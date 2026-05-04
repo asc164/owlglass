@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DopplerLens · Owlglass</title>
+  <meta name="description" content="Detect typosquats, homoglyphs, and lookalike domains that could be used to phish your customers or employees.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    /* DopplerLens-specific small additions */
+    .progress-card { padding: 18px 22px; }
+    .progress-bar {
+      height: 6px;
+      background: var(--bg-sunken);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 12px 0 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--brand);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-feature-settings: 'tnum';
+    }
+    .baseline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .baseline-item {
+      padding: 10px 12px;
+      background: var(--bg-sunken);
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+    }
+    .baseline-item .lbl {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .baseline-item .val {
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+    .row-score {
+      text-align: right;
+      font-feature-settings: 'tnum';
+    }
+    .row-score .num {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .row-score .lbl {
+      font-size: 0.7rem;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .row-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .row-actions a {
+      padding: 4px 10px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      text-align: center;
+      transition: all 0.12s;
+    }
+    .row-actions a:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+    .signals-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .examples-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 0.82rem;
+    }
+    .example-link {
+      padding: 3px 10px;
+      background: var(--bg-sunken);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .example-link:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+    .row-doppler {
+      grid-template-columns: auto 1fr auto auto;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div id="sidebar-slot"></div>
+
+  <main class="main">
+    <div class="main-inner">
+      <button class="mobile-toggle" aria-label="Toggle menu"></button>
+
+      <div class="topbar">
+        <div class="titles">
+          <div class="breadcrumb"><a href="/">Owlglass</a> / DopplerLens</div>
+          <h1>DopplerLens</h1>
+          <p class="tagline">Generate hundreds of lookalike variations of a domain — typosquats, homoglyphs, TLD swaps, bitsquats — then check which are actually registered. For each live one, classify it as defensive, parked, suspicious, or likely phishing based on DNS, mail, web, and favicon evidence.</p>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 16px 18px;">
+        <div class="input-row" style="margin-bottom: 0;">
+          <input id="domainInput" type="text" placeholder="Enter your brand domain (e.g. nike.com)" autocomplete="off">
+          <button class="btn primary" id="scanBtn">Find lookalikes</button>
+        </div>
+        <div class="examples-row">
+          <span class="muted">Try:</span>
+          <span class="example-link" data-d="nike.com">nike.com</span>
+          <span class="example-link" data-d="paypal.com">paypal.com</span>
+          <span class="example-link" data-d="microsoft.com">microsoft.com</span>
+          <span class="example-link" data-d="github.com">github.com</span>
+          <span class="example-link" data-d="cloudflare.com">cloudflare.com</span>
+        </div>
+      </div>
+
+      <div class="status" id="statusBar">
+        <div><span class="dot" id="statusDot"></span><span id="statusText">Ready — enter your brand domain to begin.</span></div>
+        <div class="faint" id="lastScanText"></div>
+      </div>
+
+      <div id="progressBox" class="card progress-card hidden">
+        <div style="font-weight: 600; color: var(--text); margin-bottom: 4px;" id="progressLabel">Generating lookalikes…</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="progress-meta">
+          <span id="progressDetail">—</span>
+          <span id="progressCount">0 / 0</span>
+        </div>
+      </div>
+
+      <div id="baselineCard" class="card hidden">
+        <div class="card-header"><h2>Your domain · baseline fingerprint</h2></div>
+        <p class="muted" style="font-size: 0.85rem; margin-bottom: 6px;">DopplerLens compares each lookalike against this fingerprint. Matches on IP, nameserver, or mail server suggest a defensive registration; mismatches with active services suggest phishing infrastructure.</p>
+        <div class="baseline-grid" id="baselineGrid"></div>
+      </div>
+
+      <div class="metric-strip" id="metricStrip" style="display:none;"></div>
+
+      <div class="tabs">
+        <button class="tab active" data-view="overview">Overview</button>
+        <button class="tab" data-view="phishing">Likely phishing <span class="count" id="critCount">0</span></button>
+        <button class="tab" data-view="suspicious">Suspicious <span class="count" id="highCount">0</span></button>
+        <button class="tab" data-view="parked">Parked <span class="count" id="medCount">0</span></button>
+        <button class="tab" data-view="defensive">Defensive <span class="count" id="okCount">0</span></button>
+        <button class="tab" data-view="all">All findings <span class="count" id="allCount">0</span></button>
+        <button class="tab" data-view="about">Method</button>
+      </div>
+
+      <section class="view active" id="view-overview">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2>Findings by verdict</h2></div>
+            <div id="severitySummary"><p class="muted">Will appear after scan.</p></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Detection method</h2></div>
+            <div id="methodBreakdown"><p class="muted">Will appear after scan.</p></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h2>Recommended actions</h2></div>
+          <div id="recommendations"><p class="muted">A prioritized list will appear after scan.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-phishing">
+        <div class="card">
+          <div class="card-header"><h2>Likely phishing infrastructure</h2></div>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">High-suspicion domains: active services on infrastructure unrelated to yours, often with characteristics consistent with phishing kits (matching favicon, suspicious TLDs, mail-capable but distinct from your mail flow).</p>
+          <div id="critList"><p class="muted">Will appear after scan.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-suspicious">
+        <div class="card">
+          <div class="card-header"><h2>Suspicious — investigate</h2></div>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Live infrastructure with some warning signs but not conclusive. May be unrelated services, may be early-stage phishing setup, may be brand-related properties you didn't catalog.</p>
+          <div id="highList"><p class="muted">Will appear after scan.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-parked">
+        <div class="card">
+          <div class="card-header"><h2>Parked or dormant registrations</h2></div>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Registered but not currently hosting active web or mail services. Could be domain squatters waiting to monetize, defensive registrations by competitors, or future phishing infrastructure not yet activated.</p>
+          <div id="medList"><p class="muted">Will appear after scan.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-defensive">
+        <div class="card">
+          <div class="card-header"><h2>Likely defensive (yours or your registrar)</h2></div>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Lookalikes that resolve to your own infrastructure or to known brand-protection registrars (MarkMonitor, CSC, Brandshelter). These are working in your favor.</p>
+          <div id="okList"><p class="muted">Will appear after scan.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-all">
+        <div class="card">
+          <div class="card-header">
+            <h2 id="allTitle">All findings</h2>
+            <button class="btn" id="exportBtn">Export CSV</button>
+          </div>
+          <div class="filters" id="vFilters">
+            <button class="filter active" data-f="all">All</button>
+            <button class="filter" data-f="crit">Likely phishing</button>
+            <button class="filter" data-f="high">Suspicious</button>
+            <button class="filter" data-f="med">Parked</button>
+            <button class="filter" data-f="ok">Defensive</button>
+          </div>
+          <div id="allList"><p class="muted">Will appear after scan.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-about">
+        <div class="card">
+          <h2>How DopplerLens works</h2>
+          <p style="margin-bottom: 12px;">DopplerLens uses the same family of algorithms as <a href="https://github.com/elceef/dnstwist" target="_blank" rel="noopener">dnstwist</a> — character omission, duplication, transposition, keyboard-adjacent substitution, homoglyph substitution, character insertion, hyphenation, TLD swaps, common prefixes/suffixes, and bitsquatting (single bit-flip mutations). Each algorithm produces variations of your domain that humans might mistype or fail to notice.</p>
+          <p style="margin-bottom: 12px;">For each candidate, DopplerLens runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a> to see if the domain is registered. Live candidates get deeper analysis: nameservers, mail servers, web server reachability, and a favicon hash comparison against your domain.</p>
+
+          <h3 style="margin: 18px 0 8px;">How verdicts are assigned</h3>
+          <p class="muted" style="font-size: 0.88rem;">Each domain accumulates a suspicion score from positive and negative signals. Sharing your IP, nameservers, or mail servers reduces the score (defensive). Having an active web server on different infrastructure raises it. Matching favicon on different infrastructure raises it sharply. Brand-protection registrars (MarkMonitor, CSC) are recognized and scored as defensive even without infrastructure overlap.</p>
+
+          <h3 style="margin: 18px 0 8px;">Honest limits</h3>
+          <p class="muted" style="font-size: 0.88rem;">DopplerLens does not detect <strong>IDN homograph attacks</strong> using non-Latin Unicode (e.g. Cyrillic letters that look identical to Latin ones) — those require punycode-aware generation that is unreliable from the browser. Favicon comparison only works when the suspect domain serves its favicon with permissive CORS headers, which most don't, so absence of a favicon match is not exonerating evidence. The DNS-based liveness check can produce false positives for shared parking infrastructure where many unrelated dormant domains resolve to the same IP.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="/assets/shared.js"></script>
+<script>Owlglass.mount({ active: 'dopplerlens' });</script>
+
+<script>
+'use strict';
+
+// ============================================================
+// DopplerLens — application logic
+// ============================================================
+
+const SEV_COLORS = {
+  crit: '#dc2626',
+  high: '#ea580c',
+  med:  '#d97706',
+  low:  '#2563eb',
+  ok:   '#16a34a'
+};
+
+// Verdict mapping: phishing=crit, suspicious=high, parked=med, defensive=ok
+const VERDICT = {
+  crit: { label: 'Likely phishing', short: 'Phishing', sev: 'crit' },
+  high: { label: 'Suspicious',      short: 'Suspicious', sev: 'high' },
+  med:  { label: 'Parked',          short: 'Parked', sev: 'med' },
+  ok:   { label: 'Defensive',       short: 'Defensive', sev: 'ok' }
+};
+
+// dnstwist-style algorithms ----------------------------------
+const KEYBOARD = {
+  q:'wa',w:'qeas',e:'wrds',r:'etdf',t:'ryfg',y:'tugh',u:'yihj',i:'uojk',o:'ipkl',p:'ol',
+  a:'qwsz',s:'awedxz',d:'serfcx',f:'drtgvc',g:'ftyhbv',h:'gyujnb',j:'huiknm',k:'jiolm',l:'kop',
+  z:'asx',x:'zsdc',c:'xdfv',v:'cfgb',b:'vghn',n:'bhjm',m:'njk'
+};
+
+const HOMOGLYPHS = {
+  '0':'o','1':'li','2':'z','3':'e','4':'a','5':'s','6':'b','7':'t','8':'b','9':'g',
+  'a':'4','b':'68','c':'','d':'cl','e':'3','g':'69q','h':'lh','i':'1l','j':'i',
+  'k':'lc','l':'1i','m':'rn','n':'m','o':'0','p':'q','q':'gp','r':'n','s':'5','t':'7',
+  'u':'vy','v':'uy','w':'vv','x':'k','y':'v','z':'2'
+};
+
+const COMMON_TLDS = ['com','net','org','co','io','app','xyz','top','shop','online','site','info','biz','live','store','vip'];
+const SUSPICIOUS_TLDS = /\.(tk|ml|ga|cf|gq|xyz|top|shop|click|online|site)$/;
+const BRAND_REGISTRARS = /markmonitor|cscdbs|brandshelter|safenames|comlaude|nom-iq|ascio|gandi|godaddy/i;
+
+let currentScan = null;
+let currentResults = [];
+let currentFilter = 'all';
+let currentOriginal = '';
+
+// ----------------------------------------------------------
+// Variation generation
+// ----------------------------------------------------------
+function generateVariations(domain) {
+  const parts = domain.split('.');
+  const name = parts[0];
+  const tld = parts.slice(1).join('.');
+  const set = new Set();
+  const methodMap = new Map(); // variation -> detection method
+
+  function add(variation, method) {
+    if (variation === domain) return;
+    if (!methodMap.has(variation)) methodMap.set(variation, method);
+    set.add(variation);
+  }
+
+  // 1. Character omission
+  for (let i = 0; i < name.length; i++) {
+    add(name.slice(0, i) + name.slice(i + 1) + '.' + tld, 'omission');
+  }
+
+  // 2. Character duplication
+  for (let i = 0; i < name.length; i++) {
+    add(name.slice(0, i + 1) + name[i] + name.slice(i + 1) + '.' + tld, 'duplication');
+  }
+
+  // 3. Adjacent transposition
+  for (let i = 0; i < name.length - 1; i++) {
+    add(name.slice(0, i) + name[i+1] + name[i] + name.slice(i + 2) + '.' + tld, 'transposition');
+  }
+
+  // 4. Keyboard-adjacent substitution
+  for (let i = 0; i < name.length; i++) {
+    const adj = KEYBOARD[name[i]] || '';
+    for (const c of adj) {
+      add(name.slice(0, i) + c + name.slice(i + 1) + '.' + tld, 'keyboard-sub');
+    }
+  }
+
+  // 5. Homoglyph substitution
+  for (let i = 0; i < name.length; i++) {
+    const subs = HOMOGLYPHS[name[i]] || '';
+    for (const c of subs) {
+      add(name.slice(0, i) + c + name.slice(i + 1) + '.' + tld, 'homoglyph');
+    }
+  }
+
+  // 6. Single character insertion (limited to keep candidate count reasonable)
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789-';
+  for (let i = 0; i <= name.length; i++) {
+    for (const c of chars) {
+      const v = name.slice(0, i) + c + name.slice(i) + '.' + tld;
+      if (v.length <= name.length + 5 + tld.length) add(v, 'insertion');
+    }
+  }
+
+  // 7. Hyphenation
+  for (let i = 1; i < name.length; i++) {
+    add(name.slice(0, i) + '-' + name.slice(i) + '.' + tld, 'hyphenation');
+  }
+
+  // 8. TLD swap
+  for (const t of COMMON_TLDS) {
+    if (t !== tld) add(name + '.' + t, 'tld-swap');
+  }
+
+  // 9. Prefix / suffix
+  const affixes = ['my','the','secure','login','account','-secure','-login','-pay','pay-','support','-support','official','-official'];
+  for (const a of affixes) {
+    if (a.startsWith('-') || a.endsWith('-')) {
+      add(name + a + '.' + tld, 'affix');
+      add(a + name + '.' + tld, 'affix');
+    } else {
+      add(a + name + '.' + tld, 'affix');
+      add(name + a + '.' + tld, 'affix');
+    }
+  }
+
+  // 10. Bitsquatting (single bit-flip)
+  for (let i = 0; i < name.length; i++) {
+    const c = name.charCodeAt(i);
+    for (let b = 0; b < 7; b++) {
+      const flipped = c ^ (1 << b);
+      if ((flipped >= 97 && flipped <= 122) || (flipped >= 48 && flipped <= 57)) {
+        add(name.slice(0, i) + String.fromCharCode(flipped) + name.slice(i + 1) + '.' + tld, 'bitsquat');
+      }
+    }
+  }
+
+  return [...set].map(v => ({ domain: v, method: methodMap.get(v) || 'other' }));
+}
+
+// ----------------------------------------------------------
+// DNS / fingerprint helpers
+// ----------------------------------------------------------
+async function dnsLookup(domain, type) {
+  try {
+    const res = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(domain) + '&type=' + type);
+    const json = await res.json();
+    return { answers: json.Answer || [], status: json.Status };
+  } catch {
+    return { answers: [], status: -1 };
+  }
+}
+
+async function getIPs(domain) {
+  const r = await dnsLookup(domain, 'A');
+  return r.answers.filter(a => a.type === 1).map(a => a.data);
+}
+
+async function getMX(domain) {
+  const r = await dnsLookup(domain, 'MX');
+  return r.answers.filter(a => a.type === 15).map(a => a.data);
+}
+
+async function getNS(domain) {
+  const r = await dnsLookup(domain, 'NS');
+  return r.answers.filter(a => a.type === 2).map(a => a.data);
+}
+
+async function fetchFaviconBytes(domain) {
+  try {
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 4000);
+    const res = await fetch('https://' + domain + '/favicon.ico', { signal: ctrl.signal, mode: 'cors', cache: 'no-store' });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    return new Uint8Array(buf);
+  } catch { return null; }
+}
+
+async function simpleHash(bytes) {
+  if (!bytes || bytes.length === 0) return null;
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(hash)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function probeWebServer(domain) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let done = false;
+    const t = setTimeout(() => { if (!done) { done = true; resolve(false); } }, 4000);
+    img.onload  = () => { if (!done) { done = true; clearTimeout(t); resolve(true); } };
+    img.onerror = () => { if (!done) { done = true; clearTimeout(t); resolve(true); } };
+    img.src = 'https://' + domain + '/favicon.ico?_=' + Math.random();
+  });
+}
+
+// ----------------------------------------------------------
+// Main scan
+// ----------------------------------------------------------
+async function scanDomain(rawInput) {
+  const original = (rawInput || '').toLowerCase().trim()
+    .replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+
+  if (!original.includes('.')) {
+    alert('Please enter a full domain like nike.com');
+    return;
+  }
+
+  currentScan = { aborted: false };
+  const myScan = currentScan;
+  currentOriginal = original;
+
+  // Reset UI
+  document.getElementById('progressBox').classList.remove('hidden');
+  document.getElementById('baselineCard').classList.add('hidden');
+  document.getElementById('metricStrip').style.display = 'none';
+  document.getElementById('scanBtn').disabled = true;
+
+  const setProgress = (label, detail, pct, count) => {
+    document.getElementById('progressLabel').textContent = label;
+    document.getElementById('progressDetail').textContent = detail;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = count;
+  };
+
+  try {
+    // Step 1: baseline
+    setStatus('busy', 'Profiling ' + original + '…');
+    setProgress('Step 1 of 4: Profiling your domain', 'DNS, mail, nameservers, favicon…', 5, '');
+
+    const [origIPs, origMX, origNS, origFavBytes] = await Promise.all([
+      getIPs(original), getMX(original), getNS(original), fetchFaviconBytes(original)
+    ]);
+    const origFavHash = await simpleHash(origFavBytes);
+    const origIPSet = new Set(origIPs);
+    const origNSSet = new Set(origNS.map(n => n.toLowerCase().replace(/\.$/, '')));
+    const origMXSet = new Set(origMX.map(m => m.toLowerCase().split(' ').pop().replace(/\.$/, '')));
+
+    // Show baseline card
+    renderBaseline(original, origIPs, origMX, origNS, origFavHash);
+
+    // Step 2: generate
+    setProgress('Step 2 of 4: Generating lookalikes', 'Applying dnstwist algorithms…', 10, '');
+    const candidates = generateVariations(original);
+    await new Promise(r => setTimeout(r, 80));
+
+    if (myScan.aborted) return;
+
+    // Step 3: DNS check
+    setProgress('Step 3 of 4: Checking ' + candidates.length + ' candidates', 'Resolving DNS…', 15, '0 / ' + candidates.length);
+
+    const liveCandidates = [];
+    const BATCH = 20;
+    let done = 0;
+    for (let i = 0; i < candidates.length; i += BATCH) {
+      if (myScan.aborted) return;
+      const batch = candidates.slice(i, i + BATCH);
+      const results = await Promise.all(batch.map(async ({ domain, method }) => {
+        const ips = await getIPs(domain);
+        return { domain, method, ips };
+      }));
+      results.forEach(r => { if (r.ips.length > 0) liveCandidates.push(r); });
+      done += batch.length;
+      const pct = 15 + (done / candidates.length) * 50;
+      setProgress('Step 3 of 4: Resolving DNS', liveCandidates.length + ' live so far', pct, done + ' / ' + candidates.length);
+    }
+
+    if (myScan.aborted) return;
+
+    // Step 4: deep analysis
+    setProgress('Step 4 of 4: Analyzing ' + liveCandidates.length + ' live domains', 'MX, NS, web, favicon…', 65, '0 / ' + liveCandidates.length);
+
+    const detailed = [];
+    for (let i = 0; i < liveCandidates.length; i += 5) {
+      if (myScan.aborted) return;
+      const batch = liveCandidates.slice(i, i + 5);
+      const results = await Promise.all(batch.map(async ({ domain, method, ips }) => {
+        const [mx, ns, webAlive, favBytes] = await Promise.all([
+          getMX(domain), getNS(domain), probeWebServer(domain), fetchFaviconBytes(domain)
+        ]);
+        const favHash = await simpleHash(favBytes);
+        return { domain, method, ips, mx, ns, webAlive, favHash };
+      }));
+      detailed.push(...results);
+      const pct = 65 + ((i + batch.length) / liveCandidates.length) * 35;
+      setProgress('Step 4 of 4: Deep analysis', detailed.length + ' analyzed', pct, detailed.length + ' / ' + liveCandidates.length);
+    }
+
+    if (myScan.aborted) return;
+
+    // Classify
+    const classified = detailed.map(d =>
+      classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHash)
+    );
+
+    // Sort: crit -> high -> med -> ok, then alpha
+    const order = { crit: 0, high: 1, med: 2, ok: 3 };
+    classified.sort((a, b) => order[a.verdict] - order[b.verdict] || a.domain.localeCompare(b.domain));
+
+    currentResults = classified;
+    setProgress('Scan complete', 'Found ' + liveCandidates.length + ' registered lookalikes among ' + candidates.length + ' variations', 100, candidates.length + ' / ' + candidates.length);
+    await new Promise(r => setTimeout(r, 400));
+    document.getElementById('progressBox').classList.add('hidden');
+
+    renderAll(original, classified, candidates.length);
+    setStatus('ok', 'Complete — ' + classified.length + ' live lookalikes from ' + candidates.length + ' candidates');
+    document.getElementById('lastScanText').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
+
+  } catch (e) {
+    console.error('Scan error:', e);
+    setStatus('bad', 'Failed: ' + e.message);
+    document.getElementById('progressBox').classList.add('hidden');
+  } finally {
+    document.getElementById('scanBtn').disabled = false;
+  }
+}
+
+// ----------------------------------------------------------
+// Classification
+// ----------------------------------------------------------
+function classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHash) {
+  const signals = [];
+  let score = 0;
+
+  const sharedIP = d.ips.some(ip => origIPSet.has(ip));
+  const sharedNS = d.ns.some(n => origNSSet.has(n.toLowerCase().replace(/\.$/, '')));
+  const sharedMX = d.mx.some(m => origMXSet.has(m.toLowerCase().split(' ').pop().replace(/\.$/, '')));
+  const protectionNS = d.ns.some(n => BRAND_REGISTRARS.test(n));
+
+  if (sharedIP) {
+    signals.push({ text: 'Same IP as your domain', cls: 'ok' });
+    score -= 100;
+  }
+  if (sharedNS) {
+    signals.push({ text: 'Same nameservers', cls: 'ok' });
+    score -= 50;
+  }
+  if (sharedMX) {
+    signals.push({ text: 'Mail routed to your servers', cls: 'ok' });
+    score -= 40;
+  }
+  if (protectionNS && !sharedNS) {
+    signals.push({ text: 'Brand-protection registrar', cls: 'ok' });
+    score -= 60;
+  }
+  if (d.mx.length > 0 && !sharedMX) {
+    signals.push({ text: 'Has mail server (can send)', cls: 'crit' });
+    score += 30;
+  }
+  if (d.webAlive && !sharedIP) {
+    signals.push({ text: 'Active web server', cls: 'high' });
+    score += 25;
+  }
+  if (origFavHash && d.favHash && d.favHash === origFavHash && !sharedIP) {
+    signals.push({ text: 'Favicon matches yours', cls: 'crit' });
+    score += 60;
+  }
+  if (!d.webAlive && d.mx.length === 0 && !sharedIP) {
+    signals.push({ text: 'No active services', cls: 'med' });
+    score += 5;
+  }
+  if (SUSPICIOUS_TLDS.test(d.domain)) {
+    signals.push({ text: 'Low-trust TLD', cls: 'med' });
+    score += 15;
+  }
+
+  let verdict;
+  if (score <= -30) verdict = 'ok';
+  else if (score >= 50) verdict = 'crit';
+  else if (score >= 20) verdict = 'high';
+  else verdict = 'med';
+
+  return Object.assign({}, d, { signals, score, verdict });
+}
+
+// ----------------------------------------------------------
+// Rendering
+// ----------------------------------------------------------
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (dot) dot.className = 'dot ' + type;
+  if (txt) txt.textContent = text;
+}
+
+function renderBaseline(domain, ips, mx, ns, favHash) {
+  const card = document.getElementById('baselineCard');
+  const grid = document.getElementById('baselineGrid');
+
+  const item = (lbl, val) =>
+    '<div class="baseline-item"><div class="lbl">' + lbl + '</div><div class="val">' + val + '</div></div>';
+
+  grid.innerHTML =
+    item('Domain', escapeHtml(domain)) +
+    item('IPs', ips.length === 0 ? '<span class="muted">none</span>' : escapeHtml(ips.slice(0, 3).join(', ')) + (ips.length > 3 ? ' +' + (ips.length - 3) : '')) +
+    item('Mail (MX)', mx.length === 0 ? '<span class="muted">none</span>' : mx.length + ' record(s)') +
+    item('Nameservers', ns.length === 0 ? '<span class="muted">none</span>' : escapeHtml(ns.slice(0, 2).map(n => n.replace(/\.$/, '').split('.').slice(-2).join('.')).join(', '))) +
+    item('Favicon SHA-256', favHash ? '<code>' + favHash + '</code>' : '<span class="muted">unavailable</span>');
+
+  card.classList.remove('hidden');
+}
+
+function renderAll(original, results, totalChecked) {
+  const counts = {
+    crit: results.filter(r => r.verdict === 'crit').length,
+    high: results.filter(r => r.verdict === 'high').length,
+    med:  results.filter(r => r.verdict === 'med').length,
+    ok:   results.filter(r => r.verdict === 'ok').length
+  };
+
+  // Tab counts
+  document.getElementById('critCount').textContent = counts.crit;
+  document.getElementById('highCount').textContent = counts.high;
+  document.getElementById('medCount').textContent = counts.med;
+  document.getElementById('okCount').textContent = counts.ok;
+  document.getElementById('allCount').textContent = results.length;
+
+  // Metric strip
+  const m = (label, value, meta, mod) =>
+    '<div class="metric ' + (mod || '') + '"><div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
+  const strip = document.getElementById('metricStrip');
+  strip.style.display = 'grid';
+  strip.innerHTML =
+    m('Lookalikes generated', totalChecked, 'Total candidates', 'brand') +
+    m('Live registrations', results.length, Math.round(results.length / totalChecked * 100) + '% live', '') +
+    m('Likely phishing', counts.crit, 'High suspicion', counts.crit > 0 ? 'crit' : 'ok') +
+    m('Suspicious', counts.high, 'Worth investigating', counts.high > 0 ? 'high' : '') +
+    m('Parked', counts.med, 'Registered, idle', counts.med > 0 ? 'med' : '') +
+    m('Defensive', counts.ok, 'Yours or registrar', 'ok');
+
+  // Severity bar
+  renderSeveritySummary(counts);
+
+  // Method breakdown
+  renderMethodBreakdown(results);
+
+  // Recommendations
+  renderRecommendations(counts, results);
+
+  // Per-bucket lists
+  renderBucket('critList', results.filter(r => r.verdict === 'crit'));
+  renderBucket('highList', results.filter(r => r.verdict === 'high'));
+  renderBucket('medList',  results.filter(r => r.verdict === 'med'));
+  renderBucket('okList',   results.filter(r => r.verdict === 'ok'));
+  renderAllList();
+}
+
+function renderSeveritySummary(counts) {
+  const total = counts.crit + counts.high + counts.med + counts.ok;
+  if (total === 0) {
+    document.getElementById('severitySummary').innerHTML = '<p class="muted">No live lookalikes found.</p>';
+    return;
+  }
+  const segs = [];
+  if (counts.crit > 0) segs.push('<div class="seg-crit" style="flex:' + counts.crit + ';"></div>');
+  if (counts.high > 0) segs.push('<div class="seg-high" style="flex:' + counts.high + ';"></div>');
+  if (counts.med > 0)  segs.push('<div class="seg-med" style="flex:' + counts.med + ';"></div>');
+  if (counts.ok > 0)   segs.push('<div class="seg-ok" style="flex:' + counts.ok + ';"></div>');
+
+  const items = [
+    { label: 'Likely phishing', color: SEV_COLORS.crit, count: counts.crit },
+    { label: 'Suspicious',      color: SEV_COLORS.high, count: counts.high },
+    { label: 'Parked',          color: SEV_COLORS.med,  count: counts.med  },
+    { label: 'Defensive',       color: SEV_COLORS.ok,   count: counts.ok   }
+  ];
+  document.getElementById('severitySummary').innerHTML =
+    '<div class="sev-bar">' + segs.join('') + '</div>' +
+    '<div class="sev-legend">' +
+      items.filter(i => i.count > 0).map(i =>
+        '<div class="item"><span class="swatch" style="background:' + i.color + ';"></span><span>' + i.label + '</span><span style="font-weight:600;color:var(--text);">' + i.count + '</span></div>'
+      ).join('') +
+    '</div>';
+}
+
+function renderMethodBreakdown(results) {
+  const counts = {};
+  results.forEach(r => { counts[r.method] = (counts[r.method] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (sorted.length === 0) {
+    document.getElementById('methodBreakdown').innerHTML = '<p class="muted">No data.</p>';
+    return;
+  }
+  const max = sorted[0][1];
+  const labelMap = {
+    'omission': 'Character omission',
+    'duplication': 'Character duplication',
+    'transposition': 'Adjacent transposition',
+    'keyboard-sub': 'Keyboard-adjacent typo',
+    'homoglyph': 'Homoglyph substitution',
+    'insertion': 'Character insertion',
+    'hyphenation': 'Hyphenation',
+    'tld-swap': 'TLD swap',
+    'affix': 'Prefix / suffix',
+    'bitsquat': 'Bitsquatting',
+    'other': 'Other'
+  };
+  document.getElementById('methodBreakdown').innerHTML = sorted.map(([k, n]) =>
+    '<div class="bar-row">' +
+      '<div class="bar-label">' + (labelMap[k] || k) + '</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + (n / max * 100) + '%;"></div></div>' +
+      '<div class="bar-count">' + n + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function renderRecommendations(counts, results) {
+  const recs = [];
+  if (counts.crit > 0) {
+    recs.push({
+      sev: 'crit',
+      title: 'Investigate ' + counts.crit + ' likely phishing domain' + (counts.crit === 1 ? '' : 's'),
+      why: 'Active services on infrastructure unrelated to yours, with phishing indicators. Submit to your incident response team for takedown via registrar abuse channels or services like PhishLabs / Google Safe Browsing.'
+    });
+  }
+  if (counts.high > 0) {
+    recs.push({
+      sev: 'high',
+      title: 'Review ' + counts.high + ' suspicious domain' + (counts.high === 1 ? '' : 's'),
+      why: 'These have warning signs but aren\'t conclusive. Check whether they belong to your organization first; if not, monitor and consider takedown if intent becomes clear.'
+    });
+  }
+  if (counts.med > 5) {
+    recs.push({
+      sev: '',
+      title: counts.med + ' parked domains may be future phishing infrastructure',
+      why: 'Squatters often park lookalikes for years before activating. Consider defensive registration of the highest-traffic-risk variants (your TLD swaps and most common typos) before someone else does.'
+    });
+  }
+  if (counts.ok > 0) {
+    recs.push({
+      sev: '',
+      title: counts.ok + ' lookalike' + (counts.ok === 1 ? ' is' : 's are') + ' working in your favor',
+      why: 'Defensive registrations or your own properties. Keep these renewed; the cost of letting one expire and an attacker grabbing it is much higher than the renewal fee.'
+    });
+  }
+  if (recs.length === 0) {
+    recs.push({ sev: '', title: 'No significant lookalike risk detected', why: 'Either the domain has few registered variations or all live ones map back to your infrastructure.' });
+  }
+
+  document.getElementById('recommendations').innerHTML = recs.slice(0, 6).map((r, i) =>
+    '<div class="rec ' + (r.sev ? 'sev-' + r.sev : '') + '">' +
+      '<div class="rec-num">' + (i + 1) + '</div>' +
+      '<div><div class="rec-title">' + escapeHtml(r.title) + '</div><div class="rec-why">' + escapeHtml(r.why) + '</div></div>' +
+      '<div></div>' +
+    '</div>'
+  ).join('');
+}
+
+function renderBucket(elId, items) {
+  const c = document.getElementById(elId);
+  if (items.length === 0) {
+    c.innerHTML = '<div class="empty"><div class="ico">—</div>None in this category.</div>';
+    return;
+  }
+  c.innerHTML = items.map(renderRow).join('');
+}
+
+function renderAllList() {
+  document.getElementById('allTitle').textContent = 'All findings (' + currentResults.length + ')';
+  let filtered = currentResults;
+  if (currentFilter !== 'all') filtered = filtered.filter(r => r.verdict === currentFilter);
+
+  const c = document.getElementById('allList');
+  if (filtered.length === 0) {
+    c.innerHTML = '<div class="empty"><div class="ico">—</div>No domains in this filter.</div>';
+    return;
+  }
+  c.innerHTML = filtered.map(renderRow).join('');
+}
+
+function renderRow(r) {
+  const v = VERDICT[r.verdict];
+  const ipDisplay = r.ips.slice(0, 2).join(', ') + (r.ips.length > 2 ? ' +' + (r.ips.length - 2) : '');
+  const flag = 'flag-' + v.sev;
+
+  const methodLabel = {
+    'omission': 'Omission', 'duplication': 'Duplication', 'transposition': 'Transposition',
+    'keyboard-sub': 'Keyboard typo', 'homoglyph': 'Homoglyph', 'insertion': 'Insertion',
+    'hyphenation': 'Hyphenation', 'tld-swap': 'TLD swap', 'affix': 'Prefix/suffix',
+    'bitsquat': 'Bitsquat', 'other': 'Other'
+  }[r.method] || r.method;
+
+  const services = [];
+  if (r.webAlive) services.push('<span class="pill">Web</span>');
+  if (r.mx.length > 0) services.push('<span class="pill">Mail</span>');
+
+  return '<div class="row row-doppler ' + flag + '">' +
+    '<div><span class="badge ' + v.sev + '">' + v.short + '</span></div>' +
+    '<div>' +
+      '<div class="row-name">' + escapeHtml(r.domain) + '</div>' +
+      '<div class="row-meta">' +
+        '<span class="pill brand">' + escapeHtml(methodLabel) + '</span>' +
+        '<span class="pill">' + escapeHtml(ipDisplay) + '</span>' +
+        services.join('') +
+      '</div>' +
+      (r.signals.length > 0 ? '<div class="signals-row">' +
+        r.signals.map(s => '<span class="pill ' + s.cls + '">' + escapeHtml(s.text) + '</span>').join('') +
+      '</div>' : '') +
+    '</div>' +
+    '<div class="row-score">' +
+      '<div class="num" style="color:' + SEV_COLORS[v.sev] + ';">' + (r.score > 0 ? '+' : '') + r.score + '</div>' +
+      '<div class="lbl">Score</div>' +
+    '</div>' +
+    '<div class="row-actions">' +
+      '<a href="https://' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener noreferrer" title="Open in new tab — be careful">Visit</a>' +
+      '<a href="https://www.virustotal.com/gui/domain/' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener">VT</a>' +
+      '<a href="https://urlscan.io/search/#domain:' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener">urlscan</a>' +
+    '</div>' +
+  '</div>';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ----------------------------------------------------------
+// CSV export
+// ----------------------------------------------------------
+function exportCSV() {
+  if (currentResults.length === 0) return;
+  const headers = ['Domain', 'Verdict', 'Score', 'Method', 'IPs', 'HasMX', 'HasWeb', 'FaviconMatch', 'Signals'];
+  const rows = currentResults.map(r => [
+    r.domain,
+    VERDICT[r.verdict].label,
+    r.score,
+    r.method,
+    r.ips.join('|'),
+    r.mx.length > 0,
+    r.webAlive,
+    r.signals.some(s => s.text === 'Favicon matches yours'),
+    r.signals.map(s => s.text).join('; ')
+  ]);
+  const csv = [headers, ...rows].map(row =>
+    row.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')
+  ).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dopplerlens-' + currentOriginal + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ----------------------------------------------------------
+// Wire up events
+// ----------------------------------------------------------
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-' + t.dataset.view).classList.add('active');
+  });
+});
+
+document.querySelectorAll('#vFilters .filter').forEach(f => {
+  f.addEventListener('click', () => {
+    document.querySelectorAll('#vFilters .filter').forEach(x => x.classList.remove('active'));
+    f.classList.add('active');
+    currentFilter = f.dataset.f;
+    renderAllList();
+  });
+});
+
+document.getElementById('scanBtn').addEventListener('click', () => {
+  const v = document.getElementById('domainInput').value;
+  if (v.trim()) scanDomain(v);
+});
+
+document.getElementById('domainInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = document.getElementById('domainInput').value;
+    if (v.trim()) scanDomain(v);
+  }
+});
+
+document.querySelectorAll('.example-link').forEach(b => {
+  b.addEventListener('click', () => {
+    document.getElementById('domainInput').value = b.dataset.d;
+    scanDomain(b.dataset.d);
+  });
+});
+
+document.getElementById('exportBtn').addEventListener('click', exportCSV);
+
+// URL hash auto-scan, e.g. /dopplerlens/#nike.com
+const h = decodeURIComponent(window.location.hash.replace('#', ''));
+if (h && h.includes('.')) {
+  document.getElementById('domainInput').value = h;
+  setTimeout(() => scanDomain(h), 300);
+}
+document.getElementById('domainInput').focus();
+</script>
+</body>
+</html>

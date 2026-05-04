@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Owlglass — See your security posture from the outside</title>
+  <meta name="description" content="A free toolkit of security lenses. Find subdomains, detect lookalike domains, audit external posture, and check email authentication. No accounts, no API keys.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="container">
+
+    <section class="hero">
+      <h1>See your security posture <span class="accent">from the outside.</span></h1>
+      <p class="lede">Owlglass is a free toolkit of security lenses. Each one shows you something specific about a domain that an attacker could already see — pulled from public certificate logs, DNS records, and threat catalogs. No accounts. No API keys. No data leaves your browser.</p>
+    </section>
+
+    <section>
+      <div class="tool-grid">
+
+        <a href="/certlens/" class="tool-card">
+          <div class="tag">Lens 01</div>
+          <div class="name">CertLens</div>
+          <div class="desc">Find every subdomain and certificate ever issued for a domain. Surface shadow IT, expiring certs, and unexpected issuance.</div>
+          <div class="arrow">Open lens →</div>
+        </a>
+
+        <a href="/dopplerlens/" class="tool-card coming-soon">
+          <div class="tag">Lens 02 · Coming soon</div>
+          <div class="name">DopplerLens</div>
+          <div class="desc">Detect typosquats, homoglyphs, and lookalike domains that could be used to phish your customers or employees.</div>
+          <div class="arrow">Open lens →</div>
+        </a>
+
+        <a href="/posturelens/" class="tool-card coming-soon">
+          <div class="tag">Lens 03 · Coming soon</div>
+          <div class="name">PostureLens</div>
+          <div class="desc">A composite view of a domain's externally visible security posture — DNS hygiene, web headers, and exposure to known-exploited vulnerabilities.</div>
+          <div class="arrow">Open lens →</div>
+        </a>
+
+        <a href="/maillens/" class="tool-card coming-soon">
+          <div class="tag">Lens 04 · Coming soon</div>
+          <div class="name">MailLens</div>
+          <div class="desc">Check whether a domain's email is properly defended against spoofing — SPF, DMARC, MTA-STS, and DNSSEC, plain language.</div>
+          <div class="arrow">Open lens →</div>
+        </a>
+
+      </div>
+    </section>
+
+    <section style="padding: 40px 0 80px;">
+      <h2 style="font-family: var(--font-serif); font-weight: 500;">Why these tools exist</h2>
+      <p style="max-width: 720px; margin-top: 12px;">Most of what an attacker learns about your organization is already public. Certificate transparency logs, DNS records, the CISA Known Exploited Vulnerabilities catalog, and dozens of other free, authoritative sources tell the whole story — if you know how to read them.</p>
+      <p style="max-width: 720px; margin-top: 12px;">Owlglass is a quiet, opinionated set of lenses for reading that public data. Each tool does one thing, presents the answer plainly, and links you to the sources. Built for security analysts, IT admins, founders, and anyone who wants to understand what they look like from the outside.</p>
+    </section>
+
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="/assets/shared.js"></script>
+  <script>Owlglass.mount({ active: 'home' });</script>
+</body>
+</html>

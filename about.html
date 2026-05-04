@@ -4,46 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>About · Owlglass</title>
-  <meta name="description" content="Owlglass is a free, independent toolkit of security lenses built on public data sources.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-  <div id="site-header"></div>
+  <div class="app">
+    <div id="sidebar-slot"></div>
 
-  <main class="container">
-    <div class="tool-header">
-      <div class="breadcrumb"><a href="/">Owlglass</a> / About</div>
-      <h1>About Owlglass</h1>
-      <p class="tagline">Free, independent security tools built on public data.</p>
-    </div>
+    <main class="main">
+      <div class="main-inner" style="max-width: 800px;">
+        <button class="mobile-toggle" aria-label="Toggle menu"></button>
 
-    <section class="section">
-      <h2>What this is</h2>
-      <p>Owlglass is a small, focused toolkit. Each tool — each "lens" — answers one specific question about a domain or organization, using only publicly available data from authoritative sources. The goal is to make it easy for anyone — security analysts, IT teams, founders, journalists, curious people — to understand what their organization looks like from outside.</p>
-    </section>
+        <div class="topbar">
+          <div class="titles">
+            <div class="breadcrumb"><a href="/">Owlglass</a> / About</div>
+            <h1>About Owlglass</h1>
+            <p class="tagline">Free, independent security tools built on public data.</p>
+          </div>
+        </div>
 
-    <section class="section">
-      <h2>How it works</h2>
-      <p>Every lens runs entirely in your browser. When you analyze a domain, your browser talks directly to the data source — Google's public DNS resolver, the SSLMate CertSpotter API, the CISA KEV catalog, the FIRST EPSS scoring API, and a few others. Owlglass itself has no backend, no accounts, no logging, and no analytics that touch your queries. The site is a static collection of HTML, CSS, and JavaScript.</p>
-      <p style="margin-top: 12px;">This design has tradeoffs. It means there's nothing to sign up for, nothing to pay for, and no way for us to see what you scan. It also means we can't run scheduled scans for you or alert you when something changes — those are features that would require a backend, and they may show up later as a paid tier. For now, everything is free and ephemeral.</p>
-    </section>
+        <div class="card">
+          <h2>What this is</h2>
+          <p>Owlglass is a small, focused toolkit. Each tool — each "lens" — answers one specific question about a domain or organization, using only publicly available data from authoritative sources. The goal is to make it easy for anyone — security analysts, IT teams, founders, journalists, curious people — to understand what their organization looks like from outside.</p>
+        </div>
 
-    <section class="section">
-      <h2>Honest limits</h2>
-      <p>These tools see only what's externally visible. They cannot see your internal network, your patching cadence, your EDR coverage, or your people. They are one input among many, useful for spotting gaps, validating a vendor, or sanity-checking your own footprint — not a replacement for real security operations.</p>
-      <p style="margin-top: 12px;">The free APIs Owlglass relies on have rate limits and occasionally change or break. When that happens, the tool will say so plainly rather than silently fail.</p>
-    </section>
+        <div class="card">
+          <h2>How it works</h2>
+          <p style="margin-bottom: 12px;">Every lens runs entirely in your browser. When you analyze a domain, your browser talks directly to the data source — Google's public DNS resolver, the SSLMate CertSpotter API, the CISA KEV catalog, the FIRST EPSS scoring API, and a few others. Owlglass itself has no backend, no accounts, no logging, and no analytics that touch your queries.</p>
+          <p>This design has tradeoffs. It means there's nothing to sign up for, nothing to pay for, and no way for us to see what you scan. It also means we can't run scheduled scans for you or alert you when something changes.</p>
+        </div>
 
-    <section class="section">
-      <h2>Data sources</h2>
-      <p>Each tool's page lists exactly which public sources it uses and links to them. We don't aggregate, store, or republish data from these sources — every query goes directly from your browser to the source.</p>
-    </section>
-  </main>
+        <div class="card">
+          <h2>Honest limits</h2>
+          <p>These tools see only what's externally visible. They cannot see your internal network, your patching cadence, your EDR coverage, or your people. They are one input among many — useful for spotting gaps, validating a vendor, or sanity-checking your own footprint, not a replacement for real security operations.</p>
+        </div>
 
-  <div id="site-footer"></div>
+      </div>
+    </main>
+  </div>
+
   <script src="/assets/shared.js"></script>
   <script>Owlglass.mount({ active: 'about' });</script>
 </body>

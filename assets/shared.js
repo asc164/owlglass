@@ -18,7 +18,7 @@
   const NAV_TOOLS = [
   { slug: 'certlens',     label: 'CertLens',     href: '/certlens/',     ready: true  },
   { slug: 'dopplerlens',  label: 'DopplerLens',  href: '/dopplerlens/',  ready: true  },
-  { slug: 'posturelens',  label: 'PostureLens',  href: '/posturelens/',  ready: false },
+  { slug: 'posturelens',  label: 'PostureLens',  href: '/posturelens/',  ready: true },
   { slug: 'maillens',     label: 'MailLens',     href: '/maillens/',     ready: false }
 ];
 

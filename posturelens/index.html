@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PostureLens · Owlglass</title>
+  <meta name="description" content="External security posture report card for any domain. Watchlist tracking with delta detection. Live KEV vendor exposure check.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    /* PostureLens-specific additions */
+
+    /* Watchlist table */
+    .watch-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.88rem;
+    }
+    .watch-table thead th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--bg-sunken);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-table thead th:first-child { border-top-left-radius: var(--radius-sm); }
+    .watch-table thead th:last-child  { border-top-right-radius: var(--radius-sm); }
+    .watch-table thead th.sortable { cursor: pointer; user-select: none; }
+    .watch-table thead th.sortable:hover { color: var(--text); }
+    .watch-table thead th.sort-asc::after  { content: ' ↑'; color: var(--brand); }
+    .watch-table thead th.sort-desc::after { content: ' ↓'; color: var(--brand); }
+    .watch-table tbody tr {
+      cursor: pointer;
+      transition: background 0.12s;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-table tbody tr:hover { background: var(--bg-hover); }
+    .watch-table tbody tr.expanded { background: var(--bg-sunken); }
+    .watch-table tbody td {
+      padding: 14px;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--border);
+    }
+    .watch-table tbody tr:last-child td { border-bottom: none; }
+
+    .grade-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .grade-A { background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.3); }
+    .grade-B { background: rgba(132, 204, 22, 0.12); color: #4d7c0f; border: 1px solid rgba(132, 204, 22, 0.3); }
+    .grade-C { background: rgba(217, 119, 6, 0.12); color: #b45309; border: 1px solid rgba(217, 119, 6, 0.3); }
+    .grade-D { background: rgba(234, 88, 12, 0.12); color: #c2410c; border: 1px solid rgba(234, 88, 12, 0.3); }
+    .grade-F { background: rgba(220, 38, 38, 0.12); color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.3); }
+
+    .domain-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .domain-name {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .domain-tag {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .domain-tag.vendor { color: var(--sev-low); }
+    .domain-tag.own { color: var(--brand); }
+
+    .delta {
+      font-feature-settings: 'tnum';
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .delta.up { color: var(--sev-ok); }
+    .delta.down { color: var(--sev-crit); }
+    .delta.flat { color: var(--text-faint); }
+
+    .row-flags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+    .table-actions button {
+      padding: 5px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-family: var(--font-sans);
+    }
+    .table-actions button:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+    .table-actions button.danger:hover { border-color: var(--sev-crit); color: var(--sev-crit); }
+
+    /* Detail expansion */
+    .detail-row td {
+      padding: 0 !important;
+      background: var(--bg) !important;
+      border-bottom: 1px solid var(--border) !important;
+    }
+    .detail-content {
+      padding: 24px;
+      animation: detailFade 0.2s ease;
+    }
+    @keyframes detailFade {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Sub-score breakdown */
+    .subscores {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 16px 0 20px;
+    }
+    .subscore {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .subscore-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .subscore-name {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .subscore-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      font-feature-settings: 'tnum';
+    }
+    .subscore-bar {
+      height: 5px;
+      background: var(--bg-sunken);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .subscore-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .subscore-detail {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Findings list inside detail */
+    .finding {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      align-items: start;
+    }
+    .finding-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: white;
+    }
+    .finding-icon.crit { background: var(--sev-crit); }
+    .finding-icon.high { background: var(--sev-high); }
+    .finding-icon.med { background: var(--sev-med); }
+    .finding-icon.ok { background: var(--sev-ok); }
+    .finding-text {
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+    .finding-detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+    .finding-detail code {
+      background: var(--bg-sunken);
+      padding: 1px 5px;
+      font-size: 0.78rem;
+    }
+
+    /* Delta panel */
+    .delta-panel {
+      background: var(--brand-soft);
+      border: 1px solid var(--brand-soft-strong);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .delta-panel.regression {
+      background: var(--sev-crit-bg);
+      border-color: rgba(220, 38, 38, 0.2);
+    }
+    .delta-panel.improvement {
+      background: var(--sev-ok-bg);
+      border-color: rgba(22, 163, 74, 0.2);
+    }
+    .delta-panel h3 {
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .delta-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+      font-size: 0.85rem;
+    }
+    .delta-list li {
+      padding: 4px 0;
+      color: var(--text-secondary);
+    }
+    .delta-list li::before {
+      content: '→';
+      margin-right: 8px;
+      color: var(--text-muted);
+    }
+
+    /* KEV findings inline */
+    .kev-finding {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--sev-crit-bg);
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      align-items: center;
+    }
+    .kev-cve {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--sev-crit);
+      font-size: 0.82rem;
+    }
+    .kev-cve a { color: inherit; }
+    .kev-meta {
+      color: var(--text-secondary);
+    }
+
+    /* Vendor questions modal-ish display */
+    .vendor-questions {
+      background: var(--bg-sunken);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    /* Add domain card */
+    .add-card {
+      padding: 16px 18px;
+    }
+    .add-card .input-row { margin-bottom: 6px; }
+    .type-toggle {
+      display: inline-flex;
+      gap: 0;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .type-toggle button {
+      padding: 9px 14px;
+      background: var(--bg-elev);
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      border-right: 1px solid var(--border);
+    }
+    .type-toggle button:last-child { border-right: none; }
+    .type-toggle button.active {
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .watchlist-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin: 6px 0 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .watchlist-meta .count-warn { color: var(--sev-high); font-weight: 600; }
+    .watchlist-meta .actions { display: flex; gap: 8px; }
+
+    .empty-watchlist {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-watchlist h3 {
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    /* Sub-score color modifiers */
+    .fill-A { background: var(--sev-ok); }
+    .fill-B { background: #84cc16; }
+    .fill-C { background: var(--sev-med); }
+    .fill-D { background: var(--sev-high); }
+    .fill-F { background: var(--sev-crit); }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div id="sidebar-slot"></div>
+
+  <main class="main">
+    <div class="main-inner">
+      <button class="mobile-toggle" aria-label="Toggle menu"></button>
+
+      <div class="topbar">
+        <div class="titles">
+          <div class="breadcrumb"><a href="/">Owlglass</a> / PostureLens</div>
+          <h1>PostureLens</h1>
+          <p class="tagline">A composite external-security report card for any domain. Track your own organization plus key vendors. Re-scan periodically and PostureLens flags what changed since your last visit — score regressions, new findings, and live exposure to actively-exploited vulnerabilities in your stack.</p>
+        </div>
+      </div>
+
+      <div class="card add-card">
+        <div class="input-row">
+          <input id="domainInput" type="text" placeholder="Enter a domain to add to your watchlist" autocomplete="off">
+          <div class="type-toggle">
+            <button data-type="own" class="active">Own org</button>
+            <button data-type="vendor">Vendor</button>
+          </div>
+          <button class="btn primary" id="addBtn">Add &amp; scan</button>
+        </div>
+        <div class="examples-row" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:0.82rem;">
+          <span class="muted">Quick add:</span>
+          <span class="example-link" data-d="github.com" data-t="own">github.com</span>
+          <span class="example-link" data-d="cloudflare.com" data-t="own">cloudflare.com</span>
+          <span class="example-link" data-d="okta.com" data-t="vendor">okta.com</span>
+          <span class="example-link" data-d="zoom.us" data-t="vendor">zoom.us</span>
+          <span class="example-link" data-d="salesforce.com" data-t="vendor">salesforce.com</span>
+        </div>
+      </div>
+
+      <div class="status" id="statusBar">
+        <div><span class="dot" id="statusDot"></span><span id="statusText">Loading live KEV catalog…</span></div>
+        <div class="faint" id="kevText"></div>
+      </div>
+
+      <div class="metric-strip" id="metricStrip" style="display:none;"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Watchlist</h2>
+          <div class="actions" style="display:flex;gap:8px;">
+            <button class="btn" id="rescanAllBtn" disabled>Rescan all</button>
+            <button class="btn" id="exportBtn" disabled>Export JSON</button>
+          </div>
+        </div>
+        <div class="watchlist-meta" id="watchlistMeta"></div>
+        <div id="watchlistContent">
+          <div class="empty-watchlist">
+            <h3>Your watchlist is empty</h3>
+            <p>Add a domain above to begin. PostureLens will run an external posture scan, save the result locally, and flag changes when you re-scan later.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="aboutCard">
+        <details>
+          <summary style="cursor:pointer; color: var(--text); font-weight: 600; font-size: 1rem;">How PostureLens scoring works</summary>
+          <div style="padding-top: 14px;">
+            <h3 style="margin: 0 0 8px;">The grade</h3>
+            <p style="font-size: 0.88rem; margin-bottom: 12px;">Each domain receives a composite score from 0–100 and a letter grade (A: 85+, B: 70–84, C: 55–69, D: 40–54, F: under 40). The score starts at 50 (industry-typical baseline) and adjusts up or down based on five sub-scores.</p>
+
+            <h3 style="margin: 14px 0 8px;">Sub-scores</h3>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Email authentication (weight: 25%).</strong> SPF presence and strictness, DMARC presence and policy enforcement, MTA-STS deployment.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>DNS hygiene (weight: 15%).</strong> DNSSEC validation, CAA records, nameserver redundancy.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Web security (weight: 15%).</strong> HTTPS reachability, HTTPS enforcement (HTTP redirects to HTTPS), and HSTS preload list membership. The "SSL Labs deep scan" link runs a more thorough TLS audit on demand.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Attack surface (weight: 15%).</strong> Subdomain count and presence of sensitive subdomain patterns (admin, dev, jenkins, vpn, etc.) found in public Certificate Transparency logs.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 12px;"><strong>Vendor exposure (weight: 30%).</strong> Cross-references technologies detectable from your DNS records (mail provider via MX, hosting hints via NS) against the live CISA Known Exploited Vulnerabilities catalog. Recent KEV matches lower this sub-score sharply.</p>
+
+            <h3 style="margin: 14px 0 8px;">Honest limits</h3>
+            <p style="font-size: 0.88rem; color: var(--text-muted);">Vendor matching is heuristic substring matching against KEV vendor names — produces some false positives. We do not see internal patching, EDR, or controls behind authentication. Web security relies on browser-accessible signals only; advanced TLS analysis requires the SSL Labs deep scan. Industry-tagged threat intelligence is not used because most public threat data is not reliably industry-tagged.</p>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/assets/shared.js"></script>
+<script>Owlglass.mount({ active: 'posturelens' });</script>
+
+<script>
+'use strict';
+
+// ============================================================
+// PostureLens — application logic
+// ============================================================
+
+const STORAGE_KEY = 'owlglass_posturelens_v1';
+const KEV_URLS = [
+  'https://raw.githubusercontent.com/cisagov/kev-data/main/known_exploited_vulnerabilities.json',
+  'https://raw.githubusercontent.com/aboutcode-org/aboutcode-mirror-kev/main/known_exploited_vulnerabilities.json'
+];
+const HSTS_PRELOAD_URL = 'https://chromium.googlesource.com/chromium/src/+/refs/heads/main/net/http/transport_security_state_static.json?format=TEXT';
+const CERTSPOTTER_API = 'https://api.certspotter.com/v1/issuances';
+
+const SOFT_CAP = 15;
+const SCAN_DELAY_MS = 400; // Pause between domains in batch rescan
+
+const SUB_WEIGHTS = {
+  email:   0.25,
+  dns:    0.15,
+  web:    0.15,
+  surface: 0.15,
+  vendor: 0.30
+};
+
+let state = {
+  watchlist: [], // [{ domain, type, scans: [{ ts, score, grade, subscores, findings, kev, surface }] }]
+  sortBy: 'score',
+  sortDir: 'asc' // worst-first
+};
+let kevData = null;
+let hstsPreload = null;
+let scanInProgress = false;
+let expandedDomain = null;
+
+// ----------------------------------------------------------
+// Storage
+// ----------------------------------------------------------
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.watchlist) state.watchlist = parsed.watchlist;
+    }
+  } catch (e) { console.warn('Failed to load state:', e); }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ watchlist: state.watchlist })); }
+  catch (e) { console.warn('Failed to save state:', e); }
+}
+
+// ----------------------------------------------------------
+// KEV catalog
+// ----------------------------------------------------------
+async function loadKEV() {
+  for (const url of KEV_URLS) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const json = await res.json();
+      kevData = json.vulnerabilities || [];
+      const released = (json.dateReleased || '').slice(0, 10) || 'unknown';
+      document.getElementById('kevText').textContent = 'KEV catalog: ' + kevData.length + ' entries · ' + released;
+      return;
+    } catch (e) { console.warn('KEV source failed:', url, e); }
+  }
+  setStatus('warn', 'Could not load KEV catalog — vendor exposure scoring will be unavailable');
+  kevData = [];
+}
+
+// ----------------------------------------------------------
+// HSTS preload list
+// ----------------------------------------------------------
+async function loadHSTSPreload() {
+  try {
+    const res = await fetch(HSTS_PRELOAD_URL);
+    if (!res.ok) { hstsPreload = new Set(); return; }
+    // Chromium serves this base64-encoded
+    const b64 = await res.text();
+    const decoded = atob(b64);
+    // Strip JSON5 comments (lines starting with //)
+    const cleaned = decoded.replace(/^\s*\/\/.*$/gm, '');
+    const json = JSON.parse(cleaned);
+    hstsPreload = new Set((json.entries || []).map(e => e.name.toLowerCase()));
+  } catch (e) {
+    console.warn('HSTS preload load failed:', e);
+    hstsPreload = new Set();
+  }
+}
+
+// ----------------------------------------------------------
+// DNS helpers (DoH)
+// ----------------------------------------------------------
+async function dnsLookup(domain, type) {
+  try {
+    const res = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(domain) + '&type=' + type);
+    const json = await res.json();
+    return { answers: json.Answer || [], ad: json.AD === true, status: json.Status };
+  } catch { return { answers: [], ad: false, status: -1 }; }
+}
+
+function parseSPF(records) {
+  for (const r of records) {
+    const d = (r.data || '').replace(/"/g, '');
+    if (/v=spf1/i.test(d)) {
+      const strict = /-all/i.test(d);
+      const soft = /~all/i.test(d);
+      return { present: true, strict, soft, raw: d };
+    }
+  }
+  return { present: false, strict: false, soft: false, raw: '' };
+}
+function parseDMARC(records) {
+  for (const r of records) {
+    const d = (r.data || '').replace(/"/g, '');
+    if (/v=DMARC1/i.test(d)) {
+      const m = d.match(/p\s*=\s*(\w+)/i);
+      return { present: true, policy: m ? m[1].toLowerCase() : 'none', raw: d };
+    }
+  }
+  return { present: false, policy: null, raw: '' };
+}
+
+// ----------------------------------------------------------
+// Web security probe
+// ----------------------------------------------------------
+async function probeHTTPS(domain) {
+  // We can't read most response headers due to CORS, but we can confirm the
+  // request reaches the server. We also try the http variant to detect lack
+  // of redirect/enforcement. This is intentionally minimal but reliable.
+  let httpsOk = false;
+  let httpOnly = false;
+
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 5000);
+    await fetch('https://' + domain + '/', { mode: 'no-cors', signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(t);
+    httpsOk = true;
+  } catch { httpsOk = false; }
+
+  // HTTP-only test omitted: most browsers block mixed content from a https
+  // page (Owlglass is served over https), so this would always fail. We
+  // instead rely on HSTS preload as a strong positive signal.
+  return { httpsOk, httpOnly };
+}
+
+function inHSTSPreload(domain) {
+  if (!hstsPreload) return false;
+  if (hstsPreload.has(domain)) return true;
+  // Preload entries can cover subdomains via include_subdomains; for v1 we
+  // only check the apex domain match.
+  const parts = domain.split('.');
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (hstsPreload.has(parts.slice(i).join('.'))) return true;
+  }
+  return false;
+}
+
+// ----------------------------------------------------------
+// Surface (subdomain enumeration) — lightweight
+// ----------------------------------------------------------
+async function getSurfaceData(domain) {
+  // Single-page CertSpotter call. CertLens uses multi-page; here we want
+  // a quick sample, not exhaustive enumeration.
+  try {
+    const url = CERTSPOTTER_API + '?domain=' + encodeURIComponent(domain) + '&include_subdomains=true&expand=dns_names';
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) return { count: null, sensitive: [], rateLimited: res.status === 429 };
+    const data = await res.json();
+    if (!Array.isArray(data)) return { count: null, sensitive: [] };
+
+    const subdomains = new Set();
+    data.forEach(c => {
+      (c.dns_names || []).forEach(n => {
+        const clean = n.toLowerCase().replace(/^\*\./, '');
+        if (clean.endsWith(domain) || clean === domain) subdomains.add(clean);
+      });
+    });
+    const arr = [...subdomains];
+    const sensitive = arr.filter(s => isSensitiveSubdomain(s)).slice(0, 8);
+    return { count: arr.length, sensitive, rateLimited: false };
+  } catch { return { count: null, sensitive: [], rateLimited: false }; }
+}
+
+const SENSITIVE_PATTERNS = [
+  /^(admin|administrator|root|console|portal|panel|cpanel)\./,
+  /^(dev|development|test|testing|staging|stage|qa|uat|sandbox|preview)\./,
+  /^(jenkins|gitlab|gitea|jira|confluence|bamboo|teamcity|bitbucket|nexus|artifactory)\./,
+  /^(vpn|remote|rdp|ssh|ftp|sftp|gateway)\./,
+  /^(internal|intranet|private|secret|corp|hq)\./,
+  /^(grafana|kibana|prometheus|elasticsearch|elk|datadog|splunk)\./,
+  /^(phpmyadmin|adminer|webmail|whm|plesk|webdav)\./,
+  /^(api-dev|api-test|api-staging|dev-api|test-api|stage-api)\./,
+  /(backup|backups|old|legacy|deprecated|archive)/
+];
+function isSensitiveSubdomain(s) {
+  return SENSITIVE_PATTERNS.some(re => re.test(s));
+}
+
+// ----------------------------------------------------------
+// Vendor exposure (KEV match)
+// ----------------------------------------------------------
+function detectStackVendors(domain, mxRecords, nsRecords) {
+  // Extract apparent technology vendors from public DNS data
+  const vendors = new Set();
+  vendors.add(domain.split('.')[0]); // The brand itself
+
+  // Mail provider from MX hostnames
+  mxRecords.forEach(mx => {
+    const target = (mx.split(' ').pop() || '').toLowerCase().replace(/\.$/, '');
+    if (/google/.test(target) || /googlemail/.test(target)) vendors.add('google');
+    if (/outlook/.test(target) || /office365/.test(target) || /microsoft/.test(target)) vendors.add('microsoft');
+    if (/mimecast/.test(target)) vendors.add('mimecast');
+    if (/proofpoint/.test(target) || /pphosted/.test(target)) vendors.add('proofpoint');
+    if (/barracuda/.test(target)) vendors.add('barracuda');
+    if (/zoho/.test(target)) vendors.add('zoho');
+    if (/protonmail/.test(target) || /\.proton\./.test(target)) vendors.add('proton');
+    if (/icloud/.test(target)) vendors.add('apple');
+  });
+
+  // Hosting / DNS hints from NS records
+  nsRecords.forEach(ns => {
+    const t = ns.toLowerCase().replace(/\.$/, '');
+    if (/cloudflare/.test(t)) vendors.add('cloudflare');
+    if (/awsdns/.test(t) || /amazonaws/.test(t)) vendors.add('aws');
+    if (/azure-dns/.test(t)) vendors.add('microsoft');
+    if (/googledomains/.test(t) || /\.google\./.test(t)) vendors.add('google');
+    if (/godaddy/.test(t)) vendors.add('godaddy');
+    if (/namecheap/.test(t)) vendors.add('namecheap');
+    if (/dnsimple/.test(t)) vendors.add('dnsimple');
+    if (/ns\.akamai/.test(t)) vendors.add('akamai');
+    if (/digitalocean/.test(t)) vendors.add('digitalocean');
+  });
+
+  return [...vendors].filter(v => v.length >= 4); // Filter very short tokens
+}
+
+function findKEVMatches(vendors) {
+  if (!kevData || kevData.length === 0) return [];
+  const yearMs = 365 * 86400000;
+  const recentCutoff = Date.now() - yearMs;
+  const matches = [];
+
+  vendors.forEach(v => {
+    kevData.forEach(entry => {
+      const vp = (entry.vendorProject || '').toLowerCase();
+      const product = (entry.product || '').toLowerCase();
+      if (vp.includes(v) || product.includes(v)) {
+        const added = new Date(entry.dateAdded).getTime();
+        matches.push({
+          cve: entry.cveID,
+          vendor: entry.vendorProject,
+          product: entry.product,
+          name: entry.vulnerabilityName,
+          dateAdded: entry.dateAdded,
+          isRecent: added >= recentCutoff,
+          ransomware: entry.knownRansomwareCampaignUse === 'Known',
+          matchedVendor: v
+        });
+      }
+    });
+  });
+
+  // Dedupe by CVE
+  const seen = new Set();
+  const deduped = [];
+  matches.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+  matches.forEach(m => {
+    if (!seen.has(m.cve)) { seen.add(m.cve); deduped.push(m); }
+  });
+  return deduped;
+}
+
+// ----------------------------------------------------------
+// Scoring (lenient: start at 50, add for good, subtract for bad)
+// ----------------------------------------------------------
+function scoreDomain(facts) {
+  const findings = [];
+  const subscores = {};
+
+  // ----- Email auth -----
+  let email = 50;
+  if (facts.spf.present) {
+    if (facts.spf.strict) {
+      email += 18;
+      findings.push({ category: 'email', sev: 'ok', text: 'SPF properly enforced', detail: 'SPF record ends with -all (hard fail).' });
+    } else if (facts.spf.soft) {
+      email += 10;
+      findings.push({ category: 'email', sev: 'med', text: 'SPF in soft-fail mode', detail: 'SPF ends with ~all rather than -all. Spoofed mail may still reach inboxes as spam.' });
+    } else {
+      email += 4;
+      findings.push({ category: 'email', sev: 'high', text: 'SPF too permissive', detail: 'SPF is present but does not end with -all or ~all.' });
+    }
+  } else {
+    findings.push({ category: 'email', sev: 'crit', text: 'No SPF record', detail: 'Anyone can spoof email from this domain.' });
+  }
+  if (facts.dmarc.present) {
+    if (facts.dmarc.policy === 'reject') {
+      email += 25;
+      findings.push({ category: 'email', sev: 'ok', text: 'DMARC at p=reject', detail: 'Strongest possible DMARC policy. Spoofed mail is rejected by receivers.' });
+    } else if (facts.dmarc.policy === 'quarantine') {
+      email += 12;
+      findings.push({ category: 'email', sev: 'med', text: 'DMARC at p=quarantine', detail: 'Suspicious mail goes to spam. Move to p=reject when you are confident.' });
+    } else {
+      email += 2;
+      findings.push({ category: 'email', sev: 'high', text: 'DMARC in monitor-only mode (p=none)', detail: 'You receive reports but spoofed mail is still delivered.' });
+    }
+  } else if (facts.hasMX) {
+    findings.push({ category: 'email', sev: 'crit', text: 'No DMARC policy', detail: 'No active defense against email spoofing of this domain.' });
+  }
+  if (facts.hasMX) {
+    if (facts.mtaSts) {
+      email += 8;
+      findings.push({ category: 'email', sev: 'ok', text: 'MTA-STS deployed', detail: 'Mail server-to-server traffic is forced to use TLS.' });
+    } else {
+      findings.push({ category: 'email', sev: 'med', text: 'MTA-STS not deployed', detail: 'Mail in transit can fall back to unencrypted SMTP.' });
+    }
+  }
+  subscores.email = clamp(email, 0, 100);
+
+  // ----- DNS hygiene -----
+  let dns = 50;
+  if (facts.dnssec) {
+    dns += 25;
+    findings.push({ category: 'dns', sev: 'ok', text: 'DNSSEC validated', detail: 'DNS records are cryptographically signed.' });
+  } else {
+    findings.push({ category: 'dns', sev: 'med', text: 'DNSSEC not enabled', detail: 'DNS responses are not cryptographically validated. Possible cache-poisoning exposure.' });
+  }
+  if (facts.hasCAA) {
+    dns += 12;
+    findings.push({ category: 'dns', sev: 'ok', text: 'CAA record present', detail: 'Restricts which Certificate Authorities can issue certs for this domain.' });
+  } else {
+    findings.push({ category: 'dns', sev: 'med', text: 'No CAA record', detail: 'Any CA can issue certificates for this domain.' });
+  }
+  if (facts.nsCount >= 2) {
+    dns += 8;
+    findings.push({ category: 'dns', sev: 'ok', text: facts.nsCount + ' nameservers configured', detail: 'Adequate DNS redundancy.' });
+  } else if (facts.nsCount === 1) {
+    findings.push({ category: 'dns', sev: 'high', text: 'Only one nameserver', detail: 'Single point of failure for DNS resolution.' });
+  }
+  subscores.dns = clamp(dns, 0, 100);
+
+  // ----- Web security -----
+  let web = 50;
+  if (facts.httpsOk) {
+    web += 18;
+    findings.push({ category: 'web', sev: 'ok', text: 'HTTPS reachable', detail: 'Site responds over TLS.' });
+  } else {
+    web -= 25;
+    findings.push({ category: 'web', sev: 'crit', text: 'HTTPS not reachable', detail: 'Domain does not respond on HTTPS, or TLS configuration prevents browser fetch.' });
+  }
+  if (facts.hstsPreload) {
+    web += 25;
+    findings.push({ category: 'web', sev: 'ok', text: 'On HSTS preload list', detail: 'Domain is hardcoded into Chrome, Firefox, and Safari to enforce HTTPS — strong commitment to TLS-only.' });
+  } else {
+    findings.push({ category: 'web', sev: 'med', text: 'Not on HSTS preload list', detail: 'Domain has not opted into permanent browser-enforced HTTPS. Consider submitting to hstspreload.org if you control the domain.' });
+  }
+  // Note: deeper HTTP header analysis deferred to v2.
+  subscores.web = clamp(web, 0, 100);
+
+  // ----- Attack surface -----
+  let surface = 50;
+  if (facts.surface.count === null) {
+    findings.push({ category: 'surface', sev: 'med', text: 'Could not assess attack surface', detail: facts.surface.rateLimited ? 'CertSpotter rate limit reached. Try again in an hour.' : 'CertSpotter request failed.' });
+  } else {
+    if (facts.surface.count <= 20) {
+      surface += 25;
+      findings.push({ category: 'surface', sev: 'ok', text: facts.surface.count + ' subdomains in CT logs', detail: 'Small, manageable attack surface.' });
+    } else if (facts.surface.count <= 100) {
+      surface += 10;
+      findings.push({ category: 'surface', sev: 'ok', text: facts.surface.count + ' subdomains in CT logs', detail: 'Moderate attack surface — typical for organizations of this size.' });
+    } else if (facts.surface.count <= 500) {
+      surface -= 5;
+      findings.push({ category: 'surface', sev: 'med', text: facts.surface.count + ' subdomains in CT logs', detail: 'Large attack surface. Consider reviewing what is exposed and decommissioning unused subdomains.' });
+    } else {
+      surface -= 18;
+      findings.push({ category: 'surface', sev: 'high', text: facts.surface.count.toLocaleString() + ' subdomains in CT logs', detail: 'Very large attack surface. Run CertLens for the full inventory.' });
+    }
+    if (facts.surface.sensitive.length > 0) {
+      const penalty = Math.min(facts.surface.sensitive.length * 3, 18);
+      surface -= penalty;
+      findings.push({
+        category: 'surface', sev: 'high',
+        text: facts.surface.sensitive.length + ' sensitive subdomain pattern' + (facts.surface.sensitive.length === 1 ? '' : 's') + ' exposed',
+        detail: 'Examples: ' + facts.surface.sensitive.slice(0, 4).join(', ') + (facts.surface.sensitive.length > 4 ? '…' : '') + '. These commonly host admin panels, dev environments, or internal services.'
+      });
+    }
+  }
+  subscores.surface = clamp(surface, 0, 100);
+
+  // ----- Vendor exposure -----
+  let vendor = 50;
+  if (!kevData || kevData.length === 0) {
+    findings.push({ category: 'vendor', sev: 'med', text: 'KEV catalog unavailable', detail: 'Could not load CISA KEV — vendor exposure could not be assessed.' });
+    subscores.vendor = 50;
+  } else {
+    const recent = facts.kev.filter(k => k.isRecent);
+    const ransomware = facts.kev.filter(k => k.ransomware);
+    if (facts.kev.length === 0) {
+      vendor += 30;
+      findings.push({ category: 'vendor', sev: 'ok', text: 'No KEV matches in your stack', detail: 'No detectable technologies match active CISA KEV entries.' });
+    } else if (recent.length === 0) {
+      vendor += 10;
+      findings.push({ category: 'vendor', sev: 'ok', text: facts.kev.length + ' historical KEV match' + (facts.kev.length === 1 ? '' : 'es') + ' (none recent)', detail: 'Vendors in your stack appear in KEV but not in the last 12 months.' });
+    } else if (recent.length <= 3) {
+      vendor -= 12;
+      findings.push({ category: 'vendor', sev: 'high', text: recent.length + ' recent KEV match' + (recent.length === 1 ? '' : 'es') + ' in your stack', detail: 'Confirm patching status for the listed CVEs.' });
+    } else if (recent.length <= 10) {
+      vendor -= 22;
+      findings.push({ category: 'vendor', sev: 'crit', text: recent.length + ' recent KEV matches in your stack', detail: 'High exposure to actively-exploited vulnerabilities.' });
+    } else {
+      vendor -= 32;
+      findings.push({ category: 'vendor', sev: 'crit', text: recent.length + ' recent KEV matches in your stack', detail: 'Very high exposure. Review patching priorities.' });
+    }
+    if (ransomware.length > 0) {
+      vendor -= Math.min(ransomware.length * 2, 10);
+      findings.push({ category: 'vendor', sev: 'crit', text: ransomware.length + ' KEV match' + (ransomware.length === 1 ? '' : 'es') + ' tied to ransomware', detail: 'These vulnerabilities have been used in known ransomware campaigns.' });
+    }
+  }
+  subscores.vendor = clamp(vendor, 0, 100);
+
+  // ----- Composite -----
+  const score = Math.round(
+    subscores.email * SUB_WEIGHTS.email +
+    subscores.dns * SUB_WEIGHTS.dns +
+    subscores.web * SUB_WEIGHTS.web +
+    subscores.surface * SUB_WEIGHTS.surface +
+    subscores.vendor * SUB_WEIGHTS.vendor
+  );
+  const grade = scoreToGrade(score);
+
+  return { score, grade, subscores, findings };
+}
+
+function scoreToGrade(score) {
+  if (score >= 85) return 'A';
+  if (score >= 70) return 'B';
+  if (score >= 55) return 'C';
+  if (score >= 40) return 'D';
+  return 'F';
+}
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+// ----------------------------------------------------------
+// Master scan for a single domain
+// ----------------------------------------------------------
+async function scanDomain(domain) {
+  // Run DNS lookups in parallel
+  const [txt, mx, dmarcR, caaR, mtaStsR, ns] = await Promise.all([
+    dnsLookup(domain, 'TXT'),
+    dnsLookup(domain, 'MX'),
+    dnsLookup('_dmarc.' + domain, 'TXT'),
+    dnsLookup(domain, 'CAA'),
+    dnsLookup('_mta-sts.' + domain, 'TXT'),
+    dnsLookup(domain, 'NS')
+  ]);
+
+  const spf = parseSPF(txt.answers);
+  const dmarc = parseDMARC(dmarcR.answers);
+  const mtaSts = mtaStsR.answers.some(r => /v=STSv1/i.test((r.data || '').replace(/"/g, '')));
+  const hasMX = mx.answers.length > 0;
+  const hasCAA = caaR.answers.length > 0;
+  const dnssec = txt.ad;
+  const nsCount = ns.answers.filter(a => a.type === 2).length;
+  const mxRecords = mx.answers.filter(a => a.type === 15).map(a => a.data);
+  const nsRecords = ns.answers.filter(a => a.type === 2).map(a => a.data);
+
+  // Web probe
+  const web = await probeHTTPS(domain);
+  const hstsPreloadHit = inHSTSPreload(domain);
+
+  // Surface
+  const surface = await getSurfaceData(domain);
+
+  // Vendor / KEV
+  const stackVendors = detectStackVendors(domain, mxRecords, nsRecords);
+  const kevMatches = findKEVMatches(stackVendors);
+
+  // Score
+  const facts = {
+    spf, dmarc, mtaSts, hasMX, hasCAA, dnssec, nsCount,
+    httpsOk: web.httpsOk,
+    hstsPreload: hstsPreloadHit,
+    surface,
+    kev: kevMatches,
+    stackVendors
+  };
+  const result = scoreDomain(facts);
+
+  return {
+    ts: Date.now(),
+    score: result.score,
+    grade: result.grade,
+    subscores: result.subscores,
+    findings: result.findings,
+    kev: kevMatches.slice(0, 25),
+    surface: { count: surface.count, sensitiveCount: surface.sensitive.length },
+    stackVendors
+  };
+}
+
+// ----------------------------------------------------------
+// Watchlist actions
+// ----------------------------------------------------------
+function normalizeDomain(input) {
+  return (input || '').toLowerCase().trim()
+    .replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+}
+
+async function addAndScan(domain, type) {
+  domain = normalizeDomain(domain);
+  if (!domain || !domain.includes('.')) { alert('Please enter a valid domain like github.com'); return; }
+  if (state.watchlist.find(w => w.domain === domain)) { alert('Already in watchlist'); return; }
+
+  state.watchlist.push({ domain, type, scans: [] });
+  saveState();
+  renderWatchlist();
+  await scanOne(state.watchlist.length - 1);
+}
+
+async function scanOne(idx) {
+  if (scanInProgress) return;
+  scanInProgress = true;
+  const entry = state.watchlist[idx];
+  if (!entry) { scanInProgress = false; return; }
+  setStatus('busy', 'Scanning ' + entry.domain + '…');
+  try {
+    const result = await scanDomain(entry.domain);
+    entry.scans = entry.scans || [];
+    entry.scans.push(result);
+    if (entry.scans.length > 12) entry.scans = entry.scans.slice(-12);
+    saveState();
+    renderAll();
+    setStatus('ok', 'Scanned ' + entry.domain + ' — ' + result.grade + ' (' + result.score + ')');
+  } catch (e) {
+    console.error('Scan failed:', e);
+    setStatus('bad', 'Scan failed: ' + e.message);
+  } finally {
+    scanInProgress = false;
+  }
+}
+
+async function rescanAll() {
+  if (scanInProgress) return;
+  if (state.watchlist.length === 0) return;
+  scanInProgress = true;
+  document.getElementById('rescanAllBtn').disabled = true;
+  for (let i = 0; i < state.watchlist.length; i++) {
+    setStatus('busy', 'Rescanning (' + (i + 1) + '/' + state.watchlist.length + ') · ' + state.watchlist[i].domain + '…');
+    try {
+      const result = await scanDomain(state.watchlist[i].domain);
+      state.watchlist[i].scans = state.watchlist[i].scans || [];
+      state.watchlist[i].scans.push(result);
+      if (state.watchlist[i].scans.length > 12) state.watchlist[i].scans = state.watchlist[i].scans.slice(-12);
+      saveState();
+      renderAll();
+    } catch (e) { console.error('Scan failed for', state.watchlist[i].domain, e); }
+    if (i < state.watchlist.length - 1) await new Promise(r => setTimeout(r, SCAN_DELAY_MS));
+  }
+  scanInProgress = false;
+  document.getElementById('rescanAllBtn').disabled = false;
+  setStatus('ok', 'All ' + state.watchlist.length + ' domains rescanned');
+}
+
+function removeEntry(idx) {
+  const e = state.watchlist[idx];
+  if (!e) return;
+  if (!confirm('Remove ' + e.domain + ' from your watchlist? Scan history will be lost.')) return;
+  state.watchlist.splice(idx, 1);
+  if (expandedDomain === e.domain) expandedDomain = null;
+  saveState();
+  renderAll();
+}
+
+function exportJSON() {
+  const data = JSON.stringify(state.watchlist, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'posturelens-watchlist-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ----------------------------------------------------------
+// Delta detection
+// ----------------------------------------------------------
+function computeDelta(entry) {
+  if (!entry.scans || entry.scans.length < 2) return null;
+  const last = entry.scans[entry.scans.length - 1];
+  const prev = entry.scans[entry.scans.length - 2];
+  const scoreDelta = last.score - prev.score;
+  const gradeChanged = last.grade !== prev.grade;
+
+  const subDeltas = {};
+  Object.keys(last.subscores).forEach(k => {
+    subDeltas[k] = (last.subscores[k] || 0) - (prev.subscores[k] || 0);
+  });
+
+  // Surface change
+  const surfDelta = (last.surface.count || 0) - (prev.surface.count || 0);
+
+  // KEV change
+  const prevCves = new Set((prev.kev || []).map(k => k.cve));
+  const newKev = (last.kev || []).filter(k => !prevCves.has(k.cve));
+
+  // Findings text-level diff
+  const prevFindings = new Set((prev.findings || []).map(f => f.text));
+  const lastFindings = new Set((last.findings || []).map(f => f.text));
+  const newIssues = (last.findings || []).filter(f => !prevFindings.has(f.text) && f.sev !== 'ok');
+  const resolvedIssues = (prev.findings || []).filter(f => !lastFindings.has(f.text) && f.sev !== 'ok');
+
+  return {
+    scoreDelta, gradeChanged, gradeFrom: prev.grade, gradeTo: last.grade,
+    subDeltas, surfDelta, newKev, newIssues, resolvedIssues,
+    prevTs: prev.ts, lastTs: last.ts
+  };
+}
+
+// ----------------------------------------------------------
+// Vendor questionnaire generator
+// ----------------------------------------------------------
+function buildVendorQuestionnaire(entry) {
+  const last = entry.scans[entry.scans.length - 1];
+  if (!last) return '';
+  const lines = [];
+  lines.push('Security review questions for ' + entry.domain);
+  lines.push('Generated by Owlglass PostureLens · ' + new Date().toISOString().slice(0, 10));
+  lines.push('Composite external posture grade: ' + last.grade + ' (' + last.score + '/100)');
+  lines.push('');
+  lines.push('The following questions are derived from externally-observable security signals.');
+  lines.push('Each one corresponds to a specific finding from public DNS, certificate, and');
+  lines.push('threat-feed data. The vendor should be able to provide a clear answer for each.');
+  lines.push('');
+
+  const findingsBySev = { crit: [], high: [], med: [] };
+  (last.findings || []).forEach(f => { if (findingsBySev[f.sev]) findingsBySev[f.sev].push(f); });
+
+  let n = 1;
+  if (findingsBySev.crit.length > 0) {
+    lines.push('CRITICAL FINDINGS');
+    findingsBySev.crit.forEach(f => {
+      lines.push(n++ + '. We observed: "' + f.text + '"');
+      lines.push('   ' + (f.detail || ''));
+      lines.push('   Question: What is your remediation timeline for this issue, and what');
+      lines.push('   compensating controls are in place today?');
+      lines.push('');
+    });
+  }
+  if (findingsBySev.high.length > 0) {
+    lines.push('HIGH-PRIORITY FINDINGS');
+    findingsBySev.high.forEach(f => {
+      lines.push(n++ + '. We observed: "' + f.text + '"');
+      lines.push('   ' + (f.detail || ''));
+      lines.push('   Question: Is there a planned remediation? If not, why is the current');
+      lines.push('   configuration acceptable for your security model?');
+      lines.push('');
+    });
+  }
+  if (findingsBySev.med.length > 0) {
+    lines.push('MEDIUM-PRIORITY OBSERVATIONS');
+    findingsBySev.med.forEach(f => {
+      lines.push(n++ + '. We observed: "' + f.text + '"');
+      lines.push('   ' + (f.detail || ''));
+      lines.push('');
+    });
+  }
+
+  if (last.kev && last.kev.length > 0) {
+    const recent = last.kev.filter(k => k.isRecent);
+    if (recent.length > 0) {
+      lines.push('VENDOR EXPOSURE — ACTIVELY EXPLOITED VULNERABILITIES');
+      lines.push('Technologies detectable from your public DNS records appear in the CISA');
+      lines.push('Known Exploited Vulnerabilities catalog. Please confirm patching status:');
+      lines.push('');
+      recent.slice(0, 10).forEach(k => {
+        lines.push('  · ' + k.cve + ' — ' + k.vendor + ' / ' + k.product);
+        lines.push('    "' + k.name + '"');
+        lines.push('    Added to KEV: ' + k.dateAdded.slice(0, 10) + (k.ransomware ? ' (RANSOMWARE)' : ''));
+      });
+      lines.push('');
+    }
+  }
+
+  lines.push('CONTEXT');
+  lines.push('These findings are based solely on publicly observable signals (public DNS,');
+  lines.push('Certificate Transparency logs, the CISA KEV catalog, and the Chromium HSTS');
+  lines.push('preload list). They do not reflect internal controls, patching cadence, or');
+  lines.push('compensating measures, which only the vendor can speak to.');
+  return lines.join('\n');
+}
+
+// ----------------------------------------------------------
+// Rendering
+// ----------------------------------------------------------
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (dot) dot.className = 'dot ' + type;
+  if (txt) txt.textContent = text;
+}
+
+function renderAll() {
+  renderMetricStrip();
+  renderWatchlistMeta();
+  renderWatchlist();
+}
+
+function renderMetricStrip() {
+  const strip = document.getElementById('metricStrip');
+  if (state.watchlist.length === 0) { strip.style.display = 'none'; return; }
+  const scanned = state.watchlist.filter(e => e.scans && e.scans.length > 0);
+  if (scanned.length === 0) { strip.style.display = 'none'; return; }
+
+  const lastScans = scanned.map(e => e.scans[e.scans.length - 1]);
+  const avg = Math.round(lastScans.reduce((s, x) => s + x.score, 0) / lastScans.length);
+  const fCount = lastScans.filter(s => s.grade === 'F').length;
+  const dCount = lastScans.filter(s => s.grade === 'D').length;
+  const recentKev = lastScans.reduce((s, x) => s + (x.kev || []).filter(k => k.isRecent).length, 0);
+  const regressions = scanned.reduce((acc, e) => {
+    const d = computeDelta(e);
+    return acc + (d && d.scoreDelta < -3 ? 1 : 0);
+  }, 0);
+  const newKevSinceLast = scanned.reduce((acc, e) => {
+    const d = computeDelta(e);
+    return acc + (d ? d.newKev.length : 0);
+  }, 0);
+
+  const m = (label, value, meta, mod) =>
+    '<div class="metric ' + (mod || '') + '"><div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
+
+  strip.style.display = 'grid';
+  strip.innerHTML =
+    m('Watchlist', state.watchlist.length, scanned.length + ' scanned', 'brand') +
+    m('Average score', avg, 'Grade ' + scoreToGrade(avg), avg >= 70 ? 'ok' : avg >= 55 ? 'med' : 'crit') +
+    m('Failing (F)', fCount, dCount + ' at D', fCount > 0 ? 'crit' : 'ok') +
+    m('Active KEV exposure', recentKev, 'Across all domains', recentKev > 0 ? 'crit' : 'ok') +
+    m('Regressions', regressions, 'Score dropped ≥3 pts', regressions > 0 ? 'high' : 'ok') +
+    m('New KEV since last', newKevSinceLast, 'Since previous scan', newKevSinceLast > 0 ? 'crit' : 'ok');
+}
+
+function renderWatchlistMeta() {
+  const meta = document.getElementById('watchlistMeta');
+  const n = state.watchlist.length;
+  let countText = n + ' domain' + (n === 1 ? '' : 's') + ' tracked';
+  if (n > SOFT_CAP) countText = '<span class="count-warn">' + n + ' domains tracked</span> (above soft cap of ' + SOFT_CAP + ' — scan time and storage will grow)';
+  meta.innerHTML = '<div>' + countText + '</div>';
+
+  document.getElementById('rescanAllBtn').disabled = n === 0;
+  document.getElementById('exportBtn').disabled = n === 0;
+}
+
+function renderWatchlist() {
+  const c = document.getElementById('watchlistContent');
+  if (state.watchlist.length === 0) {
+    c.innerHTML = '<div class="empty-watchlist"><h3>Your watchlist is empty</h3><p>Add a domain above to begin. PostureLens will run an external posture scan, save the result locally, and flag changes when you re-scan later.</p></div>';
+    return;
+  }
+
+  // Sort
+  const sorted = [...state.watchlist].map((e, idx) => ({ e, idx }));
+  sorted.sort((a, b) => {
+    const aLast = a.e.scans && a.e.scans[a.e.scans.length - 1];
+    const bLast = b.e.scans && b.e.scans[b.e.scans.length - 1];
+    let av, bv;
+    switch (state.sortBy) {
+      case 'domain': av = a.e.domain; bv = b.e.domain; break;
+      case 'type':   av = a.e.type;   bv = b.e.type;   break;
+      case 'score':  av = aLast ? aLast.score : -1; bv = bLast ? bLast.score : -1; break;
+      case 'delta':  {
+        const ad = computeDelta(a.e); const bd = computeDelta(b.e);
+        av = ad ? ad.scoreDelta : 0; bv = bd ? bd.scoreDelta : 0; break;
+      }
+      case 'lastscan': av = aLast ? aLast.ts : 0; bv = bLast ? bLast.ts : 0; break;
+      default: av = 0; bv = 0;
+    }
+    if (av < bv) return state.sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return state.sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Build table
+  let html = '<table class="watch-table"><thead><tr>' +
+    th('domain', 'Domain') +
+    th('type', 'Type') +
+    th('score', 'Grade · Score') +
+    th('delta', 'Δ Last scan') +
+    '<th>Flags</th>' +
+    th('lastscan', 'Last scan') +
+    '<th></th>' +
+    '</tr></thead><tbody>';
+
+  sorted.forEach(({ e, idx }) => {
+    const last = e.scans && e.scans[e.scans.length - 1];
+    const delta = computeDelta(e);
+    const expanded = expandedDomain === e.domain;
+
+    let scoreCell = '<span class="muted">Pending</span>';
+    if (last) {
+      scoreCell = '<div style="display:flex;align-items:center;gap:10px;"><span class="grade-pill grade-' + last.grade + '">' + last.grade + '</span><span style="font-feature-settings:\'tnum\';font-weight:600;color:var(--text);">' + last.score + '</span></div>';
+    }
+
+    let deltaCell = '<span class="muted">—</span>';
+    if (delta) {
+      const cls = delta.scoreDelta > 0 ? 'up' : delta.scoreDelta < 0 ? 'down' : 'flat';
+      const arrow = delta.scoreDelta > 0 ? '+' : '';
+      deltaCell = '<span class="delta ' + cls + '">' + arrow + delta.scoreDelta + '</span>';
+      if (delta.gradeChanged) deltaCell += ' <span class="muted" style="font-size:0.78rem;">' + delta.gradeFrom + '→' + delta.gradeTo + '</span>';
+    } else if (last) {
+      deltaCell = '<span class="muted" style="font-size:0.78rem;">First scan</span>';
+    }
+
+    let flags = '';
+    if (last) {
+      const recentKev = (last.kev || []).filter(k => k.isRecent).length;
+      const ransomKev = (last.kev || []).filter(k => k.ransomware && k.isRecent).length;
+      if (recentKev > 0) flags += '<span class="pill crit">' + recentKev + ' KEV</span>';
+      if (ransomKev > 0) flags += '<span class="pill crit">Ransomware</span>';
+      if (last.subscores && last.subscores.email < 40) flags += '<span class="pill high">Email auth</span>';
+      if (delta && delta.newKev.length > 0) flags += '<span class="pill brand">' + delta.newKev.length + ' new KEV</span>';
+      if (delta && delta.newIssues.length > 0) flags += '<span class="pill high">' + delta.newIssues.length + ' new issue' + (delta.newIssues.length === 1 ? '' : 's') + '</span>';
+    }
+    if (!flags) flags = '<span class="muted" style="font-size:0.78rem;">—</span>';
+
+    const lastScanCell = last ? relativeTime(last.ts) : '<span class="muted">—</span>';
+
+    const typeClass = e.type === 'vendor' ? 'vendor' : 'own';
+
+    html += '<tr data-domain="' + escapeHtml(e.domain) + '" class="' + (expanded ? 'expanded' : '') + '">' +
+      '<td><div class="domain-cell"><span class="domain-name">' + escapeHtml(e.domain) + '</span></div></td>' +
+      '<td><span class="domain-tag ' + typeClass + '">' + (e.type === 'vendor' ? 'Vendor' : 'Own org') + '</span></td>' +
+      '<td>' + scoreCell + '</td>' +
+      '<td>' + deltaCell + '</td>' +
+      '<td><div class="row-flags">' + flags + '</div></td>' +
+      '<td><span class="muted" style="font-size:0.85rem;">' + lastScanCell + '</span></td>' +
+      '<td><div class="table-actions">' +
+        '<button data-action="rescan" data-idx="' + idx + '">Rescan</button>' +
+        '<button class="danger" data-action="remove" data-idx="' + idx + '">×</button>' +
+      '</div></td>' +
+    '</tr>';
+
+    if (expanded && last) {
+      html += '<tr class="detail-row"><td colspan="7"><div class="detail-content">' + renderDetail(e, idx) + '</div></td></tr>';
+    }
+  });
+  html += '</tbody></table>';
+
+  c.innerHTML = html;
+
+  // Wire row-level events
+  c.querySelectorAll('.watch-table tbody tr[data-domain]').forEach(tr => {
+    tr.addEventListener('click', (ev) => {
+      // Avoid toggling when clicking the action buttons
+      if (ev.target.closest('button') || ev.target.closest('a')) return;
+      const d = tr.getAttribute('data-domain');
+      expandedDomain = expandedDomain === d ? null : d;
+      renderWatchlist();
+    });
+  });
+  c.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-idx'), 10);
+      const action = btn.getAttribute('data-action');
+      if (action === 'rescan') scanOne(idx);
+      else if (action === 'remove') removeEntry(idx);
+    });
+  });
+
+  // Wire detail-level events
+  c.querySelectorAll('button[data-detail-action]').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const action = btn.getAttribute('data-detail-action');
+      const idx = parseInt(btn.getAttribute('data-idx'), 10);
+      if (action === 'questions') {
+        const e = state.watchlist[idx];
+        if (!e) return;
+        const text = buildVendorQuestionnaire(e);
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Vendor security review questions copied to clipboard.');
+        }).catch(() => {
+          // Fallback: open in a new window
+          const w = window.open('', '_blank');
+          if (w) { w.document.body.innerText = text; }
+        });
+      } else if (action === 'ssllabs') {
+        const e = state.watchlist[idx];
+        if (e) window.open('https://www.ssllabs.com/ssltest/analyze.html?d=' + encodeURIComponent(e.domain), '_blank', 'noopener');
+      }
+    });
+  });
+}
+
+function th(key, label) {
+  const cls = state.sortBy === key ? 'sortable sort-' + state.sortDir : 'sortable';
+  return '<th class="' + cls + '" data-sort="' + key + '">' + label + '</th>';
+}
+
+function renderDetail(entry, idx) {
+  const last = entry.scans[entry.scans.length - 1];
+  const delta = computeDelta(entry);
+
+  let html = '';
+
+  // Delta panel
+  if (delta) {
+    const cls = delta.scoreDelta < -2 ? 'regression' : delta.scoreDelta > 2 ? 'improvement' : '';
+    let deltaHtml = '<div class="delta-panel ' + cls + '"><h3>Changes since previous scan (' + relativeTime(delta.prevTs) + ')</h3><ul class="delta-list">';
+    if (delta.scoreDelta !== 0) {
+      deltaHtml += '<li>Score moved by <strong>' + (delta.scoreDelta > 0 ? '+' : '') + delta.scoreDelta + '</strong> point' + (Math.abs(delta.scoreDelta) === 1 ? '' : 's') + (delta.gradeChanged ? ' (grade ' + delta.gradeFrom + ' → ' + delta.gradeTo + ')' : '') + '</li>';
+    }
+    if (delta.newIssues.length > 0) {
+      delta.newIssues.slice(0, 5).forEach(f => deltaHtml += '<li>New: ' + escapeHtml(f.text) + '</li>');
+    }
+    if (delta.resolvedIssues.length > 0) {
+      delta.resolvedIssues.slice(0, 5).forEach(f => deltaHtml += '<li>Resolved: ' + escapeHtml(f.text) + '</li>');
+    }
+    if (delta.newKev.length > 0) {
+      deltaHtml += '<li>' + delta.newKev.length + ' new KEV match' + (delta.newKev.length === 1 ? '' : 'es') + ' in stack vendors</li>';
+    }
+    if (delta.surfDelta !== 0) {
+      deltaHtml += '<li>Subdomain count changed by ' + (delta.surfDelta > 0 ? '+' : '') + delta.surfDelta + '</li>';
+    }
+    if (delta.scoreDelta === 0 && delta.newIssues.length === 0 && delta.resolvedIssues.length === 0 && delta.newKev.length === 0) {
+      deltaHtml += '<li>No significant changes since last scan</li>';
+    }
+    deltaHtml += '</ul></div>';
+    html += deltaHtml;
+  }
+
+  // Sub-scores
+  html += '<div class="subscores">';
+  const subOrder = [
+    { k: 'email',   label: 'Email auth' },
+    { k: 'dns',     label: 'DNS hygiene' },
+    { k: 'web',     label: 'Web security' },
+    { k: 'surface', label: 'Attack surface' },
+    { k: 'vendor',  label: 'Vendor exposure' }
+  ];
+  subOrder.forEach(s => {
+    const v = last.subscores[s.k] || 0;
+    const g = scoreToGrade(v);
+    const fillClass = 'fill-' + g;
+    html += '<div class="subscore">' +
+      '<div class="subscore-head"><span class="subscore-name">' + s.label + '</span><span class="subscore-value">' + Math.round(v) + '</span></div>' +
+      '<div class="subscore-bar"><div class="subscore-fill ' + fillClass + '" style="width:' + v + '%;"></div></div>' +
+      '<div class="subscore-detail">Grade ' + g + ' · Weight ' + Math.round(SUB_WEIGHTS[s.k] * 100) + '%</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  // Findings
+  html += '<h3 style="font-size:0.92rem;margin:8px 0 8px;">Findings</h3>';
+  const orderedFindings = [...last.findings].sort((a, b) => {
+    const order = { crit: 0, high: 1, med: 2, ok: 3 };
+    return (order[a.sev] || 9) - (order[b.sev] || 9);
+  });
+  if (orderedFindings.length === 0) {
+    html += '<p class="muted">No findings.</p>';
+  } else {
+    orderedFindings.forEach(f => {
+      const icon = f.sev === 'ok' ? '✓' : f.sev === 'crit' ? '!' : f.sev === 'high' ? '!' : '·';
+      html += '<div class="finding">' +
+        '<div class="finding-icon ' + f.sev + '">' + icon + '</div>' +
+        '<div><div class="finding-text">' + escapeHtml(f.text) + '</div>' +
+        (f.detail ? '<div class="finding-detail">' + f.detail + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    });
+  }
+
+  // KEV findings
+  if (last.kev && last.kev.length > 0) {
+    const recent = last.kev.filter(k => k.isRecent);
+    if (recent.length > 0) {
+      html += '<h3 style="font-size:0.92rem;margin:18px 0 8px;">Active KEV exposure (recent)</h3>';
+      recent.slice(0, 8).forEach(k => {
+        html += '<div class="kev-finding">' +
+          '<div><span class="kev-cve"><a href="https://nvd.nist.gov/vuln/detail/' + k.cve + '" target="_blank" rel="noopener">' + k.cve + '</a></span></div>' +
+          '<div class="kev-meta">' + escapeHtml(k.vendor) + ' / ' + escapeHtml(k.product) + ' · matched on "' + escapeHtml(k.matchedVendor) + '"' + (k.ransomware ? ' · <span style="color:var(--sev-crit);font-weight:600;">ransomware</span>' : '') + '</div>' +
+          '<div class="muted" style="font-size:0.78rem;">Added ' + k.dateAdded.slice(0, 10) + '</div>' +
+        '</div>';
+      });
+      if (recent.length > 8) html += '<div class="muted" style="font-size:0.82rem;">And ' + (recent.length - 8) + ' more.</div>';
+    }
+  }
+
+  // Stack vendors detected (transparency)
+  if (last.stackVendors && last.stackVendors.length > 0) {
+    html += '<h3 style="font-size:0.92rem;margin:18px 0 8px;">Detected stack vendors</h3>';
+    html += '<p class="muted" style="font-size:0.82rem;margin-bottom:6px;">Inferred from public DNS records. Used to match against the KEV catalog.</p>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+      last.stackVendors.map(v => '<span class="pill">' + escapeHtml(v) + '</span>').join('') +
+    '</div>';
+  }
+
+  // Action footer
+  html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn" data-detail-action="ssllabs" data-idx="' + idx + '">Open SSL Labs deep scan ↗</button>';
+  if (entry.type === 'vendor') {
+    html += '<button class="btn primary" data-detail-action="questions" data-idx="' + idx + '">Copy vendor security review questions</button>';
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function relativeTime(ts) {
+  const d = (Date.now() - ts) / 86400000;
+  if (d < 1 / 24) return 'just now';
+  if (d < 1) return Math.round(d * 24) + 'h ago';
+  if (d < 30) return Math.round(d) + 'd ago';
+  return Math.round(d / 30) + 'mo ago';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ----------------------------------------------------------
+// Wire up events
+// ----------------------------------------------------------
+let selectedType = 'own';
+
+document.querySelectorAll('.type-toggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.type-toggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    selectedType = b.dataset.type;
+  });
+});
+
+document.getElementById('addBtn').addEventListener('click', () => {
+  const v = document.getElementById('domainInput').value;
+  if (v.trim()) {
+    addAndScan(v, selectedType);
+    document.getElementById('domainInput').value = '';
+  }
+});
+document.getElementById('domainInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = document.getElementById('domainInput').value;
+    if (v.trim()) {
+      addAndScan(v, selectedType);
+      document.getElementById('domainInput').value = '';
+    }
+  }
+});
+document.querySelectorAll('.example-link').forEach(b => {
+  b.addEventListener('click', () => {
+    const t = b.dataset.t || 'own';
+    document.querySelectorAll('.type-toggle button').forEach(x => x.classList.toggle('active', x.dataset.type === t));
+    selectedType = t;
+    addAndScan(b.dataset.d, t);
+  });
+});
+
+document.getElementById('rescanAllBtn').addEventListener('click', rescanAll);
+document.getElementById('exportBtn').addEventListener('click', exportJSON);
+
+// Sortable headers
+document.addEventListener('click', (ev) => {
+  const th = ev.target.closest('th[data-sort]');
+  if (!th) return;
+  const key = th.getAttribute('data-sort');
+  if (state.sortBy === key) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  else { state.sortBy = key; state.sortDir = 'asc'; }
+  renderWatchlist();
+});
+
+// ----------------------------------------------------------
+// Boot
+// ----------------------------------------------------------
+loadState();
+renderAll();
+
+(async () => {
+  setStatus('busy', 'Loading live KEV catalog and HSTS preload list…');
+  await Promise.all([loadKEV(), loadHSTSPreload()]);
+  if (state.watchlist.length > 0) {
+    setStatus('ok', state.watchlist.length + ' domain' + (state.watchlist.length === 1 ? '' : 's') + ' in watchlist · KEV catalog loaded');
+  } else {
+    setStatus('ok', 'KEV catalog loaded · add a domain to begin');
+  }
+  renderAll();
+})();
+</script>
+</body>
+</html>

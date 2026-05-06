@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PostureLens · Owlglass</title>
-  <meta name="description" content="External security posture report card for any domain. Watchlist tracking with delta detection. Live KEV vendor exposure check.">
+  <meta name="description" content="External security posture report card for any domain. Watchlist tracking with delta detection. Subdomain takeover scanning.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -272,8 +272,8 @@
       color: var(--text-muted);
     }
 
-    /* KEV findings inline */
-    .kev-finding {
+    /* Takeover findings inline */
+    .takeover-finding {
       display: grid;
       grid-template-columns: auto 1fr auto;
       gap: 12px;
@@ -285,15 +285,22 @@
       font-size: 0.85rem;
       align-items: center;
     }
-    .kev-cve {
+    .takeover-sub {
       font-family: var(--font-mono);
       font-weight: 600;
       color: var(--sev-crit);
       font-size: 0.82rem;
+      word-break: break-all;
     }
-    .kev-cve a { color: inherit; }
-    .kev-meta {
+    .takeover-meta {
       color: var(--text-secondary);
+      word-break: break-all;
+    }
+    .takeover-meta code {
+      background: var(--bg-sunken);
+      padding: 1px 5px;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
     }
 
     /* Vendor questions modal-ish display */
@@ -385,7 +392,7 @@
         <div class="titles">
           <div class="breadcrumb"><a href="/">Owlglass</a> / PostureLens</div>
           <h1>PostureLens</h1>
-          <p class="tagline">A composite external-security report card for any domain. Track your own organization plus key vendors. Re-scan periodically and PostureLens flags what changed since your last visit — score regressions, new findings, and live exposure to actively-exploited vulnerabilities in your stack.</p>
+          <p class="tagline">A composite external-security report card for any domain. Track your own organization plus key vendors. Re-scan periodically and PostureLens flags what changed since your last visit — score regressions, new findings, and detected subdomain takeover candidates in your stack.</p>
         </div>
       </div>
 
@@ -409,8 +416,7 @@
       </div>
 
       <div class="status" id="statusBar">
-        <div><span class="dot" id="statusDot"></span><span id="statusText">Loading live KEV catalog…</span></div>
-        <div class="faint" id="kevText"></div>
+        <div><span class="dot" id="statusDot"></span><span id="statusText">Loading…</span></div>
       </div>
 
       <div class="metric-strip" id="metricStrip" style="display:none;"></div>
@@ -437,17 +443,16 @@
           <summary style="cursor:pointer; color: var(--text); font-weight: 600; font-size: 1rem;">How PostureLens scoring works</summary>
           <div style="padding-top: 14px;">
             <h3 style="margin: 0 0 8px;">The grade</h3>
-            <p style="font-size: 0.88rem; margin-bottom: 12px;">Each domain receives a composite score from 0–100 and a letter grade (A: 85+, B: 70–84, C: 55–69, D: 40–54, F: under 40). The score starts at 50 (industry-typical baseline) and adjusts up or down based on five sub-scores.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 12px;">Each domain receives a composite score from 0–100 and a letter grade (A: 85+, B: 70–84, C: 55–69, D: 40–54, F: under 40). The score starts at 50 (industry-typical baseline) and adjusts up or down based on four sub-scores.</p>
 
             <h3 style="margin: 14px 0 8px;">Sub-scores</h3>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Email authentication (weight: 25%).</strong> SPF presence and strictness, DMARC presence and policy enforcement, MTA-STS deployment.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>DNS hygiene (weight: 15%).</strong> DNSSEC validation, CAA records, nameserver redundancy.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Web security (weight: 15%).</strong> HTTPS reachability, HTTPS enforcement (HTTP redirects to HTTPS), and HSTS preload list membership. The "SSL Labs deep scan" link runs a more thorough TLS audit on demand.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Attack surface (weight: 15%).</strong> Subdomain count and presence of sensitive subdomain patterns (admin, dev, jenkins, vpn, etc.) found in public Certificate Transparency logs.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 12px;"><strong>Vendor exposure (weight: 30%).</strong> Cross-references technologies detectable from your DNS records (mail provider via MX, hosting hints via NS) against the live CISA Known Exploited Vulnerabilities catalog. Recent KEV matches lower this sub-score sharply.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Email authentication (weight: 30%).</strong> SPF presence and strictness, DMARC presence and policy enforcement, MTA-STS deployment.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>DNS hygiene (weight: 20%).</strong> DNSSEC validation, CAA records, nameserver redundancy.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Web security (weight: 20%).</strong> HTTPS reachability and HSTS preload list membership. The "SSL Labs deep scan" link runs a more thorough TLS audit on demand.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 12px;"><strong>Attack surface (weight: 30%).</strong> Subdomain count and presence of sensitive subdomain patterns from public Certificate Transparency logs. Includes subdomain takeover detection: CNAME records pointing at deprovisioned third-party services (GitHub Pages, Heroku, S3, Azure, Shopify, and others) are checked against a fingerprint database. Detected takeover candidates carry a steep penalty because they represent immediate, exploitable risk.</p>
 
             <h3 style="margin: 14px 0 8px;">Honest limits</h3>
-            <p style="font-size: 0.88rem; color: var(--text-muted);">Vendor matching is heuristic substring matching against KEV vendor names — produces some false positives. We do not see internal patching, EDR, or controls behind authentication. Web security relies on browser-accessible signals only; advanced TLS analysis requires the SSL Labs deep scan. Industry-tagged threat intelligence is not used because most public threat data is not reliably industry-tagged.</p>
+            <p style="font-size: 0.88rem; color: var(--text-muted);">Takeover detection is capped at the 50 most-recently-issued subdomains per domain to keep scans fast. The fingerprint database covers ~20 services where takeover is a documented risk. We do not see internal patching, EDR, or any controls behind authentication. Web security relies on browser-accessible signals only; advanced TLS analysis requires the SSL Labs deep scan.</p>
           </div>
         </details>
       </div>
@@ -467,30 +472,49 @@
 // ============================================================
 
 const STORAGE_KEY = 'owlglass_posturelens_v1';
-const KEV_URLS = [
-  'https://raw.githubusercontent.com/cisagov/kev-data/main/known_exploited_vulnerabilities.json',
-  'https://raw.githubusercontent.com/aboutcode-org/aboutcode-mirror-kev/main/known_exploited_vulnerabilities.json'
-];
 const HSTS_PRELOAD_URL = 'https://chromium.googlesource.com/chromium/src/+/refs/heads/main/net/http/transport_security_state_static.json?format=TEXT';
 const CERTSPOTTER_API = 'https://api.certspotter.com/v1/issuances';
 
 const SOFT_CAP = 15;
 const SCAN_DELAY_MS = 400; // Pause between domains in batch rescan
+const TAKEOVER_CHECK_CAP = 50;
 
 const SUB_WEIGHTS = {
-  email:   0.25,
-  dns:    0.15,
-  web:    0.15,
-  surface: 0.15,
-  vendor: 0.30
+  email:   0.30,
+  dns:     0.20,
+  web:     0.20,
+  surface: 0.30
 };
 
+// Subdomain takeover fingerprints — public patterns from can-i-take-over-xyz
+const TAKEOVER_FINGERPRINTS = [
+  { service: 'GitHub Pages',     cname: /\.github\.io$/i },
+  { service: 'Heroku',           cname: /\.herokuapp\.com$|\.herokussl\.com$/i },
+  { service: 'AWS S3',           cname: /\.s3[.-].*amazonaws\.com$|\.s3-website[.-].*amazonaws\.com$/i },
+  { service: 'Azure',            cname: /\.azurewebsites\.net$|\.cloudapp\.net$|\.cloudapp\.azure\.com$|\.trafficmanager\.net$|\.blob\.core\.windows\.net$/i },
+  { service: 'Shopify',          cname: /\.myshopify\.com$/i },
+  { service: 'Fastly',           cname: /\.fastly\.net$/i },
+  { service: 'Bitbucket',        cname: /\.bitbucket\.io$/i },
+  { service: 'Tumblr',           cname: /\.tumblr\.com$/i },
+  { service: 'WordPress',        cname: /\.wordpress\.com$/i },
+  { service: 'Surge.sh',         cname: /\.surge\.sh$/i },
+  { service: 'Tilda',            cname: /\.tilda\.ws$/i },
+  { service: 'Webflow',          cname: /\.proxy\.webflow\.com$|\.webflow\.io$/i },
+  { service: 'Pantheon',         cname: /\.pantheonsite\.io$/i },
+  { service: 'Help Scout',       cname: /\.helpscoutdocs\.com$/i },
+  { service: 'Ghost',            cname: /\.ghost\.io$/i },
+  { service: 'Unbounce',         cname: /\.unbouncepages\.com$/i },
+  { service: 'Readme.io',        cname: /\.readme\.io$/i },
+  { service: 'Strikingly',       cname: /\.s\.strikinglydns\.com$/i },
+  { service: 'Smugmug',          cname: /\.smugmug\.com$/i },
+  { service: 'Cargo Collective', cname: /\.cargocollective\.com$/i }
+];
+
 let state = {
-  watchlist: [], // [{ domain, type, scans: [{ ts, score, grade, subscores, findings, kev, surface }] }]
+  watchlist: [], // [{ domain, type, scans: [{ ts, score, grade, subscores, findings, takeover, surface }] }]
   sortBy: 'score',
   sortDir: 'asc' // worst-first
 };
-let kevData = null;
 let hstsPreload = null;
 let scanInProgress = false;
 let expandedDomain = null;
@@ -510,25 +534,6 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ watchlist: state.watchlist })); }
   catch (e) { console.warn('Failed to save state:', e); }
-}
-
-// ----------------------------------------------------------
-// KEV catalog
-// ----------------------------------------------------------
-async function loadKEV() {
-  for (const url of KEV_URLS) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
-      const json = await res.json();
-      kevData = json.vulnerabilities || [];
-      const released = (json.dateReleased || '').slice(0, 10) || 'unknown';
-      document.getElementById('kevText').textContent = 'KEV catalog: ' + kevData.length + ' entries · ' + released;
-      return;
-    } catch (e) { console.warn('KEV source failed:', url, e); }
-  }
-  setStatus('warn', 'Could not load KEV catalog — vendor exposure scoring will be unavailable');
-  kevData = [];
 }
 
 // ----------------------------------------------------------
@@ -588,12 +593,7 @@ function parseDMARC(records) {
 // Web security probe
 // ----------------------------------------------------------
 async function probeHTTPS(domain) {
-  // We can't read most response headers due to CORS, but we can confirm the
-  // request reaches the server. We also try the http variant to detect lack
-  // of redirect/enforcement. This is intentionally minimal but reliable.
   let httpsOk = false;
-  let httpOnly = false;
-
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 5000);
@@ -601,11 +601,7 @@ async function probeHTTPS(domain) {
     clearTimeout(t);
     httpsOk = true;
   } catch { httpsOk = false; }
-
-  // HTTP-only test omitted: most browsers block mixed content from a https
-  // page (Owlglass is served over https), so this would always fail. We
-  // instead rely on HSTS preload as a strong positive signal.
-  return { httpsOk, httpOnly };
+  return { httpsOk };
 }
 
 function inHSTSPreload(domain) {
@@ -624,17 +620,15 @@ function inHSTSPreload(domain) {
 // Surface (subdomain enumeration) — lightweight
 // ----------------------------------------------------------
 async function getSurfaceData(domain) {
-  // Single-page CertSpotter call. CertLens uses multi-page; here we want
-  // a quick sample, not exhaustive enumeration.
   try {
     const url = CERTSPOTTER_API + '?domain=' + encodeURIComponent(domain) + '&include_subdomains=true&expand=dns_names';
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     const res = await fetch(url, { signal: ctrl.signal });
     clearTimeout(t);
-    if (!res.ok) return { count: null, sensitive: [], rateLimited: res.status === 429 };
+    if (!res.ok) return { count: null, sensitive: [], allSubdomains: [], rateLimited: res.status === 429 };
     const data = await res.json();
-    if (!Array.isArray(data)) return { count: null, sensitive: [] };
+    if (!Array.isArray(data)) return { count: null, sensitive: [], allSubdomains: [] };
 
     const subdomains = new Set();
     data.forEach(c => {
@@ -645,8 +639,8 @@ async function getSurfaceData(domain) {
     });
     const arr = [...subdomains];
     const sensitive = arr.filter(s => isSensitiveSubdomain(s)).slice(0, 8);
-    return { count: arr.length, sensitive, rateLimited: false };
-  } catch { return { count: null, sensitive: [], rateLimited: false }; }
+    return { count: arr.length, sensitive, allSubdomains: arr, rateLimited: false };
+  } catch { return { count: null, sensitive: [], allSubdomains: [], rateLimited: false }; }
 }
 
 const SENSITIVE_PATTERNS = [
@@ -665,77 +659,42 @@ function isSensitiveSubdomain(s) {
 }
 
 // ----------------------------------------------------------
-// Vendor exposure (KEV match)
+// Subdomain takeover detection
 // ----------------------------------------------------------
-function detectStackVendors(domain, mxRecords, nsRecords) {
-  // Extract apparent technology vendors from public DNS data
-  const vendors = new Set();
-  vendors.add(domain.split('.')[0]); // The brand itself
+async function checkTakeoverCandidates(domain, surfaceData) {
+  // Returns { checked, total, candidates: [{subdomain, target, service, reason}] }
+  const all = surfaceData.allSubdomains || [];
+  // Prefer subdomains other than the apex; the apex is rarely a takeover target
+  const filtered = all.filter(s => s !== domain);
+  const subs = filtered.slice(0, TAKEOVER_CHECK_CAP);
+  const total = filtered.length;
+  const candidates = [];
 
-  // Mail provider from MX hostnames
-  mxRecords.forEach(mx => {
-    const target = (mx.split(' ').pop() || '').toLowerCase().replace(/\.$/, '');
-    if (/google/.test(target) || /googlemail/.test(target)) vendors.add('google');
-    if (/outlook/.test(target) || /office365/.test(target) || /microsoft/.test(target)) vendors.add('microsoft');
-    if (/mimecast/.test(target)) vendors.add('mimecast');
-    if (/proofpoint/.test(target) || /pphosted/.test(target)) vendors.add('proofpoint');
-    if (/barracuda/.test(target)) vendors.add('barracuda');
-    if (/zoho/.test(target)) vendors.add('zoho');
-    if (/protonmail/.test(target) || /\.proton\./.test(target)) vendors.add('proton');
-    if (/icloud/.test(target)) vendors.add('apple');
-  });
+  for (const sub of subs) {
+    const cnameRes = await dnsLookup(sub, 'CNAME');
+    const cnames = cnameRes.answers
+      .filter(a => a.type === 5)
+      .map(a => (a.data || '').toLowerCase().replace(/\.$/, ''));
+    if (cnames.length === 0) continue;
 
-  // Hosting / DNS hints from NS records
-  nsRecords.forEach(ns => {
-    const t = ns.toLowerCase().replace(/\.$/, '');
-    if (/cloudflare/.test(t)) vendors.add('cloudflare');
-    if (/awsdns/.test(t) || /amazonaws/.test(t)) vendors.add('aws');
-    if (/azure-dns/.test(t)) vendors.add('microsoft');
-    if (/googledomains/.test(t) || /\.google\./.test(t)) vendors.add('google');
-    if (/godaddy/.test(t)) vendors.add('godaddy');
-    if (/namecheap/.test(t)) vendors.add('namecheap');
-    if (/dnsimple/.test(t)) vendors.add('dnsimple');
-    if (/ns\.akamai/.test(t)) vendors.add('akamai');
-    if (/digitalocean/.test(t)) vendors.add('digitalocean');
-  });
-
-  return [...vendors].filter(v => v.length >= 4); // Filter very short tokens
-}
-
-function findKEVMatches(vendors) {
-  if (!kevData || kevData.length === 0) return [];
-  const yearMs = 365 * 86400000;
-  const recentCutoff = Date.now() - yearMs;
-  const matches = [];
-
-  vendors.forEach(v => {
-    kevData.forEach(entry => {
-      const vp = (entry.vendorProject || '').toLowerCase();
-      const product = (entry.product || '').toLowerCase();
-      if (vp.includes(v) || product.includes(v)) {
-        const added = new Date(entry.dateAdded).getTime();
-        matches.push({
-          cve: entry.cveID,
-          vendor: entry.vendorProject,
-          product: entry.product,
-          name: entry.vulnerabilityName,
-          dateAdded: entry.dateAdded,
-          isRecent: added >= recentCutoff,
-          ransomware: entry.knownRansomwareCampaignUse === 'Known',
-          matchedVendor: v
+    for (const target of cnames) {
+      const fp = TAKEOVER_FINGERPRINTS.find(f => f.cname.test(target));
+      if (!fp) continue;
+      // Confirm the CNAME target does not currently resolve to an A record
+      const aRes = await dnsLookup(target, 'A');
+      const resolves = aRes.answers.filter(a => a.type === 1).length > 0;
+      if (!resolves) {
+        candidates.push({
+          subdomain: sub,
+          target,
+          service: fp.service,
+          reason: 'CNAME target does not resolve to any IP'
         });
       }
-    });
-  });
+    }
+  }
 
-  // Dedupe by CVE
-  const seen = new Set();
-  const deduped = [];
-  matches.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
-  matches.forEach(m => {
-    if (!seen.has(m.cve)) { seen.add(m.cve); deduped.push(m); }
-  });
-  return deduped;
+  return { checked: subs.length, total, candidates };
 }
 
 // ----------------------------------------------------------
@@ -822,10 +781,9 @@ function scoreDomain(facts) {
   } else {
     findings.push({ category: 'web', sev: 'med', text: 'Not on HSTS preload list', detail: 'Domain has not opted into permanent browser-enforced HTTPS. Consider submitting to hstspreload.org if you control the domain.' });
   }
-  // Note: deeper HTTP header analysis deferred to v2.
   subscores.web = clamp(web, 0, 100);
 
-  // ----- Attack surface -----
+  // ----- Attack surface (includes takeover) -----
   let surface = 50;
   if (facts.surface.count === null) {
     findings.push({ category: 'surface', sev: 'med', text: 'Could not assess attack surface', detail: facts.surface.rateLimited ? 'CertSpotter rate limit reached. Try again in an hour.' : 'CertSpotter request failed.' });
@@ -853,46 +811,34 @@ function scoreDomain(facts) {
       });
     }
   }
-  subscores.surface = clamp(surface, 0, 100);
-
-  // ----- Vendor exposure -----
-  let vendor = 50;
-  if (!kevData || kevData.length === 0) {
-    findings.push({ category: 'vendor', sev: 'med', text: 'KEV catalog unavailable', detail: 'Could not load CISA KEV — vendor exposure could not be assessed.' });
-    subscores.vendor = 50;
-  } else {
-    const recent = facts.kev.filter(k => k.isRecent);
-    const ransomware = facts.kev.filter(k => k.ransomware);
-    if (facts.kev.length === 0) {
-      vendor += 30;
-      findings.push({ category: 'vendor', sev: 'ok', text: 'No KEV matches in your stack', detail: 'No detectable technologies match active CISA KEV entries.' });
-    } else if (recent.length === 0) {
-      vendor += 10;
-      findings.push({ category: 'vendor', sev: 'ok', text: facts.kev.length + ' historical KEV match' + (facts.kev.length === 1 ? '' : 'es') + ' (none recent)', detail: 'Vendors in your stack appear in KEV but not in the last 12 months.' });
-    } else if (recent.length <= 3) {
-      vendor -= 12;
-      findings.push({ category: 'vendor', sev: 'high', text: recent.length + ' recent KEV match' + (recent.length === 1 ? '' : 'es') + ' in your stack', detail: 'Confirm patching status for the listed CVEs.' });
-    } else if (recent.length <= 10) {
-      vendor -= 22;
-      findings.push({ category: 'vendor', sev: 'crit', text: recent.length + ' recent KEV matches in your stack', detail: 'High exposure to actively-exploited vulnerabilities.' });
-    } else {
-      vendor -= 32;
-      findings.push({ category: 'vendor', sev: 'crit', text: recent.length + ' recent KEV matches in your stack', detail: 'Very high exposure. Review patching priorities.' });
-    }
-    if (ransomware.length > 0) {
-      vendor -= Math.min(ransomware.length * 2, 10);
-      findings.push({ category: 'vendor', sev: 'crit', text: ransomware.length + ' KEV match' + (ransomware.length === 1 ? '' : 'es') + ' tied to ransomware', detail: 'These vulnerabilities have been used in known ransomware campaigns.' });
-    }
+  // Takeover findings — major impact when present
+  if (facts.takeover && facts.takeover.candidates.length > 0) {
+    const n = facts.takeover.candidates.length;
+    const penalty = Math.min(25 + (n - 1) * 8, 50);
+    surface -= penalty;
+    findings.push({
+      category: 'surface', sev: 'crit',
+      text: n + ' subdomain takeover candidate' + (n === 1 ? '' : 's') + ' detected',
+      detail: facts.takeover.candidates.slice(0, 3).map(c =>
+        c.subdomain + ' → ' + c.service + ' (' + c.target + ')'
+      ).join('; ') + (n > 3 ? '; and ' + (n - 3) + ' more.' : '') +
+      '. CNAME targets do not resolve, suggesting deprovisioned third-party services that an attacker may be able to claim.'
+    });
+  } else if (facts.takeover && facts.takeover.checked > 0) {
+    findings.push({
+      category: 'surface', sev: 'ok',
+      text: 'No subdomain takeover candidates',
+      detail: 'Checked ' + facts.takeover.checked + ' of ' + facts.takeover.total + ' subdomains. No dangling CNAMEs to known-takeoverable services.'
+    });
   }
-  subscores.vendor = clamp(vendor, 0, 100);
+  subscores.surface = clamp(surface, 0, 100);
 
   // ----- Composite -----
   const score = Math.round(
     subscores.email * SUB_WEIGHTS.email +
     subscores.dns * SUB_WEIGHTS.dns +
     subscores.web * SUB_WEIGHTS.web +
-    subscores.surface * SUB_WEIGHTS.surface +
-    subscores.vendor * SUB_WEIGHTS.vendor
+    subscores.surface * SUB_WEIGHTS.surface
   );
   const grade = scoreToGrade(score);
 
@@ -929,8 +875,6 @@ async function scanDomain(domain) {
   const hasCAA = caaR.answers.length > 0;
   const dnssec = txt.ad;
   const nsCount = ns.answers.filter(a => a.type === 2).length;
-  const mxRecords = mx.answers.filter(a => a.type === 15).map(a => a.data);
-  const nsRecords = ns.answers.filter(a => a.type === 2).map(a => a.data);
 
   // Web probe
   const web = await probeHTTPS(domain);
@@ -939,9 +883,8 @@ async function scanDomain(domain) {
   // Surface
   const surface = await getSurfaceData(domain);
 
-  // Vendor / KEV
-  const stackVendors = detectStackVendors(domain, mxRecords, nsRecords);
-  const kevMatches = findKEVMatches(stackVendors);
+  // Subdomain takeover detection
+  const takeover = await checkTakeoverCandidates(domain, surface);
 
   // Score
   const facts = {
@@ -949,8 +892,7 @@ async function scanDomain(domain) {
     httpsOk: web.httpsOk,
     hstsPreload: hstsPreloadHit,
     surface,
-    kev: kevMatches,
-    stackVendors
+    takeover
   };
   const result = scoreDomain(facts);
 
@@ -960,9 +902,12 @@ async function scanDomain(domain) {
     grade: result.grade,
     subscores: result.subscores,
     findings: result.findings,
-    kev: kevMatches.slice(0, 25),
-    surface: { count: surface.count, sensitiveCount: surface.sensitive.length },
-    stackVendors
+    takeover: {
+      checked: takeover.checked,
+      total: takeover.total,
+      candidates: takeover.candidates
+    },
+    surface: { count: surface.count, sensitiveCount: surface.sensitive.length }
   };
 }
 
@@ -990,7 +935,7 @@ async function scanOne(idx) {
   scanInProgress = true;
   const entry = state.watchlist[idx];
   if (!entry) { scanInProgress = false; return; }
-  setStatus('busy', 'Scanning ' + entry.domain + '…');
+  setStatus('busy', 'Scanning ' + entry.domain + '… (subdomain takeover check may take 10–20s)');
   try {
     const result = await scanDomain(entry.domain);
     entry.scans = entry.scans || [];
@@ -1068,9 +1013,10 @@ function computeDelta(entry) {
   // Surface change
   const surfDelta = (last.surface.count || 0) - (prev.surface.count || 0);
 
-  // KEV change
-  const prevCves = new Set((prev.kev || []).map(k => k.cve));
-  const newKev = (last.kev || []).filter(k => !prevCves.has(k.cve));
+  // Takeover change
+  const prevTakeovers = new Set(((prev.takeover && prev.takeover.candidates) || []).map(c => c.subdomain + '|' + c.target));
+  const lastTakeovers = ((last.takeover && last.takeover.candidates) || []);
+  const newTakeovers = lastTakeovers.filter(c => !prevTakeovers.has(c.subdomain + '|' + c.target)).length;
 
   // Findings text-level diff
   const prevFindings = new Set((prev.findings || []).map(f => f.text));
@@ -1080,7 +1026,7 @@ function computeDelta(entry) {
 
   return {
     scoreDelta, gradeChanged, gradeFrom: prev.grade, gradeTo: last.grade,
-    subDeltas, surfDelta, newKev, newIssues, resolvedIssues,
+    subDeltas, surfDelta, newTakeovers, newIssues, resolvedIssues,
     prevTs: prev.ts, lastTs: last.ts
   };
 }
@@ -1098,7 +1044,7 @@ function buildVendorQuestionnaire(entry) {
   lines.push('');
   lines.push('The following questions are derived from externally-observable security signals.');
   lines.push('Each one corresponds to a specific finding from public DNS, certificate, and');
-  lines.push('threat-feed data. The vendor should be able to provide a clear answer for each.');
+  lines.push('subdomain takeover data. The vendor should be able to provide a clear answer for each.');
   lines.push('');
 
   const findingsBySev = { crit: [], high: [], med: [] };
@@ -1134,27 +1080,24 @@ function buildVendorQuestionnaire(entry) {
     });
   }
 
-  if (last.kev && last.kev.length > 0) {
-    const recent = last.kev.filter(k => k.isRecent);
-    if (recent.length > 0) {
-      lines.push('VENDOR EXPOSURE — ACTIVELY EXPLOITED VULNERABILITIES');
-      lines.push('Technologies detectable from your public DNS records appear in the CISA');
-      lines.push('Known Exploited Vulnerabilities catalog. Please confirm patching status:');
-      lines.push('');
-      recent.slice(0, 10).forEach(k => {
-        lines.push('  · ' + k.cve + ' — ' + k.vendor + ' / ' + k.product);
-        lines.push('    "' + k.name + '"');
-        lines.push('    Added to KEV: ' + k.dateAdded.slice(0, 10) + (k.ransomware ? ' (RANSOMWARE)' : ''));
-      });
-      lines.push('');
-    }
+  if (last.takeover && last.takeover.candidates && last.takeover.candidates.length > 0) {
+    lines.push('SUBDOMAIN TAKEOVER CANDIDATES');
+    lines.push('Subdomains with CNAME records pointing at deprovisioned third-party services.');
+    lines.push('Each represents potential immediate, exploitable risk:');
+    lines.push('');
+    last.takeover.candidates.forEach(c => {
+      lines.push('  · ' + c.subdomain);
+      lines.push('    CNAME → ' + c.target + ' (' + c.service + ')');
+      lines.push('    ' + c.reason);
+    });
+    lines.push('');
   }
 
   lines.push('CONTEXT');
   lines.push('These findings are based solely on publicly observable signals (public DNS,');
-  lines.push('Certificate Transparency logs, the CISA KEV catalog, and the Chromium HSTS');
-  lines.push('preload list). They do not reflect internal controls, patching cadence, or');
-  lines.push('compensating measures, which only the vendor can speak to.');
+  lines.push('Certificate Transparency logs, and the Chromium HSTS preload list). They do');
+  lines.push('not reflect internal controls, patching cadence, or compensating measures,');
+  lines.push('which only the vendor can speak to.');
   return lines.join('\n');
 }
 
@@ -1184,14 +1127,15 @@ function renderMetricStrip() {
   const avg = Math.round(lastScans.reduce((s, x) => s + x.score, 0) / lastScans.length);
   const fCount = lastScans.filter(s => s.grade === 'F').length;
   const dCount = lastScans.filter(s => s.grade === 'D').length;
-  const recentKev = lastScans.reduce((s, x) => s + (x.kev || []).filter(k => k.isRecent).length, 0);
+  const domainsWithTakeovers = lastScans.filter(s => s.takeover && s.takeover.candidates && s.takeover.candidates.length > 0).length;
+  const totalTakeovers = lastScans.reduce((sum, s) => sum + ((s.takeover && s.takeover.candidates) ? s.takeover.candidates.length : 0), 0);
   const regressions = scanned.reduce((acc, e) => {
     const d = computeDelta(e);
     return acc + (d && d.scoreDelta < -3 ? 1 : 0);
   }, 0);
-  const newKevSinceLast = scanned.reduce((acc, e) => {
+  const newTakeoversSinceLast = scanned.reduce((acc, e) => {
     const d = computeDelta(e);
-    return acc + (d ? d.newKev.length : 0);
+    return acc + (d ? d.newTakeovers : 0);
   }, 0);
 
   const m = (label, value, meta, mod) =>
@@ -1202,9 +1146,9 @@ function renderMetricStrip() {
     m('Watchlist', state.watchlist.length, scanned.length + ' scanned', 'brand') +
     m('Average score', avg, 'Grade ' + scoreToGrade(avg), avg >= 70 ? 'ok' : avg >= 55 ? 'med' : 'crit') +
     m('Failing (F)', fCount, dCount + ' at D', fCount > 0 ? 'crit' : 'ok') +
-    m('Active KEV exposure', recentKev, 'Across all domains', recentKev > 0 ? 'crit' : 'ok') +
+    m('Takeover candidates', domainsWithTakeovers, totalTakeovers + ' candidate' + (totalTakeovers === 1 ? '' : 's') + ' total', domainsWithTakeovers > 0 ? 'crit' : 'ok') +
     m('Regressions', regressions, 'Score dropped ≥3 pts', regressions > 0 ? 'high' : 'ok') +
-    m('New KEV since last', newKevSinceLast, 'Since previous scan', newKevSinceLast > 0 ? 'crit' : 'ok');
+    m('New takeovers since last', newTakeoversSinceLast, 'Since previous scan', newTakeoversSinceLast > 0 ? 'crit' : 'ok');
 }
 
 function renderWatchlistMeta() {
@@ -1280,12 +1224,10 @@ function renderWatchlist() {
 
     let flags = '';
     if (last) {
-      const recentKev = (last.kev || []).filter(k => k.isRecent).length;
-      const ransomKev = (last.kev || []).filter(k => k.ransomware && k.isRecent).length;
-      if (recentKev > 0) flags += '<span class="pill crit">' + recentKev + ' KEV</span>';
-      if (ransomKev > 0) flags += '<span class="pill crit">Ransomware</span>';
+      const takeoverCount = (last.takeover && last.takeover.candidates) ? last.takeover.candidates.length : 0;
+      if (takeoverCount > 0) flags += '<span class="pill crit">' + takeoverCount + ' takeover</span>';
       if (last.subscores && last.subscores.email < 40) flags += '<span class="pill high">Email auth</span>';
-      if (delta && delta.newKev.length > 0) flags += '<span class="pill brand">' + delta.newKev.length + ' new KEV</span>';
+      if (delta && delta.newTakeovers > 0) flags += '<span class="pill crit">' + delta.newTakeovers + ' new takeover</span>';
       if (delta && delta.newIssues.length > 0) flags += '<span class="pill high">' + delta.newIssues.length + ' new issue' + (delta.newIssues.length === 1 ? '' : 's') + '</span>';
     }
     if (!flags) flags = '<span class="muted" style="font-size:0.78rem;">—</span>';
@@ -1384,13 +1326,13 @@ function renderDetail(entry, idx) {
     if (delta.resolvedIssues.length > 0) {
       delta.resolvedIssues.slice(0, 5).forEach(f => deltaHtml += '<li>Resolved: ' + escapeHtml(f.text) + '</li>');
     }
-    if (delta.newKev.length > 0) {
-      deltaHtml += '<li>' + delta.newKev.length + ' new KEV match' + (delta.newKev.length === 1 ? '' : 'es') + ' in stack vendors</li>';
+    if (delta.newTakeovers > 0) {
+      deltaHtml += '<li><strong>' + delta.newTakeovers + ' new subdomain takeover candidate' + (delta.newTakeovers === 1 ? '' : 's') + ' detected</strong></li>';
     }
     if (delta.surfDelta !== 0) {
       deltaHtml += '<li>Subdomain count changed by ' + (delta.surfDelta > 0 ? '+' : '') + delta.surfDelta + '</li>';
     }
-    if (delta.scoreDelta === 0 && delta.newIssues.length === 0 && delta.resolvedIssues.length === 0 && delta.newKev.length === 0) {
+    if (delta.scoreDelta === 0 && delta.newIssues.length === 0 && delta.resolvedIssues.length === 0 && delta.newTakeovers === 0) {
       deltaHtml += '<li>No significant changes since last scan</li>';
     }
     deltaHtml += '</ul></div>';
@@ -1403,8 +1345,7 @@ function renderDetail(entry, idx) {
     { k: 'email',   label: 'Email auth' },
     { k: 'dns',     label: 'DNS hygiene' },
     { k: 'web',     label: 'Web security' },
-    { k: 'surface', label: 'Attack surface' },
-    { k: 'vendor',  label: 'Vendor exposure' }
+    { k: 'surface', label: 'Attack surface' }
   ];
   subOrder.forEach(s => {
     const v = last.subscores[s.k] || 0;
@@ -1438,29 +1379,24 @@ function renderDetail(entry, idx) {
     });
   }
 
-  // KEV findings
-  if (last.kev && last.kev.length > 0) {
-    const recent = last.kev.filter(k => k.isRecent);
-    if (recent.length > 0) {
-      html += '<h3 style="font-size:0.92rem;margin:18px 0 8px;">Active KEV exposure (recent)</h3>';
-      recent.slice(0, 8).forEach(k => {
-        html += '<div class="kev-finding">' +
-          '<div><span class="kev-cve"><a href="https://nvd.nist.gov/vuln/detail/' + k.cve + '" target="_blank" rel="noopener">' + k.cve + '</a></span></div>' +
-          '<div class="kev-meta">' + escapeHtml(k.vendor) + ' / ' + escapeHtml(k.product) + ' · matched on "' + escapeHtml(k.matchedVendor) + '"' + (k.ransomware ? ' · <span style="color:var(--sev-crit);font-weight:600;">ransomware</span>' : '') + '</div>' +
-          '<div class="muted" style="font-size:0.78rem;">Added ' + k.dateAdded.slice(0, 10) + '</div>' +
+  // Subdomain takeover candidates
+  if (last.takeover) {
+    const cands = last.takeover.candidates || [];
+    if (cands.length > 0) {
+      html += '<h3 style="font-size:0.92rem;margin:18px 0 8px;">Subdomain takeover candidates</h3>';
+      html += '<p class="muted" style="font-size:0.82rem;margin-bottom:6px;">Subdomains with CNAME records pointing at deprovisioned third-party services. An attacker may be able to claim the same identifier on the third-party platform and serve content under your subdomain.</p>';
+      cands.forEach(c => {
+        html += '<div class="takeover-finding">' +
+          '<div><span class="takeover-sub">' + escapeHtml(c.subdomain) + '</span></div>' +
+          '<div class="takeover-meta">CNAME → <code>' + escapeHtml(c.target) + '</code> · service: ' + escapeHtml(c.service) + '</div>' +
+          '<div class="muted" style="font-size:0.78rem;">' + escapeHtml(c.reason) + '</div>' +
         '</div>';
       });
-      if (recent.length > 8) html += '<div class="muted" style="font-size:0.82rem;">And ' + (recent.length - 8) + ' more.</div>';
+      html += '<p class="muted" style="font-size:0.78rem;margin-top:6px;">Checked ' + last.takeover.checked + ' of ' + last.takeover.total + ' subdomains.</p>';
+    } else if (last.takeover.checked > 0) {
+      html += '<h3 style="font-size:0.92rem;margin:18px 0 8px;">Subdomain takeover</h3>';
+      html += '<p class="muted" style="font-size:0.82rem;">Checked ' + last.takeover.checked + ' of ' + last.takeover.total + ' subdomains. No dangling CNAMEs to known-takeoverable services.</p>';
     }
-  }
-
-  // Stack vendors detected (transparency)
-  if (last.stackVendors && last.stackVendors.length > 0) {
-    html += '<h3 style="font-size:0.92rem;margin:18px 0 8px;">Detected stack vendors</h3>';
-    html += '<p class="muted" style="font-size:0.82rem;margin-bottom:6px;">Inferred from public DNS records. Used to match against the KEV catalog.</p>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
-      last.stackVendors.map(v => '<span class="pill">' + escapeHtml(v) + '</span>').join('') +
-    '</div>';
   }
 
   // Action footer
@@ -1545,12 +1481,12 @@ loadState();
 renderAll();
 
 (async () => {
-  setStatus('busy', 'Loading live KEV catalog and HSTS preload list…');
-  await Promise.all([loadKEV(), loadHSTSPreload()]);
+  setStatus('busy', 'Loading HSTS preload list…');
+  await loadHSTSPreload();
   if (state.watchlist.length > 0) {
-    setStatus('ok', state.watchlist.length + ' domain' + (state.watchlist.length === 1 ? '' : 's') + ' in watchlist · KEV catalog loaded');
+    setStatus('ok', state.watchlist.length + ' domain' + (state.watchlist.length === 1 ? '' : 's') + ' in watchlist · ready');
   } else {
-    setStatus('ok', 'KEV catalog loaded · add a domain to begin');
+    setStatus('ok', 'Ready · add a domain to begin');
   }
   renderAll();
 })();

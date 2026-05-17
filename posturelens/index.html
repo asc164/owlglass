@@ -446,10 +446,10 @@
             <p style="font-size: 0.88rem; margin-bottom: 12px;">Each domain receives a composite score from 0–100 and a letter grade (A: 85+, B: 70–84, C: 55–69, D: 40–54, F: under 40). The score starts at 50 (industry-typical baseline) and adjusts up or down based on four sub-scores.</p>
 
             <h3 style="margin: 14px 0 8px;">Sub-scores</h3>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Email authentication (weight: 30%).</strong> SPF presence and strictness, DMARC presence and policy enforcement, MTA-STS deployment.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>DNS hygiene (weight: 20%).</strong> DNSSEC validation, CAA records, nameserver redundancy.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Web security (weight: 20%).</strong> HTTPS reachability and HSTS preload list membership. The "SSL Labs deep scan" link runs a more thorough TLS audit on demand.</p>
-            <p style="font-size: 0.88rem; margin-bottom: 12px;"><strong>Attack surface (weight: 30%).</strong> Subdomain count and presence of sensitive subdomain patterns from public Certificate Transparency logs. Includes subdomain takeover detection: CNAME records pointing at deprovisioned third-party services (GitHub Pages, Heroku, S3, Azure, Shopify, and others) are checked against a fingerprint database. Detected takeover candidates carry a steep penalty because they represent immediate, exploitable risk.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Email authentication (weight: 35%).</strong> SPF presence and strictness, DMARC presence and policy enforcement, MTA-STS deployment. Weighted heavily because email spoofing is a direct, frequent attack vector and these signals are reliably observable from public DNS.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>Attack surface (weight: 35%).</strong> Subdomain count and presence of sensitive subdomain patterns from public Certificate Transparency logs. Includes subdomain takeover detection: CNAME records pointing at deprovisioned third-party services (GitHub Pages, Heroku, S3, Azure, Shopify, and others) are checked against a fingerprint database. Detected takeover candidates carry a steep penalty because they represent immediate, exploitable risk.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 6px;"><strong>DNS hygiene (weight: 20%).</strong> DNSSEC validation, CAA records, nameserver redundancy. Indicates operational maturity but rarely causes breaches on its own.</p>
+            <p style="font-size: 0.88rem; margin-bottom: 12px;"><strong>Web security (weight: 10%).</strong> HTTPS reachability and HSTS preload list membership. Weighted lightly because deep TLS analysis requires capabilities a browser cannot provide; the "SSL Labs deep scan" link runs a more thorough audit on demand.</p>
 
             <h3 style="margin: 14px 0 8px;">Honest limits</h3>
             <p style="font-size: 0.88rem; color: var(--text-muted);">Takeover detection is capped at the 50 most-recently-issued subdomains per domain to keep scans fast. The fingerprint database covers ~20 services where takeover is a documented risk. We do not see internal patching, EDR, or any controls behind authentication. Web security relies on browser-accessible signals only; advanced TLS analysis requires the SSL Labs deep scan.</p>
@@ -480,10 +480,10 @@ const SCAN_DELAY_MS = 400; // Pause between domains in batch rescan
 const TAKEOVER_CHECK_CAP = 50;
 
 const SUB_WEIGHTS = {
-  email:   0.30,
+  email:   0.35,
   dns:     0.20,
-  web:     0.20,
-  surface: 0.30
+  web:     0.10,
+  surface: 0.35
 };
 
 // Subdomain takeover fingerprints — public patterns from can-i-take-over-xyz

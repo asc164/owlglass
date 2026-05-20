@@ -10,103 +10,135 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
 <style>
+  /* SurfaceLens — light theme, matches DopplerLens/PostureLens */
   :root{
-    --sl-bg:#0b0d10; --sl-panel:#11151a; --sl-border:#1f262e;
-    --sl-text:#e6ebf0; --sl-muted:#8a95a1; --sl-accent:#5aa6ff;
-    --sl-good:#3ecf8e; --sl-warn:#f5a524; --sl-bad:#ef4444;
-    --sl-chip:#1a2128;
+    --sl-accent:#7c3aed;
+    --sl-accent-hover:#6d28d9;
+    --sl-border:#e5e7eb;
+    --sl-border-strong:#d1d5db;
+    --sl-text:#111827;
+    --sl-muted:#6b7280;
+    --sl-bg:#ffffff;
+    --sl-bg-soft:#f9fafb;
+    --sl-chip-bg:#f3f4f6;
+    --sl-good:#059669;
+    --sl-warn:#d97706;
+    --sl-bad:#dc2626;
   }
-  .sl-wrap{max-width:1200px;margin:0 auto;padding:24px;font-family:Inter,system-ui,sans-serif;color:var(--sl-text)}
-  .sl-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px;flex-wrap:wrap}
-  .sl-header h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-0.01em}
-  .sl-tagline{margin:4px 0 0;color:var(--sl-muted);font-size:14px}
-  .sl-header-meta{font-size:13px;color:var(--sl-muted);margin-top:8px}
+
+  /* Breadcrumb */
+  .sl-crumb{font-size:13px;color:var(--sl-muted);margin-bottom:8px}
+  .sl-crumb a{color:var(--sl-muted);text-decoration:none}
+  .sl-crumb a:hover{color:var(--sl-text)}
+
+  /* Header */
+  .sl-header h1{margin:0 0 6px;font-size:24px;font-weight:700;color:var(--sl-text);letter-spacing:-0.01em}
+  .sl-tagline{margin:0;color:var(--sl-muted);font-size:14px;line-height:1.55;max-width:760px}
+  .sl-header-meta{font-size:13px;color:var(--sl-muted);margin-top:10px}
+
+  /* Input card */
+  .sl-input{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:16px;margin-top:20px}
+  .sl-input-row{display:flex;gap:8px;flex-wrap:wrap}
+  .sl-input input[type=text]{flex:1;min-width:240px;background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);padding:10px 12px;border-radius:8px;font:inherit;font-size:14px}
+  .sl-input input[type=text]:focus{outline:none;border-color:var(--sl-accent);box-shadow:0 0 0 3px rgba(124,58,237,0.12)}
+  .sl-btn{background:var(--sl-accent);border:none;color:#fff;font:inherit;font-weight:600;font-size:14px;padding:10px 18px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  .sl-btn:hover{background:var(--sl-accent-hover)}
+  .sl-btn:disabled{opacity:0.5;cursor:not-allowed}
+  .sl-btn.ghost{background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);font-weight:500}
+  .sl-btn.ghost:hover{border-color:var(--sl-border-strong);background:var(--sl-bg-soft)}
+  .sl-btn.danger{background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-bad);font-weight:500}
+  .sl-btn.danger:hover{border-color:var(--sl-bad);background:#fef2f2}
+  .sl-hint{font-size:12.5px;color:var(--sl-muted);margin-top:10px;line-height:1.5}
+  .sl-try{font-size:12px;color:var(--sl-muted);margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .sl-try-chip{background:var(--sl-chip-bg);color:var(--sl-text);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid transparent}
+  .sl-try-chip:hover{border-color:var(--sl-border-strong)}
+
+  /* Status */
+  .sl-status{font-size:13px;color:var(--sl-muted);margin-top:12px;padding:10px 12px;background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;min-height:0;display:none}
+  .sl-status.show{display:block}
+  .sl-status.error{color:var(--sl-bad);background:#fef2f2;border-color:#fecaca}
 
   /* Tabs */
-  .sl-tabs{display:flex;gap:4px;border-bottom:1px solid var(--sl-border);margin-bottom:20px}
-  .sl-tab{background:transparent;border:none;color:var(--sl-muted);font:inherit;font-size:14px;font-weight:500;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:8px}
+  .sl-tabs{display:flex;gap:0;border-bottom:1px solid var(--sl-border);margin:24px 0 20px;flex-wrap:wrap}
+  .sl-tab{background:transparent;border:none;color:var(--sl-muted);font:inherit;font-size:14px;font-weight:500;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:8px}
   .sl-tab:hover:not(:disabled){color:var(--sl-text)}
-  .sl-tab.active{color:var(--sl-text);border-bottom-color:var(--sl-accent)}
-  .sl-tab:disabled{cursor:not-allowed;opacity:0.55}
-  .sl-tab .sl-soon{font-size:10px;background:var(--sl-chip);color:var(--sl-muted);padding:2px 6px;border-radius:8px;text-transform:uppercase;letter-spacing:0.05em}
+  .sl-tab.active{color:var(--sl-text);border-bottom-color:var(--sl-accent);font-weight:600}
+  .sl-tab:disabled{cursor:not-allowed;opacity:0.6}
+  .sl-tab .sl-soon{font-size:10px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
+  .sl-tab .sl-count{font-size:11px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:2px 7px;border-radius:10px;font-weight:500}
   .sl-panel-tab{display:none}
   .sl-panel-tab.active{display:block}
 
-  /* Input panel */
-  .sl-input{background:var(--sl-panel);border:1px solid var(--sl-border);border-radius:10px;padding:16px;margin-bottom:16px}
-  .sl-input-row{display:flex;gap:8px;flex-wrap:wrap}
-  .sl-input input[type=text]{flex:1;min-width:220px;background:#0b0d10;border:1px solid var(--sl-border);color:var(--sl-text);padding:10px 12px;border-radius:8px;font:inherit;font-size:14px}
-  .sl-input input[type=text]:focus{outline:none;border-color:var(--sl-accent)}
-  .sl-btn{background:var(--sl-accent);border:none;color:#fff;font:inherit;font-weight:600;font-size:14px;padding:10px 16px;border-radius:8px;cursor:pointer}
-  .sl-btn:hover{filter:brightness(1.1)}
-  .sl-btn:disabled{opacity:0.5;cursor:not-allowed}
-  .sl-btn.ghost{background:transparent;border:1px solid var(--sl-border);color:var(--sl-text)}
-  .sl-btn.danger{background:transparent;border:1px solid var(--sl-border);color:var(--sl-bad)}
-  .sl-hint{font-size:12px;color:var(--sl-muted);margin-top:8px}
-
   /* Toolbar */
-  .sl-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .sl-toolbar{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
 
-  /* Status */
-  .sl-status{font-size:13px;color:var(--sl-muted);margin:8px 0;min-height:18px}
-  .sl-status.error{color:var(--sl-bad)}
-
-  /* Scope list */
-  .sl-scopes{display:flex;flex-direction:column;gap:12px}
-  .sl-scope{background:var(--sl-panel);border:1px solid var(--sl-border);border-radius:10px;overflow:hidden}
-  .sl-scope-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;gap:12px;flex-wrap:wrap}
-  .sl-scope-title{font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px}
-  .sl-scope-mode{font-size:10px;background:var(--sl-chip);color:var(--sl-muted);padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:0.05em}
-  .sl-scope-meta{font-size:12px;color:var(--sl-muted)}
+  /* Scope cards */
+  .sl-scopes{display:flex;flex-direction:column;gap:14px}
+  .sl-scope{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;overflow:hidden}
+  .sl-scope-head{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--sl-border)}
+  .sl-scope-title{font-weight:600;font-size:15px;color:var(--sl-text);display:flex;align-items:center;gap:10px}
+  .sl-scope-mode{font-size:10px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
+  .sl-scope-meta{font-size:12px;color:var(--sl-muted);margin-top:3px}
   .sl-scope-actions{display:flex;gap:6px}
-  .sl-scope-actions button{background:transparent;border:1px solid var(--sl-border);color:var(--sl-text);font:inherit;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer}
-  .sl-scope-actions button:hover{border-color:var(--sl-accent)}
+  .sl-scope-actions button{background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);font:inherit;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer}
+  .sl-scope-actions button:hover{border-color:var(--sl-border-strong);background:var(--sl-bg-soft)}
   .sl-scope-actions button.danger{color:var(--sl-bad)}
+  .sl-scope-actions button.danger:hover{border-color:var(--sl-bad);background:#fef2f2}
 
-  .sl-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--sl-border);border-top:1px solid var(--sl-border);border-bottom:1px solid var(--sl-border)}
-  .sl-summary-cell{background:var(--sl-panel);padding:10px 14px}
-  .sl-summary-cell .lbl{font-size:11px;color:var(--sl-muted);text-transform:uppercase;letter-spacing:0.05em}
-  .sl-summary-cell .val{font-size:18px;font-weight:600;margin-top:2px}
+  /* Summary cells */
+  .sl-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));background:var(--sl-bg-soft);border-bottom:1px solid var(--sl-border)}
+  .sl-summary-cell{padding:12px 14px;border-right:1px solid var(--sl-border)}
+  .sl-summary-cell:last-child{border-right:none}
+  .sl-summary-cell .lbl{font-size:11px;color:var(--sl-muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+  .sl-summary-cell .val{font-size:20px;font-weight:600;margin-top:3px;color:var(--sl-text)}
   .sl-summary-cell .val.warn{color:var(--sl-warn)}
   .sl-summary-cell .val.bad{color:var(--sl-bad)}
 
   /* Asset table */
-  .sl-assets-wrap{padding:0 16px 16px}
-  .sl-assets{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
-  .sl-assets th{text-align:left;font-weight:500;color:var(--sl-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;padding:8px;border-bottom:1px solid var(--sl-border)}
-  .sl-assets td{padding:10px 8px;border-bottom:1px solid var(--sl-border);vertical-align:top}
+  .sl-assets-wrap{padding:0;overflow-x:auto}
+  .sl-assets{width:100%;border-collapse:collapse;font-size:13px}
+  .sl-assets th{text-align:left;font-weight:500;color:var(--sl-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;padding:10px 14px;background:var(--sl-bg-soft);border-bottom:1px solid var(--sl-border);white-space:nowrap}
+  .sl-assets td{padding:11px 14px;border-bottom:1px solid var(--sl-border);vertical-align:top;color:var(--sl-text)}
   .sl-assets tr:last-child td{border-bottom:none}
+  .sl-assets tr:hover td{background:var(--sl-bg-soft)}
   .sl-host{font-weight:500;color:var(--sl-text);word-break:break-all}
-  .sl-ips{color:var(--sl-muted);font-family:ui-monospace,monospace;font-size:12px}
+  .sl-ips{color:var(--sl-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6}
   .sl-chips{display:flex;flex-wrap:wrap;gap:4px}
-  .sl-chip{background:var(--sl-chip);color:var(--sl-text);font-size:11px;padding:2px 8px;border-radius:10px;font-family:ui-monospace,monospace}
-  .sl-chip.cve{background:rgba(239,68,68,0.15);color:#fca5a5}
-  .sl-chip.tag{background:rgba(90,166,255,0.15);color:#93c5fd;font-family:Inter,sans-serif}
-  .sl-chip.sensitive{background:rgba(245,165,36,0.15);color:#fbbf24}
-  .sl-empty{padding:32px;text-align:center;color:var(--sl-muted);font-size:14px}
+  .sl-chip{background:var(--sl-chip-bg);color:var(--sl-text);font-size:11px;padding:2px 8px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .sl-chip.cve{background:#fef2f2;color:var(--sl-bad);border:1px solid #fecaca}
+  .sl-chip.tag{background:#eef2ff;color:#4338ca;font-family:Inter,sans-serif;border:1px solid #c7d2fe}
+  .sl-chip.sensitive{background:#fffbeb;color:var(--sl-warn);font-family:Inter,sans-serif;border:1px solid #fde68a}
+  .sl-dash{color:var(--sl-muted)}
+  .sl-empty{padding:40px 24px;text-align:center;color:var(--sl-muted);font-size:14px;background:var(--sl-bg)}
+  .sl-empty code{background:var(--sl-chip-bg);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--sl-text)}
 
   /* Mode B preview */
-  .sl-modeb-preview{background:var(--sl-panel);border:1px dashed var(--sl-border);border-radius:10px;padding:24px;color:var(--sl-muted);font-size:14px;line-height:1.6}
-  .sl-modeb-preview h3{color:var(--sl-text);margin:0 0 8px;font-size:16px}
-  .sl-modeb-preview ul{margin:8px 0 0 18px;padding:0}
+  .sl-modeb-preview{background:var(--sl-bg);border:1px dashed var(--sl-border-strong);border-radius:10px;padding:24px;color:var(--sl-muted);font-size:14px;line-height:1.6}
+  .sl-modeb-preview h3{color:var(--sl-text);margin:0 0 10px;font-size:16px;font-weight:600}
+  .sl-modeb-preview ul{margin:10px 0 0 20px;padding:0}
   .sl-modeb-preview li{margin:4px 0}
+  .sl-modeb-preview code{background:var(--sl-chip-bg);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sl-text)}
 
-  /* Explain */
-  .sl-explain{margin-top:32px;background:var(--sl-panel);border:1px solid var(--sl-border);border-radius:10px;padding:24px}
-  .sl-explain h2{margin:0 0 8px;font-size:18px}
-  .sl-explain .lede{color:var(--sl-muted);font-size:13px;margin:0 0 16px}
-  .sl-explain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-  .sl-explain-card{background:#0b0d10;border:1px solid var(--sl-border);border-radius:8px;padding:14px}
-  .sl-explain-card h3{margin:0 0 6px;font-size:13px;font-weight:600}
-  .sl-explain-card p{margin:0;font-size:12px;color:var(--sl-muted);line-height:1.5}
+  /* Explainer */
+  .sl-explain{margin-top:36px;background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:24px}
+  .sl-explain h2{margin:0 0 6px;font-size:18px;color:var(--sl-text);font-weight:600}
+  .sl-explain .lede{color:var(--sl-muted);font-size:13px;margin:0 0 18px}
+  .sl-explain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .sl-explain-card{background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;padding:14px}
+  .sl-explain-card h3{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--sl-text)}
+  .sl-explain-card p{margin:0;font-size:12.5px;color:var(--sl-muted);line-height:1.55}
+  .sl-explain-card a{color:var(--sl-accent);text-decoration:none}
+  .sl-explain-card a:hover{text-decoration:underline}
+  .sl-explain-card code{background:var(--sl-chip-bg);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--sl-text)}
 
-  .sl-footer{margin-top:32px;padding:16px 0;border-top:1px solid var(--sl-border);font-size:12px;color:var(--sl-muted);display:flex;gap:16px;flex-wrap:wrap}
+  .sl-footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--sl-border);font-size:12.5px;color:var(--sl-muted);display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .sl-footer a{color:var(--sl-muted);text-decoration:none}
   .sl-footer a:hover{color:var(--sl-text)}
 
   @media(max-width:700px){
     .sl-scope-head{flex-direction:column;align-items:flex-start}
-    .sl-assets-wrap{overflow-x:auto}
+    .sl-summary-cell{border-right:none;border-bottom:1px solid var(--sl-border)}
+    .sl-summary-cell:last-child{border-bottom:none}
   }
 </style>
 </head>
@@ -119,95 +151,103 @@
 
         <button class="mobile-toggle" aria-label="Toggle menu"></button>
 
-        <div class="sl-wrap">
+        <div class="sl-crumb">
+          <a href="/">Owlglass</a> / SurfaceLens
+        </div>
 
-          <header class="sl-header">
-            <div>
-              <h1>SurfaceLens</h1>
-              <p class="sl-tagline">Free, browser-based attack surface mapping. Discover subdomains, IPs, open ports, CVEs and certificates from public data.</p>
-              <div class="sl-header-meta" id="sl-meta-summary">No scopes tracked yet.</div>
-            </div>
-          </header>
+        <header class="sl-header">
+          <h1>SurfaceLens</h1>
+          <p class="sl-tagline">Map your public attack surface. Enumerate every subdomain ever issued a TLS certificate, resolve them to live IPs, and reveal open ports and known CVEs from passive scan data — all in your browser, with no accounts or API keys.</p>
+          <div class="sl-header-meta" id="sl-meta-summary">No scopes tracked yet.</div>
+        </header>
 
-          <nav class="sl-tabs" role="tablist">
-            <button class="sl-tab active" role="tab" data-tab="single" aria-selected="true">Single domain</button>
-            <button class="sl-tab" role="tab" data-tab="org" disabled title="Coming in v2">
-              Organization <span class="sl-soon">Soon</span>
-            </button>
-          </nav>
+        <!-- Input card -->
+        <div class="sl-input">
+          <div class="sl-input-row">
+            <input type="text" id="sl-domain-input" placeholder="Enter a domain (e.g. stripe.com)" autocomplete="off" spellcheck="false">
+            <button class="sl-btn" id="sl-scan-btn">Map surface</button>
+          </div>
+          <div class="sl-try">
+            <span>Try:</span>
+            <span class="sl-try-chip" data-try="stripe.com">stripe.com</span>
+            <span class="sl-try-chip" data-try="github.com">github.com</span>
+            <span class="sl-try-chip" data-try="cloudflare.com">cloudflare.com</span>
+            <span class="sl-try-chip" data-try="hashicorp.com">hashicorp.com</span>
+          </div>
+          <div class="sl-hint">SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.</div>
+          <div class="sl-status" id="sl-status"></div>
+        </div>
 
-          <!-- Mode A: Single domain -->
-          <section class="sl-panel-tab active" id="sl-tab-single">
-            <div class="sl-input">
-              <div class="sl-input-row">
-                <input type="text" id="sl-domain-input" placeholder="example.com" autocomplete="off" spellcheck="false">
-                <button class="sl-btn" id="sl-scan-btn">Scan domain</button>
-              </div>
-              <div class="sl-hint">Enter a registered domain. SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.</div>
-              <div class="sl-status" id="sl-status"></div>
-            </div>
+        <!-- Tabs -->
+        <nav class="sl-tabs" role="tablist">
+          <button class="sl-tab active" role="tab" data-tab="single" aria-selected="true">Single domain</button>
+          <button class="sl-tab" role="tab" data-tab="org" disabled title="Coming in v2">
+            Organization <span class="sl-soon">Soon</span>
+          </button>
+        </nav>
 
-            <div class="sl-toolbar">
-              <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
-              <button class="sl-btn ghost" id="sl-export">Export JSON</button>
-              <button class="sl-btn danger" id="sl-clear-all">Clear all</button>
-            </div>
-
-            <div class="sl-scopes" id="sl-scopes"></div>
-          </section>
-
-          <!-- Mode B placeholder -->
-          <section class="sl-panel-tab" id="sl-tab-org">
-            <div class="sl-modeb-preview">
-              <h3>Organization discovery (coming soon)</h3>
-              <p>Mode B will let you enter a single seed domain (e.g. <code>acme.com</code>) and discover related domains owned by the same organization through:</p>
-              <ul>
-                <li>Certificate SAN expansion (sister domains on the same TLS certs)</li>
-                <li>Reverse-DNS clustering via Shodan InternetDB</li>
-                <li>WHOIS registrant overlap (where available)</li>
-              </ul>
-              <p>You will then review candidates with confidence scores and confirm which ones to scan. Ship target: after Mode A has been validated in production.</p>
-            </div>
-          </section>
-
-          <!-- Scoring / what we check explainer -->
-          <section class="sl-explain">
-            <h2>What SurfaceLens checks</h2>
-            <p class="lede">Read this if you want to understand what each finding means and where the data comes from.</p>
-            <div class="sl-explain-grid">
-              <div class="sl-explain-card">
-                <h3>Subdomain discovery</h3>
-                <p>We query the public <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">CertSpotter</a> Certificate Transparency API for every TLS certificate ever issued to the domain. Each certificate's SAN entries become candidate subdomains. Coverage is excellent for HTTPS-facing assets but misses hosts that have never had a public cert.</p>
-              </div>
-              <div class="sl-explain-card">
-                <h3>DNS resolution</h3>
-                <p>Each discovered subdomain is resolved through <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google DNS-over-HTTPS</a> for current A and AAAA records. Unresolvable hosts are kept in the inventory but marked as inactive — they may have been decommissioned.</p>
-              </div>
-              <div class="sl-explain-card">
-                <h3>Open ports &amp; CVEs</h3>
-                <p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>, a free passive scan dataset refreshed weekly. We surface open ports, known CVEs and service tags. Data is passive — we never scan you or your assets directly.</p>
-              </div>
-              <div class="sl-explain-card">
-                <h3>Sensitive hostnames</h3>
-                <p>Hostnames containing tokens like <code>admin</code>, <code>staging</code>, <code>dev</code>, <code>internal</code>, <code>vpn</code>, <code>jenkins</code>, <code>git</code> are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.</p>
-              </div>
-              <div class="sl-explain-card">
-                <h3>Limitations</h3>
-                <p>Browser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Very large orgs may hit CertSpotter rate limits.</p>
-              </div>
-              <div class="sl-explain-card">
-                <h3>Privacy</h3>
-                <p>All results are stored in your browser's <code>localStorage</code>. Nothing is sent to Owlglass. Outbound requests go directly to CertSpotter, Google DNS and Shodan from your browser.</p>
-              </div>
-            </div>
-          </section>
-
-          <div class="sl-footer">
-            <a href="/">Owlglass home</a>
-            <a href="/posturelens/">PostureLens</a>
-            <span>SurfaceLens runs entirely in your browser. No accounts, no servers.</span>
+        <!-- Mode A: Single domain -->
+        <section class="sl-panel-tab active" id="sl-tab-single">
+          <div class="sl-toolbar">
+            <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
+            <button class="sl-btn ghost" id="sl-export">Export JSON</button>
+            <button class="sl-btn danger" id="sl-clear-all">Clear all</button>
           </div>
 
+          <div class="sl-scopes" id="sl-scopes"></div>
+        </section>
+
+        <!-- Mode B placeholder -->
+        <section class="sl-panel-tab" id="sl-tab-org">
+          <div class="sl-modeb-preview">
+            <h3>Organization discovery — coming soon</h3>
+            <p>Mode B will let you enter a single seed domain (e.g. <code>acme.com</code>) and discover related domains owned by the same organization through:</p>
+            <ul>
+              <li>Certificate SAN expansion (sister domains on the same TLS certs)</li>
+              <li>Reverse-DNS clustering via Shodan InternetDB</li>
+              <li>WHOIS registrant overlap (where available)</li>
+            </ul>
+            <p>You will then review candidates with confidence scores and confirm which ones to scan. Ship target: after Mode A has been validated in production.</p>
+          </div>
+        </section>
+
+        <!-- Explainer -->
+        <section class="sl-explain">
+          <h2>What SurfaceLens checks</h2>
+          <p class="lede">Read this if you want to understand what each finding means and where the data comes from.</p>
+          <div class="sl-explain-grid">
+            <div class="sl-explain-card">
+              <h3>Subdomain discovery</h3>
+              <p>We query the public <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">CertSpotter</a> Certificate Transparency API for every TLS certificate ever issued to the domain. Each certificate's SAN entries become candidate subdomains. Coverage is excellent for HTTPS-facing assets but misses hosts that have never had a public cert.</p>
+            </div>
+            <div class="sl-explain-card">
+              <h3>DNS resolution</h3>
+              <p>Each discovered subdomain is resolved through <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google DNS-over-HTTPS</a> for current A and AAAA records. Unresolvable hosts are kept in the inventory but marked as inactive — they may have been decommissioned.</p>
+            </div>
+            <div class="sl-explain-card">
+              <h3>Open ports &amp; CVEs</h3>
+              <p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>, a free passive scan dataset refreshed weekly. We surface open ports, known CVEs and service tags. Data is passive — we never scan you or your assets directly.</p>
+            </div>
+            <div class="sl-explain-card">
+              <h3>Sensitive hostnames</h3>
+              <p>Hostnames containing tokens like <code>admin</code>, <code>staging</code>, <code>dev</code>, <code>internal</code>, <code>vpn</code>, <code>jenkins</code>, <code>git</code> are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.</p>
+            </div>
+            <div class="sl-explain-card">
+              <h3>Limitations</h3>
+              <p>Browser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Very large orgs may hit CertSpotter rate limits.</p>
+            </div>
+            <div class="sl-explain-card">
+              <h3>Privacy</h3>
+              <p>All results stay in your browser's <code>localStorage</code>. Nothing is sent to Owlglass. Outbound requests go directly to CertSpotter, Google DNS and Shodan from your browser.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="sl-footer">
+          <a href="/">Owlglass home</a>
+          <a href="/posturelens/">PostureLens</a>
+          <a href="/dopplerlens/">DopplerLens</a>
+          <span>Runs entirely in your browser. No accounts, no servers.</span>
         </div>
 
       </div>
@@ -259,7 +299,9 @@
   const $ = id => document.getElementById(id);
   const status = (msg, isErr) => {
     const el = $('sl-status');
-    el.textContent = msg || '';
+    if (!msg){ el.classList.remove('show','error'); el.textContent = ''; return; }
+    el.textContent = msg;
+    el.classList.add('show');
     el.classList.toggle('error', !!isErr);
   };
   const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({
@@ -471,7 +513,7 @@
   function renderScopes(){
     const wrap = $('sl-scopes');
     if (!state.scopes.length){
-      wrap.innerHTML = `<div class="sl-empty">No scopes yet. Try <code>stripe.com</code>, <code>github.com</code>, or your own domain above.</div>`;
+      wrap.innerHTML = `<div class="sl-empty">No scopes yet — enter a domain above to begin mapping.</div>`;
       return;
     }
     wrap.innerHTML = state.scopes.map((s, idx) => renderScope(s, idx)).join('');
@@ -484,7 +526,7 @@
     const rows = assets.length
       ? assets.slice().sort((a,b) => (b.cves.length - a.cves.length) || (b.ports.length - a.ports.length) || a.subdomain.localeCompare(b.subdomain))
           .map(renderAssetRow).join('')
-      : `<tr><td colspan="5" class="sl-empty">No assets discovered yet. Click Scan.</td></tr>`;
+      : `<tr><td colspan="5" class="sl-empty">No assets discovered yet. Click Rescan.</td></tr>`;
 
     return `
       <div class="sl-scope" data-idx="${idx}">
@@ -530,7 +572,7 @@
   }
 
   function renderAssetRow(a){
-    const portChips = a.ports.length ? a.ports.map(p => `<span class="sl-chip">${p}</span>`).join('') : '<span class="sl-ips">—</span>';
+    const portChips = a.ports.length ? a.ports.map(p => `<span class="sl-chip">${p}</span>`).join('') : '<span class="sl-dash">—</span>';
     const cveChips  = a.cves.slice(0,6).map(c => `<span class="sl-chip cve">${escapeHtml(c)}</span>`).join('');
     const moreCves  = a.cves.length > 6 ? `<span class="sl-chip cve">+${a.cves.length-6}</span>` : '';
     const tagChips  = a.tags.map(t => `<span class="sl-chip tag">${escapeHtml(t)}</span>`).join('');
@@ -540,10 +582,10 @@
     return `
       <tr>
         <td class="sl-host">${escapeHtml(a.subdomain)}</td>
-        <td class="sl-ips">${a.ips.length ? a.ips.map(escapeHtml).join('<br>') : '—'}</td>
+        <td class="sl-ips">${a.ips.length ? a.ips.map(escapeHtml).join('<br>') : '<span class="sl-dash">—</span>'}</td>
         <td><div class="sl-chips">${portChips}</div></td>
-        <td><div class="sl-chips">${cveChips}${moreCves}${tagChips}</div></td>
-        <td><div class="sl-chips">${notes.join('') || '<span class="sl-ips">—</span>'}</div></td>
+        <td><div class="sl-chips">${cveChips}${moreCves}${tagChips || ''}</div></td>
+        <td><div class="sl-chips">${notes.join('') || '<span class="sl-dash">—</span>'}</div></td>
       </tr>
     `;
   }
@@ -596,8 +638,11 @@
   async function addAndScan(domain){
     const norm = normalizeDomain(domain);
     if (!norm){ status('Please enter a valid domain (e.g. example.com).', true); return; }
-    if (state.scopes.some(s => s.rootDomains[0] === norm)){
-      status(`${norm} is already tracked.`, true); return;
+    const existing = state.scopes.findIndex(s => s.rootDomains[0] === norm);
+    if (existing >= 0){
+      status(`${norm} is already tracked — rescanning…`);
+      await runScanForScope(existing);
+      return;
     }
     if (state.scopes.length >= SOFT_CAP_SCOPES){
       status(`Soft cap of ${SOFT_CAP_SCOPES} scopes reached. Remove one to add more.`, true);
@@ -650,6 +695,12 @@
     $('sl-scan-btn').addEventListener('click', () => addAndScan($('sl-domain-input').value));
     $('sl-domain-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') addAndScan($('sl-domain-input').value);
+    });
+    document.querySelectorAll('.sl-try-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        $('sl-domain-input').value = chip.dataset.try;
+        addAndScan(chip.dataset.try);
+      });
     });
     $('sl-rescan-all').addEventListener('click', async () => {
       for (let i = 0; i < state.scopes.length; i++){

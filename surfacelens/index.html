@@ -10,7 +10,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
 <style>
-  /* SurfaceLens — light theme, matches DopplerLens/PostureLens */
   :root{
     --sl-accent:#7c3aed;
     --sl-accent-hover:#6d28d9;
@@ -26,17 +25,14 @@
     --sl-bad:#dc2626;
   }
 
-  /* Breadcrumb */
   .sl-crumb{font-size:13px;color:var(--sl-muted);margin-bottom:8px}
   .sl-crumb a{color:var(--sl-muted);text-decoration:none}
   .sl-crumb a:hover{color:var(--sl-text)}
 
-  /* Header */
   .sl-header h1{margin:0 0 6px;font-size:24px;font-weight:700;color:var(--sl-text);letter-spacing:-0.01em}
   .sl-tagline{margin:0;color:var(--sl-muted);font-size:14px;line-height:1.55;max-width:760px}
   .sl-header-meta{font-size:13px;color:var(--sl-muted);margin-top:10px}
 
-  /* Input card */
   .sl-input{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:16px;margin-top:20px}
   .sl-input-row{display:flex;gap:8px;flex-wrap:wrap}
   .sl-input input[type=text]{flex:1;min-width:240px;background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);padding:10px 12px;border-radius:8px;font:inherit;font-size:14px}
@@ -53,39 +49,62 @@
   .sl-try-chip{background:var(--sl-chip-bg);color:var(--sl-text);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid transparent}
   .sl-try-chip:hover{border-color:var(--sl-border-strong)}
 
-  /* Status */
-  .sl-status{font-size:13px;color:var(--sl-muted);margin-top:12px;padding:10px 12px;background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;min-height:0;display:none}
+  .sl-status{font-size:13px;color:var(--sl-muted);margin-top:12px;padding:10px 12px;background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;display:none}
   .sl-status.show{display:block}
   .sl-status.error{color:var(--sl-bad);background:#fef2f2;border-color:#fecaca}
 
-  /* Tabs */
   .sl-tabs{display:flex;gap:0;border-bottom:1px solid var(--sl-border);margin:24px 0 20px;flex-wrap:wrap}
   .sl-tab{background:transparent;border:none;color:var(--sl-muted);font:inherit;font-size:14px;font-weight:500;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:8px}
   .sl-tab:hover:not(:disabled){color:var(--sl-text)}
   .sl-tab.active{color:var(--sl-text);border-bottom-color:var(--sl-accent);font-weight:600}
   .sl-tab:disabled{cursor:not-allowed;opacity:0.6}
-  .sl-tab .sl-soon{font-size:10px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
   .sl-tab .sl-count{font-size:11px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:2px 7px;border-radius:10px;font-weight:500}
   .sl-panel-tab{display:none}
   .sl-panel-tab.active{display:block}
 
-  /* Toolbar */
-  .sl-toolbar{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+  .sl-toolbar{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap;align-items:center}
+  .sl-toolbar-spacer{flex:1}
+
+  /* Candidate review panel */
+  .sl-candidates{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;margin-top:16px;overflow:hidden}
+  .sl-candidates-head{padding:14px 16px;border-bottom:1px solid var(--sl-border);background:var(--sl-bg-soft);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .sl-candidates-head h3{margin:0;font-size:15px;font-weight:600;color:var(--sl-text)}
+  .sl-candidates-head .sub{margin:3px 0 0;font-size:12.5px;color:var(--sl-muted)}
+  .sl-cand-actions{display:flex;gap:8px}
+  .sl-cand-list{max-height:520px;overflow-y:auto}
+  .sl-cand-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--sl-border)}
+  .sl-cand-row:last-child{border-bottom:none}
+  .sl-cand-row:hover{background:var(--sl-bg-soft)}
+  .sl-cand-row.seed{background:#faf5ff}
+  .sl-cand-check{display:flex;align-items:center}
+  .sl-cand-check input{width:16px;height:16px;cursor:pointer;accent-color:var(--sl-accent)}
+  .sl-cand-info .domain{font-weight:600;font-size:14px;color:var(--sl-text)}
+  .sl-cand-info .evidence{font-size:12px;color:var(--sl-muted);margin-top:3px;line-height:1.45}
+  .sl-cand-info .seed-tag{font-size:10px;background:var(--sl-accent);color:#fff;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-left:8px;vertical-align:middle}
+  .sl-cand-conf{font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;min-width:50px;text-align:center}
+  .sl-cand-conf.high{background:#ecfdf5;color:var(--sl-good);border:1px solid #a7f3d0}
+  .sl-cand-conf.med{background:#fffbeb;color:var(--sl-warn);border:1px solid #fde68a}
+  .sl-cand-conf.low{background:var(--sl-chip-bg);color:var(--sl-muted);border:1px solid var(--sl-border)}
+  .sl-cand-issuer{font-size:11px;color:var(--sl-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;max-width:160px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sl-cand-toggle{padding:10px 16px;text-align:center;font-size:13px;color:var(--sl-accent);cursor:pointer;border-top:1px solid var(--sl-border);background:var(--sl-bg-soft);font-weight:500}
+  .sl-cand-toggle:hover{background:#f3f4f6}
+  .sl-cand-empty{padding:32px 16px;text-align:center;color:var(--sl-muted);font-size:14px}
 
   /* Scope cards */
   .sl-scopes{display:flex;flex-direction:column;gap:14px}
   .sl-scope{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;overflow:hidden}
   .sl-scope-head{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--sl-border)}
-  .sl-scope-title{font-weight:600;font-size:15px;color:var(--sl-text);display:flex;align-items:center;gap:10px}
+  .sl-scope-title{font-weight:600;font-size:15px;color:var(--sl-text);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .sl-scope-mode{font-size:10px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
+  .sl-scope-mode.org{background:#ede9fe;color:var(--sl-accent)}
   .sl-scope-meta{font-size:12px;color:var(--sl-muted);margin-top:3px}
-  .sl-scope-actions{display:flex;gap:6px}
+  .sl-scope-roots{font-size:12px;color:var(--sl-muted);margin-top:4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .sl-scope-actions{display:flex;gap:6px;flex-wrap:wrap}
   .sl-scope-actions button{background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);font:inherit;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer}
   .sl-scope-actions button:hover{border-color:var(--sl-border-strong);background:var(--sl-bg-soft)}
   .sl-scope-actions button.danger{color:var(--sl-bad)}
   .sl-scope-actions button.danger:hover{border-color:var(--sl-bad);background:#fef2f2}
 
-  /* Summary cells */
   .sl-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));background:var(--sl-bg-soft);border-bottom:1px solid var(--sl-border)}
   .sl-summary-cell{padding:12px 14px;border-right:1px solid var(--sl-border)}
   .sl-summary-cell:last-child{border-right:none}
@@ -94,7 +113,6 @@
   .sl-summary-cell .val.warn{color:var(--sl-warn)}
   .sl-summary-cell .val.bad{color:var(--sl-bad)}
 
-  /* Asset table */
   .sl-assets-wrap{padding:0;overflow-x:auto}
   .sl-assets{width:100%;border-collapse:collapse;font-size:13px}
   .sl-assets th{text-align:left;font-weight:500;color:var(--sl-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;padding:10px 14px;background:var(--sl-bg-soft);border-bottom:1px solid var(--sl-border);white-space:nowrap}
@@ -102,6 +120,7 @@
   .sl-assets tr:last-child td{border-bottom:none}
   .sl-assets tr:hover td{background:var(--sl-bg-soft)}
   .sl-host{font-weight:500;color:var(--sl-text);word-break:break-all}
+  .sl-root-tag{font-size:10px;background:var(--sl-chip-bg);color:var(--sl-muted);padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:500;font-family:Inter,sans-serif}
   .sl-ips{color:var(--sl-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6}
   .sl-chips{display:flex;flex-wrap:wrap;gap:4px}
   .sl-chip{background:var(--sl-chip-bg);color:var(--sl-text);font-size:11px;padding:2px 8px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -112,14 +131,6 @@
   .sl-empty{padding:40px 24px;text-align:center;color:var(--sl-muted);font-size:14px;background:var(--sl-bg)}
   .sl-empty code{background:var(--sl-chip-bg);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--sl-text)}
 
-  /* Mode B preview */
-  .sl-modeb-preview{background:var(--sl-bg);border:1px dashed var(--sl-border-strong);border-radius:10px;padding:24px;color:var(--sl-muted);font-size:14px;line-height:1.6}
-  .sl-modeb-preview h3{color:var(--sl-text);margin:0 0 10px;font-size:16px;font-weight:600}
-  .sl-modeb-preview ul{margin:10px 0 0 20px;padding:0}
-  .sl-modeb-preview li{margin:4px 0}
-  .sl-modeb-preview code{background:var(--sl-chip-bg);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sl-text)}
-
-  /* Explainer */
   .sl-explain{margin-top:36px;background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:24px}
   .sl-explain h2{margin:0 0 6px;font-size:18px;color:var(--sl-text);font-weight:600}
   .sl-explain .lede{color:var(--sl-muted);font-size:13px;margin:0 0 18px}
@@ -139,6 +150,8 @@
     .sl-scope-head{flex-direction:column;align-items:flex-start}
     .sl-summary-cell{border-right:none;border-bottom:1px solid var(--sl-border)}
     .sl-summary-cell:last-child{border-bottom:none}
+    .sl-cand-row{grid-template-columns:auto 1fr auto;gap:10px}
+    .sl-cand-issuer{display:none}
   }
 </style>
 </head>
@@ -161,55 +174,55 @@
           <div class="sl-header-meta" id="sl-meta-summary">No scopes tracked yet.</div>
         </header>
 
-        <!-- Input card -->
-        <div class="sl-input">
-          <div class="sl-input-row">
-            <input type="text" id="sl-domain-input" placeholder="Enter a domain (e.g. stripe.com)" autocomplete="off" spellcheck="false">
-            <button class="sl-btn" id="sl-scan-btn">Map surface</button>
-          </div>
-          <div class="sl-try">
-            <span>Try:</span>
-            <span class="sl-try-chip" data-try="stripe.com">stripe.com</span>
-            <span class="sl-try-chip" data-try="github.com">github.com</span>
-            <span class="sl-try-chip" data-try="cloudflare.com">cloudflare.com</span>
-            <span class="sl-try-chip" data-try="hashicorp.com">hashicorp.com</span>
-          </div>
-          <div class="sl-hint">SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.</div>
-          <div class="sl-status" id="sl-status"></div>
-        </div>
-
         <!-- Tabs -->
         <nav class="sl-tabs" role="tablist">
           <button class="sl-tab active" role="tab" data-tab="single" aria-selected="true">Single domain</button>
-          <button class="sl-tab" role="tab" data-tab="org" disabled title="Coming in v2">
-            Organization <span class="sl-soon">Soon</span>
-          </button>
+          <button class="sl-tab" role="tab" data-tab="org" aria-selected="false">Organization</button>
         </nav>
 
         <!-- Mode A: Single domain -->
         <section class="sl-panel-tab active" id="sl-tab-single">
-          <div class="sl-toolbar">
-            <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
-            <button class="sl-btn ghost" id="sl-export">Export JSON</button>
-            <button class="sl-btn danger" id="sl-clear-all">Clear all</button>
+          <div class="sl-input">
+            <div class="sl-input-row">
+              <input type="text" id="sl-domain-input" placeholder="Enter a domain (e.g. stripe.com)" autocomplete="off" spellcheck="false">
+              <button class="sl-btn" id="sl-scan-btn">Map surface</button>
+            </div>
+            <div class="sl-try">
+              <span>Try:</span>
+              <span class="sl-try-chip" data-try="stripe.com">stripe.com</span>
+              <span class="sl-try-chip" data-try="github.com">github.com</span>
+              <span class="sl-try-chip" data-try="cloudflare.com">cloudflare.com</span>
+              <span class="sl-try-chip" data-try="hashicorp.com">hashicorp.com</span>
+            </div>
+            <div class="sl-hint">SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.</div>
+            <div class="sl-status" id="sl-status"></div>
           </div>
-
-          <div class="sl-scopes" id="sl-scopes"></div>
         </section>
 
-        <!-- Mode B placeholder -->
+        <!-- Mode B: Organization -->
         <section class="sl-panel-tab" id="sl-tab-org">
-          <div class="sl-modeb-preview">
-            <h3>Organization discovery — coming soon</h3>
-            <p>Mode B will let you enter a single seed domain (e.g. <code>acme.com</code>) and discover related domains owned by the same organization through:</p>
-            <ul>
-              <li>Certificate SAN expansion (sister domains on the same TLS certs)</li>
-              <li>Reverse-DNS clustering via Shodan InternetDB</li>
-              <li>WHOIS registrant overlap (where available)</li>
-            </ul>
-            <p>You will then review candidates with confidence scores and confirm which ones to scan. Ship target: after Mode A has been validated in production.</p>
+          <div class="sl-input">
+            <div class="sl-input-row">
+              <input type="text" id="sl-seed-input" placeholder="Enter a seed domain (e.g. acme.com)" autocomplete="off" spellcheck="false">
+              <button class="sl-btn" id="sl-discover-btn">Discover candidates</button>
+            </div>
+            <div class="sl-hint">Mode B finds related domains owned by the same organization. We pull every TLS certificate ever issued for your seed domain, extract every other domain that appears as a SAN on those certificates, and rank the candidates by confidence. You then review and confirm which ones to scan. <strong>Heuristic — verify before trusting.</strong></div>
+            <div class="sl-status" id="sl-org-status"></div>
           </div>
+
+          <!-- Candidate review (populated after discover) -->
+          <div id="sl-candidates-wrap"></div>
         </section>
+
+        <!-- Toolbar + scope list (shared by both modes) -->
+        <div class="sl-toolbar">
+          <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
+          <button class="sl-btn ghost" id="sl-export">Export JSON</button>
+          <div class="sl-toolbar-spacer"></div>
+          <button class="sl-btn danger" id="sl-clear-all">Clear all</button>
+        </div>
+
+        <div class="sl-scopes" id="sl-scopes"></div>
 
         <!-- Explainer -->
         <section class="sl-explain">
@@ -229,16 +242,16 @@
               <p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>, a free passive scan dataset refreshed weekly. We surface open ports, known CVEs and service tags. Data is passive — we never scan you or your assets directly.</p>
             </div>
             <div class="sl-explain-card">
+              <h3>Organization discovery</h3>
+              <p>Mode B groups SANs from your seed's certificates by registrable domain, then scores candidates by how often they co-occur with the seed, the certificate issuer quality, exclusivity, and name similarity. Multi-tenant issuers (Let's Encrypt on shared platforms) are downweighted to reduce noise.</p>
+            </div>
+            <div class="sl-explain-card">
               <h3>Sensitive hostnames</h3>
               <p>Hostnames containing tokens like <code>admin</code>, <code>staging</code>, <code>dev</code>, <code>internal</code>, <code>vpn</code>, <code>jenkins</code>, <code>git</code> are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.</p>
             </div>
             <div class="sl-explain-card">
               <h3>Limitations</h3>
-              <p>Browser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Very large orgs may hit CertSpotter rate limits.</p>
-            </div>
-            <div class="sl-explain-card">
-              <h3>Privacy</h3>
-              <p>All results stay in your browser's <code>localStorage</code>. Nothing is sent to Owlglass. Outbound requests go directly to CertSpotter, Google DNS and Shodan from your browser.</p>
+              <p>Browser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Mode B is heuristic — always verify candidates before treating them as authoritative.</p>
             </div>
           </div>
         </section>
@@ -271,6 +284,7 @@
   const IP_CAP           = 100;
   const SCAN_CONCURRENCY = 6;
   const HISTORY_CAP      = 8;
+  const ROOTS_PER_ORG_CAP = 10;
 
   const SENSITIVE_PATTERNS = [
     'admin','staging','stage','dev','test','qa','uat','internal','intranet',
@@ -279,8 +293,36 @@
     'prometheus','sonar','phpmyadmin','wp-admin','api-internal','secret'
   ];
 
+  // Multi-label public suffixes — used by registrable() heuristic
+  const MULTI_LABEL_SUFFIXES = new Set([
+    'co.uk','org.uk','ac.uk','gov.uk','me.uk','net.uk','sch.uk','plc.uk',
+    'com.au','net.au','org.au','edu.au','gov.au','asn.au','id.au',
+    'co.jp','ne.jp','or.jp','ac.jp','go.jp',
+    'co.kr','or.kr','ne.kr','re.kr','pe.kr','go.kr',
+    'co.in','net.in','org.in','gen.in','firm.in','ind.in',
+    'co.za','org.za','net.za','gov.za','ac.za','web.za',
+    'co.nz','net.nz','org.nz','govt.nz','ac.nz','school.nz',
+    'com.br','net.br','org.br','gov.br','edu.br',
+    'com.mx','net.mx','org.mx','edu.mx','gob.mx',
+    'com.sg','edu.sg','gov.sg','org.sg','net.sg',
+    'com.hk','net.hk','org.hk','edu.hk','gov.hk',
+    'com.tw','net.tw','org.tw','edu.tw','gov.tw',
+    'co.il','org.il','net.il','ac.il','gov.il'
+  ]);
+
+  // Issuers that bundle unrelated tenants onto shared certs
+  const MULTI_TENANT_ISSUERS = [
+    'let\'s encrypt','letsencrypt',
+    'cloudflare inc','cloudflare, inc',
+    'amazon', // ACM is often per-tenant, but bundled on AWS shared infra
+    'google trust services',
+    'zerossl'
+  ];
+
   // ---- State ----
   let state = { scopes: [] };
+  // Transient (not persisted): in-progress org discovery results
+  let pendingDiscovery = null; // { seed, candidates: [...] }
 
   function loadState(){
     try {
@@ -297,13 +339,15 @@
 
   // ---- Utilities ----
   const $ = id => document.getElementById(id);
-  const status = (msg, isErr) => {
-    const el = $('sl-status');
+  const status = (el, msg, isErr) => {
     if (!msg){ el.classList.remove('show','error'); el.textContent = ''; return; }
     el.textContent = msg;
     el.classList.add('show');
     el.classList.toggle('error', !!isErr);
   };
+  const setStatus    = (msg, isErr) => status($('sl-status'),     msg, isErr);
+  const setOrgStatus = (msg, isErr) => status($('sl-org-status'), msg, isErr);
+
   const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
@@ -311,9 +355,25 @@
   function normalizeDomain(input){
     if (!input) return null;
     let d = String(input).trim().toLowerCase();
-    d = d.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+    d = d.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '').replace(/^\*\./, '');
     if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)) return null;
     return d;
+  }
+
+  // Reduce any hostname to its registrable domain (eTLD+1).
+  // Uses a small hardcoded list of multi-label public suffixes; defaults to last two labels.
+  function registrable(host){
+    if (!host) return null;
+    host = host.toLowerCase().replace(/^\*\./, '').replace(/\.$/,'');
+    const parts = host.split('.');
+    if (parts.length < 2) return null;
+    const lastTwo = parts.slice(-2).join('.');
+    const lastThree = parts.length >= 3 ? parts.slice(-3).join('.') : null;
+    if (lastThree && MULTI_LABEL_SUFFIXES.has(lastTwo)){
+      // e.g. host=acme.co.uk → lastTwo="co.uk" is a suffix → registrable is lastThree
+      return lastThree;
+    }
+    return lastTwo;
   }
 
   function timeAgo(ts){
@@ -328,6 +388,25 @@
   function isSensitive(host){
     const lower = host.toLowerCase();
     return SENSITIVE_PATTERNS.some(p => lower.includes(p));
+  }
+
+  function isMultiTenantIssuer(issuerName){
+    if (!issuerName) return false;
+    const lower = issuerName.toLowerCase();
+    return MULTI_TENANT_ISSUERS.some(p => lower.includes(p));
+  }
+
+  function nameSimilarity(a, b){
+    // Cheap shared-prefix substring score, 0-1
+    const aBase = a.split('.')[0];
+    const bBase = b.split('.')[0];
+    if (!aBase || !bBase) return 0;
+    if (aBase === bBase) return 1;
+    if (aBase.includes(bBase) || bBase.includes(aBase)) return 0.7;
+    // Longest common prefix
+    let i = 0;
+    while (i < aBase.length && i < bBase.length && aBase[i] === bBase[i]) i++;
+    return i / Math.max(aBase.length, bBase.length);
   }
 
   async function withTimeout(promise, ms, label){
@@ -354,18 +433,22 @@
   // ---- Data sources ----
 
   async function fetchCertSpotter(domain){
-    const url = `${CERTSPOTTER_API}?domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names`;
+    const url = `${CERTSPOTTER_API}?domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names&expand=issuer`;
     const res = await withTimeout(fetch(url), 20000, 'CertSpotter');
     if (res.status === 429) throw new Error('CertSpotter rate limit hit. Wait a minute and retry.');
     if (!res.ok) throw new Error(`CertSpotter HTTP ${res.status}`);
     const data = await res.json();
+    return data; // raw issuance list
+  }
+
+  function extractSubdomainsFromIssuances(issuances, rootDomain){
     const subs = new Set();
     const certs = [];
-    for (const issuance of data){
+    for (const issuance of issuances){
       const names = issuance.dns_names || [];
       for (const n of names){
         const clean = n.toLowerCase().replace(/^\*\./,'');
-        if (clean === domain || clean.endsWith('.' + domain)) subs.add(clean);
+        if (clean === rootDomain || clean.endsWith('.' + rootDomain)) subs.add(clean);
       }
       certs.push({
         id: issuance.id,
@@ -415,24 +498,304 @@
     }
   }
 
-  // ---- Scan engine ----
+  // ---- Mode B: Organization discovery ----
+
+  async function discoverCandidates(seed){
+    setOrgStatus(`Fetching certificates for ${seed}…`);
+    const issuances = await fetchCertSpotter(seed);
+    if (!issuances.length){
+      throw new Error(`No certificates found for ${seed}. Check the domain and try again.`);
+    }
+
+    setOrgStatus(`Analyzing ${issuances.length} certificates for related domains…`);
+
+    // Group co-occurring registrable domains
+    const seedReg = registrable(seed);
+    const candMap = new Map(); // candidate root -> { count, certs:[], issuers:Set, lastSeen }
+
+    for (const iss of issuances){
+      const names = iss.dns_names || [];
+      const issuerName = iss.issuer && iss.issuer.name;
+      const notBefore = iss.not_before;
+
+      // Collect unique registrable domains on THIS cert
+      const regsOnCert = new Set();
+      for (const n of names){
+        const reg = registrable(n);
+        if (reg) regsOnCert.add(reg);
+      }
+
+      // Only count if the seed is on this cert (it should be, since we queried it)
+      if (!regsOnCert.has(seedReg)) continue;
+
+      // For each non-seed registrable on this cert, record co-occurrence
+      const otherRegs = [...regsOnCert].filter(r => r !== seedReg);
+
+      // If this cert has a huge fan-out (multi-tenant indicator), downweight everyone on it
+      const fanOut = regsOnCert.size;
+
+      for (const cand of otherRegs){
+        if (!candMap.has(cand)){
+          candMap.set(cand, { count: 0, certs: [], issuers: new Set(), lastSeen: null, fanOutSum: 0 });
+        }
+        const entry = candMap.get(cand);
+        entry.count += 1;
+        entry.certs.push(iss.id);
+        if (issuerName) entry.issuers.add(issuerName);
+        entry.fanOutSum += fanOut;
+        if (!entry.lastSeen || (notBefore && notBefore > entry.lastSeen)){
+          entry.lastSeen = notBefore;
+        }
+      }
+    }
+
+    // Score each candidate
+    const candidates = [];
+    for (const [domain, ev] of candMap){
+      const avgFanOut = ev.fanOutSum / ev.count;
+      const issuersArr = [...ev.issuers];
+      const allMultiTenant = issuersArr.length > 0 && issuersArr.every(isMultiTenantIssuer);
+      const anyMultiTenant = issuersArr.some(isMultiTenantIssuer);
+
+      // Co-occurrence: log-scale, capped at 50
+      const coScore = Math.min(50, Math.round(15 * Math.log2(ev.count + 1) + 5));
+
+      // Issuer quality (0-20)
+      let issuerScore = 20;
+      if (allMultiTenant) issuerScore = 5;
+      else if (anyMultiTenant) issuerScore = 12;
+
+      // Exclusivity: low fan-out means the cert was a small, intentional bundle (0-20)
+      // fanOut of 2 (seed + this candidate alone) → 20; fanOut of 20+ → 0
+      let exclusivityScore = Math.max(0, Math.round(20 - (avgFanOut - 2) * 1.5));
+      exclusivityScore = Math.min(20, exclusivityScore);
+
+      // Name similarity (0-10)
+      const simScore = Math.round(nameSimilarity(domain, seedReg) * 10);
+
+      const total = Math.max(0, Math.min(100, coScore + issuerScore + exclusivityScore + simScore));
+
+      candidates.push({
+        domain,
+        confidence: total,
+        evidence: {
+          coOccurrences: ev.count,
+          avgFanOut: Math.round(avgFanOut * 10) / 10,
+          issuers: issuersArr.slice(0, 3),
+          lastSeen: ev.lastSeen,
+          multiTenant: anyMultiTenant
+        }
+      });
+    }
+
+    candidates.sort((a,b) => b.confidence - a.confidence);
+    setOrgStatus(`Found ${candidates.length} candidate domain${candidates.length===1?'':'s'} from ${issuances.length} certificates. Review and confirm below.`);
+
+    return { seed: seedReg, candidates, issuanceCount: issuances.length };
+  }
+
+  function renderCandidates(){
+    const wrap = $('sl-candidates-wrap');
+    if (!pendingDiscovery){ wrap.innerHTML = ''; return; }
+
+    const { seed, candidates } = pendingDiscovery;
+    const high = candidates.filter(c => c.confidence >= 70);
+    const med  = candidates.filter(c => c.confidence >= 40 && c.confidence < 70);
+    const low  = candidates.filter(c => c.confidence < 40);
+
+    const showLow = pendingDiscovery._showLow;
+
+    const seedRowHtml = `
+      <div class="sl-cand-row seed">
+        <div class="sl-cand-check">
+          <input type="checkbox" checked disabled aria-label="Seed domain (always included)">
+        </div>
+        <div class="sl-cand-info">
+          <span class="domain">${escapeHtml(seed)}</span>
+          <span class="seed-tag">Seed</span>
+          <div class="evidence">Always included as the seed domain.</div>
+        </div>
+        <div class="sl-cand-conf high">—</div>
+        <div class="sl-cand-issuer"></div>
+      </div>
+    `;
+
+    const renderRow = (c, autoCheck) => {
+      const conf = c.confidence;
+      const cls = conf >= 70 ? 'high' : conf >= 40 ? 'med' : 'low';
+      const issuerText = c.evidence.issuers[0] || '—';
+      const seenText = c.evidence.lastSeen ? `last seen ${new Date(c.evidence.lastSeen).toISOString().slice(0,10)}` : '';
+      const mtNote = c.evidence.multiTenant ? ' · ⚠ multi-tenant issuer' : '';
+      return `
+        <div class="sl-cand-row">
+          <div class="sl-cand-check">
+            <input type="checkbox" class="sl-cand-checkbox" data-domain="${escapeHtml(c.domain)}" ${autoCheck?'checked':''}>
+          </div>
+          <div class="sl-cand-info">
+            <span class="domain">${escapeHtml(c.domain)}</span>
+            <div class="evidence">Co-occurred on ${c.evidence.coOccurrences} cert${c.evidence.coOccurrences===1?'':'s'} · avg fan-out ${c.evidence.avgFanOut}${seenText?' · ' + seenText:''}${mtNote}</div>
+          </div>
+          <div class="sl-cand-conf ${cls}">${conf}</div>
+          <div class="sl-cand-issuer" title="${escapeHtml(issuerText)}">${escapeHtml(issuerText)}</div>
+        </div>
+      `;
+    };
+
+    let listHtml = seedRowHtml;
+    listHtml += high.map(c => renderRow(c, true)).join('');
+    listHtml += med.map(c => renderRow(c, false)).join('');
+    if (showLow){
+      listHtml += low.map(c => renderRow(c, false)).join('');
+    }
+
+    if (candidates.length === 0){
+      listHtml += `<div class="sl-cand-empty">No related domains found in this seed's certificate history. The seed will still be scanned as a single-domain scope.</div>`;
+    }
+
+    const lowToggle = low.length > 0
+      ? `<div class="sl-cand-toggle" id="sl-cand-toggle-low">${showLow ? 'Hide' : 'Show'} ${low.length} low-confidence candidate${low.length===1?'':'s'} (&lt; 40)</div>`
+      : '';
+
+    wrap.innerHTML = `
+      <div class="sl-candidates">
+        <div class="sl-candidates-head">
+          <div>
+            <h3>Candidate domains for ${escapeHtml(seed)}</h3>
+            <div class="sub">${high.length} high-confidence · ${med.length} medium · ${low.length} low. Auto-checked: confidence ≥ 70.</div>
+          </div>
+          <div class="sl-cand-actions">
+            <button class="sl-btn ghost" id="sl-cand-select-all">Select all visible</button>
+            <button class="sl-btn ghost" id="sl-cand-clear">Clear</button>
+            <button class="sl-btn" id="sl-cand-scan">Scan selected</button>
+          </div>
+        </div>
+        <div class="sl-cand-list">
+          ${listHtml}
+        </div>
+        ${lowToggle}
+      </div>
+    `;
+
+    wireCandidateEvents();
+  }
+
+  function wireCandidateEvents(){
+    const selAll = $('sl-cand-select-all');
+    const clear = $('sl-cand-clear');
+    const scan = $('sl-cand-scan');
+    const toggle = $('sl-cand-toggle-low');
+
+    if (selAll) selAll.addEventListener('click', () => {
+      document.querySelectorAll('.sl-cand-checkbox').forEach(cb => cb.checked = true);
+    });
+    if (clear) clear.addEventListener('click', () => {
+      document.querySelectorAll('.sl-cand-checkbox').forEach(cb => cb.checked = false);
+    });
+    if (toggle) toggle.addEventListener('click', () => {
+      pendingDiscovery._showLow = !pendingDiscovery._showLow;
+      renderCandidates();
+    });
+    if (scan) scan.addEventListener('click', confirmAndScanOrg);
+  }
+
+  async function confirmAndScanOrg(){
+    if (!pendingDiscovery) return;
+    const selected = [pendingDiscovery.seed];
+    document.querySelectorAll('.sl-cand-checkbox').forEach(cb => {
+      if (cb.checked) selected.push(cb.dataset.domain);
+    });
+    const unique = [...new Set(selected)];
+    if (unique.length > ROOTS_PER_ORG_CAP){
+      if (!confirm(`You selected ${unique.length} root domains. Scanning more than ${ROOTS_PER_ORG_CAP} can take several minutes and may hit rate limits. Continue?`)){
+        return;
+      }
+    }
+    if (state.scopes.length >= SOFT_CAP_SCOPES){
+      setOrgStatus(`Soft cap of ${SOFT_CAP_SCOPES} scopes reached. Remove one to add more.`, true);
+      return;
+    }
+
+    const newScope = {
+      id: 'scope_' + Date.now().toString(36),
+      mode: 'org',
+      rootDomains: unique,
+      seedDomain: pendingDiscovery.seed,
+      addedAt: new Date().toISOString(),
+      lastScan: null,
+      assets: [],
+      summary: null,
+      history: [],
+      candidates: pendingDiscovery.candidates // keep for reference
+    };
+    state.scopes.unshift(newScope);
+    saveState();
+    pendingDiscovery = null;
+    $('sl-candidates-wrap').innerHTML = '';
+    $('sl-seed-input').value = '';
+    setOrgStatus('');
+    renderAll();
+    await runScanForScope(0);
+  }
+
+  async function runDiscover(seedInput){
+    const seed = normalizeDomain(seedInput);
+    if (!seed){
+      setOrgStatus('Please enter a valid seed domain (e.g. acme.com).', true);
+      return;
+    }
+    const discoverBtn = $('sl-discover-btn');
+    discoverBtn.disabled = true;
+    pendingDiscovery = null;
+    $('sl-candidates-wrap').innerHTML = '';
+    try {
+      const result = await discoverCandidates(seed);
+      pendingDiscovery = result;
+      pendingDiscovery._showLow = false;
+      renderCandidates();
+    } catch(e){
+      setOrgStatus(`Discovery failed: ${e.message}`, true);
+    } finally {
+      discoverBtn.disabled = false;
+    }
+  }
+
+  // ---- Scan engine (works for both modes — loops over rootDomains) ----
 
   async function scanScope(scope, onProgress){
     const startedAt = new Date().toISOString();
-    const rootDomain = scope.rootDomains[0];
+    const roots = scope.rootDomains;
+    const allSubdomains = new Set();
+    const allCertificates = [];
 
-    onProgress && onProgress('Fetching certificate transparency data…');
-    const cs = await fetchCertSpotter(rootDomain);
-    let subdomains = cs.subdomains;
-    if (subdomains.length > SUBDOMAIN_CAP){
-      subdomains = subdomains.slice(0, SUBDOMAIN_CAP);
+    // Stage 1: CertSpotter for each root
+    for (let i = 0; i < roots.length; i++){
+      const root = roots[i];
+      onProgress && onProgress(`[${i+1}/${roots.length}] Fetching certificates for ${root}…`);
+      try {
+        const issuances = await fetchCertSpotter(root);
+        const { subdomains, certificates } = extractSubdomainsFromIssuances(issuances, root);
+        // tag each subdomain with its root so we can attribute later
+        subdomains.forEach(s => allSubdomains.add(JSON.stringify({ host: s, root })));
+        allCertificates.push(...certificates.map(c => ({ ...c, rootDomain: root })));
+      } catch(e){
+        onProgress && onProgress(`Skipped ${root}: ${e.message}`);
+      }
     }
 
-    onProgress && onProgress(`Resolving ${subdomains.length} subdomains via DNS…`);
-    const resolved = await pool(subdomains, SCAN_CONCURRENCY, async (host) => {
-      return await resolveDoH(host);
+    // Decode subdomain/root pairs and apply cap
+    let subdomainPairs = Array.from(allSubdomains).map(s => JSON.parse(s));
+    if (subdomainPairs.length > SUBDOMAIN_CAP){
+      subdomainPairs = subdomainPairs.slice(0, SUBDOMAIN_CAP);
+    }
+
+    // Stage 2: DNS resolve
+    onProgress && onProgress(`Resolving ${subdomainPairs.length} subdomains via DNS…`);
+    const resolved = await pool(subdomainPairs, SCAN_CONCURRENCY, async (pair) => {
+      const r = await resolveDoH(pair.host);
+      return { ...r, rootDomain: pair.root };
     });
 
+    // Stage 3: unique IPs + Shodan
     const ipSet = new Set();
     for (const r of resolved){
       if (r && !r.__error){
@@ -448,6 +811,7 @@
     const ipMap = {};
     for (const r of idbResults){ if (r && r.ip) ipMap[r.ip] = r; }
 
+    // Stage 4: build asset records
     const assets = resolved.filter(r => r && !r.__error).map(r => {
       const allIps = [...r.a, ...r.aaaa];
       const ports = new Set();
@@ -463,7 +827,7 @@
       }
       return {
         subdomain: r.host,
-        rootDomain,
+        rootDomain: r.rootDomain,
         ips: allIps,
         active: allIps.length > 0,
         ports: Array.from(ports).sort((a,b)=>a-b),
@@ -481,7 +845,8 @@
       openPorts: assets.reduce((acc,a) => acc + a.ports.length, 0),
       cves: new Set(assets.flatMap(a => a.cves)).size,
       sensitive: assets.filter(a => a.sensitive).length,
-      certificates: cs.certificates.length
+      certificates: allCertificates.length,
+      rootCount: roots.length
     };
 
     const history = scope.history || [];
@@ -492,7 +857,7 @@
       ...scope,
       lastScan: startedAt,
       assets,
-      certificates: cs.certificates,
+      certificates: allCertificates,
       summary,
       history
     };
@@ -513,7 +878,7 @@
   function renderScopes(){
     const wrap = $('sl-scopes');
     if (!state.scopes.length){
-      wrap.innerHTML = `<div class="sl-empty">No scopes yet — enter a domain above to begin mapping.</div>`;
+      wrap.innerHTML = `<div class="sl-empty">No scopes yet — use <strong>Single domain</strong> or <strong>Organization</strong> above to begin.</div>`;
       return;
     }
     wrap.innerHTML = state.scopes.map((s, idx) => renderScope(s, idx)).join('');
@@ -522,21 +887,31 @@
 
   function renderScope(scope, idx){
     const sum = scope.summary || {subdomains:0, active:0, uniqueIps:0, openPorts:0, cves:0, sensitive:0, certificates:0};
+    const isOrg = scope.mode === 'org';
     const assets = scope.assets || [];
     const rows = assets.length
       ? assets.slice().sort((a,b) => (b.cves.length - a.cves.length) || (b.ports.length - a.ports.length) || a.subdomain.localeCompare(b.subdomain))
-          .map(renderAssetRow).join('')
-      : `<tr><td colspan="5" class="sl-empty">No assets discovered yet. Click Rescan.</td></tr>`;
+          .map(a => renderAssetRow(a, isOrg)).join('')
+      : `<tr><td colspan="${isOrg?6:5}" class="sl-empty">No assets discovered yet. Click Rescan.</td></tr>`;
+
+    const titleDomain = isOrg
+      ? (scope.seedDomain || scope.rootDomains[0])
+      : scope.rootDomains[0];
+
+    const rootsLine = isOrg && scope.rootDomains.length > 1
+      ? `<div class="sl-scope-roots">${scope.rootDomains.length} roots: ${scope.rootDomains.map(escapeHtml).join(', ')}</div>`
+      : '';
 
     return `
       <div class="sl-scope" data-idx="${idx}">
         <div class="sl-scope-head">
           <div>
             <div class="sl-scope-title">
-              ${escapeHtml(scope.rootDomains[0])}
-              <span class="sl-scope-mode">${scope.mode === 'org' ? 'Org' : 'Single'}</span>
+              ${escapeHtml(titleDomain)}
+              <span class="sl-scope-mode ${isOrg?'org':''}">${isOrg?'Org':'Single'}</span>
             </div>
             <div class="sl-scope-meta">Last scan: ${timeAgo(scope.lastScan)}</div>
+            ${rootsLine}
           </div>
           <div class="sl-scope-actions">
             <button data-act="rescan" data-idx="${idx}">Rescan</button>
@@ -545,6 +920,7 @@
           </div>
         </div>
         <div class="sl-summary">
+          ${isOrg ? `<div class="sl-summary-cell"><div class="lbl">Roots</div><div class="val">${scope.rootDomains.length}</div></div>` : ''}
           <div class="sl-summary-cell"><div class="lbl">Subdomains</div><div class="val">${sum.subdomains}</div></div>
           <div class="sl-summary-cell"><div class="lbl">Active</div><div class="val">${sum.active}</div></div>
           <div class="sl-summary-cell"><div class="lbl">Unique IPs</div><div class="val">${sum.uniqueIps}</div></div>
@@ -558,6 +934,7 @@
             <thead>
               <tr>
                 <th>Host</th>
+                ${isOrg?'<th>Root</th>':''}
                 <th>IPs</th>
                 <th>Ports</th>
                 <th>CVEs / Tags</th>
@@ -571,7 +948,7 @@
     `;
   }
 
-  function renderAssetRow(a){
+  function renderAssetRow(a, isOrg){
     const portChips = a.ports.length ? a.ports.map(p => `<span class="sl-chip">${p}</span>`).join('') : '<span class="sl-dash">—</span>';
     const cveChips  = a.cves.slice(0,6).map(c => `<span class="sl-chip cve">${escapeHtml(c)}</span>`).join('');
     const moreCves  = a.cves.length > 6 ? `<span class="sl-chip cve">+${a.cves.length-6}</span>` : '';
@@ -579,9 +956,11 @@
     const notes     = [];
     if (a.sensitive) notes.push('<span class="sl-chip sensitive">sensitive name</span>');
     if (!a.active)   notes.push('<span class="sl-chip">unresolvable</span>');
+    const rootCell = isOrg ? `<td><span class="sl-root-tag">${escapeHtml(a.rootDomain||'—')}</span></td>` : '';
     return `
       <tr>
         <td class="sl-host">${escapeHtml(a.subdomain)}</td>
+        ${rootCell}
         <td class="sl-ips">${a.ips.length ? a.ips.map(escapeHtml).join('<br>') : '<span class="sl-dash">—</span>'}</td>
         <td><div class="sl-chips">${portChips}</div></td>
         <td><div class="sl-chips">${cveChips}${moreCves}${tagChips || ''}</div></td>
@@ -598,13 +977,15 @@
         const scope = state.scopes[idx];
         if (!scope) return;
         if (act === 'remove'){
-          if (!confirm(`Remove ${scope.rootDomains[0]}?`)) return;
+          const label = scope.seedDomain || scope.rootDomains[0];
+          if (!confirm(`Remove ${label}?`)) return;
           state.scopes.splice(idx, 1);
           saveState(); renderAll();
         } else if (act === 'rescan'){
           await runScanForScope(idx);
         } else if (act === 'export'){
-          downloadJson(scope, `surfacelens-${scope.rootDomains[0]}.json`);
+          const label = scope.seedDomain || scope.rootDomains[0];
+          downloadJson(scope, `surfacelens-${label}.json`);
         }
       });
     });
@@ -620,32 +1001,34 @@
   async function runScanForScope(idx){
     const scope = state.scopes[idx];
     if (!scope) return;
-    const scanBtn = $('sl-scan-btn');
-    scanBtn.disabled = true;
+    const buttons = [$('sl-scan-btn'), $('sl-discover-btn')];
+    buttons.forEach(b => b && (b.disabled = true));
+    const label = scope.seedDomain || scope.rootDomains[0];
+    const statusFn = scope.mode === 'org' ? setOrgStatus : setStatus;
     try {
-      const updated = await scanScope(scope, msg => status(`[${scope.rootDomains[0]}] ${msg}`));
+      const updated = await scanScope(scope, msg => statusFn(`[${label}] ${msg}`));
       state.scopes[idx] = updated;
       saveState();
       renderAll();
-      status(`Scan complete for ${scope.rootDomains[0]} — ${updated.summary.subdomains} assets, ${updated.summary.cves} CVEs.`);
+      statusFn(`Scan complete for ${label} — ${updated.summary.subdomains} assets across ${updated.summary.rootCount||1} root${(updated.summary.rootCount||1)>1?'s':''}, ${updated.summary.cves} CVEs.`);
     } catch(e){
-      status(`Scan failed: ${e.message}`, true);
+      statusFn(`Scan failed: ${e.message}`, true);
     } finally {
-      scanBtn.disabled = false;
+      buttons.forEach(b => b && (b.disabled = false));
     }
   }
 
-  async function addAndScan(domain){
+  async function addAndScanSingle(domain){
     const norm = normalizeDomain(domain);
-    if (!norm){ status('Please enter a valid domain (e.g. example.com).', true); return; }
-    const existing = state.scopes.findIndex(s => s.rootDomains[0] === norm);
+    if (!norm){ setStatus('Please enter a valid domain (e.g. example.com).', true); return; }
+    const existing = state.scopes.findIndex(s => s.mode === 'single' && s.rootDomains[0] === norm);
     if (existing >= 0){
-      status(`${norm} is already tracked — rescanning…`);
+      setStatus(`${norm} is already tracked — rescanning…`);
       await runScanForScope(existing);
       return;
     }
     if (state.scopes.length >= SOFT_CAP_SCOPES){
-      status(`Soft cap of ${SOFT_CAP_SCOPES} scopes reached. Remove one to add more.`, true);
+      setStatus(`Soft cap of ${SOFT_CAP_SCOPES} scopes reached. Remove one to add more.`, true);
       return;
     }
     const newScope = {
@@ -680,9 +1063,10 @@
     document.querySelectorAll('.sl-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         if (tab.disabled) return;
-        document.querySelectorAll('.sl-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sl-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
         document.querySelectorAll('.sl-panel-tab').forEach(p => p.classList.remove('active'));
         tab.classList.add('active');
+        tab.setAttribute('aria-selected','true');
         const name = tab.dataset.tab;
         $(`sl-tab-${name}`).classList.add('active');
       });
@@ -692,16 +1076,25 @@
   // ---- Boot ----
 
   function wireUI(){
-    $('sl-scan-btn').addEventListener('click', () => addAndScan($('sl-domain-input').value));
+    // Mode A
+    $('sl-scan-btn').addEventListener('click', () => addAndScanSingle($('sl-domain-input').value));
     $('sl-domain-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') addAndScan($('sl-domain-input').value);
+      if (e.key === 'Enter') addAndScanSingle($('sl-domain-input').value);
     });
     document.querySelectorAll('.sl-try-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         $('sl-domain-input').value = chip.dataset.try;
-        addAndScan(chip.dataset.try);
+        addAndScanSingle(chip.dataset.try);
       });
     });
+
+    // Mode B
+    $('sl-discover-btn').addEventListener('click', () => runDiscover($('sl-seed-input').value));
+    $('sl-seed-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') runDiscover($('sl-seed-input').value);
+    });
+
+    // Shared toolbar
     $('sl-rescan-all').addEventListener('click', async () => {
       for (let i = 0; i < state.scopes.length; i++){
         await runScanForScope(i);
@@ -716,6 +1109,7 @@
       state.scopes = [];
       saveState(); renderAll();
     });
+
     wireTabs();
   }
 

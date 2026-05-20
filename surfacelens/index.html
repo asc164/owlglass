@@ -1,0 +1,685 @@
+!doctype html
+html lang=en
+head
+meta charset=utf-8
+meta name=viewport content=width=device-width,initial-scale=1
+titleSurfaceLens · Owlglasstitle
+meta name=description content=Free, browser-based attack surface mapping subdomains, IPs, open ports, CVEs, and certificates.
+link rel=preconnect href=httpsfonts.googleapis.com
+link rel=preconnect href=httpsfonts.gstatic.com crossorigin
+link href=httpsfonts.googleapis.comcss2family=Interwght@400;500;600;700&display=swap rel=stylesheet
+link rel=stylesheet href=assetsstyle.css
+style
+  root{
+    --sl-bg#0b0d10; --sl-panel#11151a; --sl-border#1f262e;
+    --sl-text#e6ebf0; --sl-muted#8a95a1; --sl-accent#5aa6ff;
+    --sl-good#3ecf8e; --sl-warn#f5a524; --sl-bad#ef4444;
+    --sl-chip#1a2128;
+  }
+  .sl-wrap{max-width1200px;margin0 auto;padding24px;font-familyInter,system-ui,sans-serif;colorvar(--sl-text)}
+  .sl-header{displayflex;justify-contentspace-between;align-itemsflex-start;gap16px;margin-bottom16px;flex-wrapwrap}
+  .sl-header h1{margin0;font-size28px;font-weight700;letter-spacing-0.01em}
+  .sl-tagline{margin4px 0 0;colorvar(--sl-muted);font-size14px}
+  .sl-header-meta{font-size13px;colorvar(--sl-muted);margin-top8px}
+
+   Tabs 
+  .sl-tabs{displayflex;gap4px;border-bottom1px solid var(--sl-border);margin-bottom20px}
+  .sl-tab{backgroundtransparent;bordernone;colorvar(--sl-muted);fontinherit;font-size14px;font-weight500;padding10px 16px;cursorpointer;border-bottom2px solid transparent;margin-bottom-1px;displayflex;align-itemscenter;gap8px}
+  .sl-tabhovernot(disabled){colorvar(--sl-text)}
+  .sl-tab.active{colorvar(--sl-text);border-bottom-colorvar(--sl-accent)}
+  .sl-tabdisabled{cursornot-allowed;opacity0.55}
+  .sl-tab .sl-soon{font-size10px;backgroundvar(--sl-chip);colorvar(--sl-muted);padding2px 6px;border-radius8px;text-transformuppercase;letter-spacing0.05em}
+  .sl-panel-tab{displaynone}
+  .sl-panel-tab.active{displayblock}
+
+   Input panel 
+  .sl-input{backgroundvar(--sl-panel);border1px solid var(--sl-border);border-radius10px;padding16px;margin-bottom16px}
+  .sl-input-row{displayflex;gap8px;flex-wrapwrap}
+  .sl-input input[type=text]{flex1;min-width220px;background#0b0d10;border1px solid var(--sl-border);colorvar(--sl-text);padding10px 12px;border-radius8px;fontinherit;font-size14px}
+  .sl-input input[type=text]focus{outlinenone;border-colorvar(--sl-accent)}
+  .sl-btn{backgroundvar(--sl-accent);bordernone;color#fff;fontinherit;font-weight600;font-size14px;padding10px 16px;border-radius8px;cursorpointer}
+  .sl-btnhover{filterbrightness(1.1)}
+  .sl-btndisabled{opacity0.5;cursornot-allowed}
+  .sl-btn.ghost{backgroundtransparent;border1px solid var(--sl-border);colorvar(--sl-text)}
+  .sl-btn.danger{backgroundtransparent;border1px solid var(--sl-border);colorvar(--sl-bad)}
+  .sl-hint{font-size12px;colorvar(--sl-muted);margin-top8px}
+
+   Toolbar 
+  .sl-toolbar{displayflex;gap8px;margin-bottom12px;flex-wrapwrap}
+
+   Status 
+  .sl-status{font-size13px;colorvar(--sl-muted);margin8px 0;min-height18px}
+  .sl-status.error{colorvar(--sl-bad)}
+
+   Scope list 
+  .sl-scopes{displayflex;flex-directioncolumn;gap12px}
+  .sl-scope{backgroundvar(--sl-panel);border1px solid var(--sl-border);border-radius10px;overflowhidden}
+  .sl-scope-head{displayflex;justify-contentspace-between;align-itemscenter;padding14px 16px;gap12px;flex-wrapwrap}
+  .sl-scope-title{font-weight600;font-size15px;displayflex;align-itemscenter;gap10px}
+  .sl-scope-mode{font-size10px;backgroundvar(--sl-chip);colorvar(--sl-muted);padding2px 8px;border-radius8px;text-transformuppercase;letter-spacing0.05em}
+  .sl-scope-meta{font-size12px;colorvar(--sl-muted)}
+  .sl-scope-actions{displayflex;gap6px}
+  .sl-scope-actions button{backgroundtransparent;border1px solid var(--sl-border);colorvar(--sl-text);fontinherit;font-size12px;padding5px 10px;border-radius6px;cursorpointer}
+  .sl-scope-actions buttonhover{border-colorvar(--sl-accent)}
+  .sl-scope-actions button.danger{colorvar(--sl-bad)}
+
+  .sl-summary{displaygrid;grid-template-columnsrepeat(auto-fit,minmax(120px,1fr));gap1px;backgroundvar(--sl-border);border-top1px solid var(--sl-border);border-bottom1px solid var(--sl-border)}
+  .sl-summary-cell{backgroundvar(--sl-panel);padding10px 14px}
+  .sl-summary-cell .lbl{font-size11px;colorvar(--sl-muted);text-transformuppercase;letter-spacing0.05em}
+  .sl-summary-cell .val{font-size18px;font-weight600;margin-top2px}
+  .sl-summary-cell .val.warn{colorvar(--sl-warn)}
+  .sl-summary-cell .val.bad{colorvar(--sl-bad)}
+
+   Asset table 
+  .sl-assets-wrap{padding0 16px 16px}
+  .sl-assets{width100%;border-collapsecollapse;font-size13px;margin-top12px}
+  .sl-assets th{text-alignleft;font-weight500;colorvar(--sl-muted);font-size11px;text-transformuppercase;letter-spacing0.05em;padding8px;border-bottom1px solid var(--sl-border)}
+  .sl-assets td{padding10px 8px;border-bottom1px solid var(--sl-border);vertical-aligntop}
+  .sl-assets trlast-child td{border-bottomnone}
+  .sl-host{font-weight500;colorvar(--sl-text);word-breakbreak-all}
+  .sl-ips{colorvar(--sl-muted);font-familyui-monospace,monospace;font-size12px}
+  .sl-chips{displayflex;flex-wrapwrap;gap4px}
+  .sl-chip{backgroundvar(--sl-chip);colorvar(--sl-text);font-size11px;padding2px 8px;border-radius10px;font-familyui-monospace,monospace}
+  .sl-chip.cve{backgroundrgba(239,68,68,0.15);color#fca5a5}
+  .sl-chip.tag{backgroundrgba(90,166,255,0.15);color#93c5fd;font-familyInter,sans-serif}
+  .sl-chip.sensitive{backgroundrgba(245,165,36,0.15);color#fbbf24}
+  .sl-empty{padding32px;text-aligncenter;colorvar(--sl-muted);font-size14px}
+
+   Mode B preview 
+  .sl-modeb-preview{backgroundvar(--sl-panel);border1px dashed var(--sl-border);border-radius10px;padding24px;colorvar(--sl-muted);font-size14px;line-height1.6}
+  .sl-modeb-preview h3{colorvar(--sl-text);margin0 0 8px;font-size16px}
+  .sl-modeb-preview ul{margin8px 0 0 18px;padding0}
+  .sl-modeb-preview li{margin4px 0}
+
+   Explain 
+  .sl-explain{margin-top32px;backgroundvar(--sl-panel);border1px solid var(--sl-border);border-radius10px;padding24px}
+  .sl-explain h2{margin0 0 8px;font-size18px}
+  .sl-explain .lede{colorvar(--sl-muted);font-size13px;margin0 0 16px}
+  .sl-explain-grid{displaygrid;grid-template-columnsrepeat(auto-fit,minmax(220px,1fr));gap12px}
+  .sl-explain-card{background#0b0d10;border1px solid var(--sl-border);border-radius8px;padding14px}
+  .sl-explain-card h3{margin0 0 6px;font-size13px;font-weight600}
+  .sl-explain-card p{margin0;font-size12px;colorvar(--sl-muted);line-height1.5}
+
+  footer{margin-top32px;padding16px 0;border-top1px solid var(--sl-border);font-size12px;colorvar(--sl-muted);displayflex;gap16px;flex-wrapwrap}
+  footer a{colorvar(--sl-muted);text-decorationnone}
+  footer ahover{colorvar(--sl-text)}
+
+  @media(max-width700px){
+    .sl-scope-head{flex-directioncolumn;align-itemsflex-start}
+    .sl-assets-wrap{overflow-xauto}
+  }
+style
+head
+body
+
+div id=sidebar-slotdiv
+
+div class=app
+main class=content
+div class=sl-wrap
+
+  header class=sl-header
+    div
+      h1SurfaceLensh1
+      p class=sl-taglineFree, browser-based attack surface mapping. Discover subdomains, IPs, open ports, CVEs and certificates from public data.p
+      div class=sl-header-meta id=sl-meta-summaryNo scopes tracked yet.div
+    div
+  header
+
+  nav class=sl-tabs role=tablist
+    button class=sl-tab active role=tab data-tab=single aria-selected=trueSingle domainbutton
+    button class=sl-tab role=tab data-tab=org disabled title=Coming in v2
+      Organization span class=sl-soonSoonspan
+    button
+  nav
+
+  !-- Mode A Single domain --
+  section class=sl-panel-tab active id=sl-tab-single
+    div class=sl-input
+      div class=sl-input-row
+        input type=text id=sl-domain-input placeholder=example.com autocomplete=off spellcheck=false
+        button class=sl-btn id=sl-scan-btnScan domainbutton
+      div
+      div class=sl-hintEnter a registered domain. SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.div
+      div class=sl-status id=sl-statusdiv
+    div
+
+    div class=sl-toolbar
+      button class=sl-btn ghost id=sl-rescan-allRescan allbutton
+      button class=sl-btn ghost id=sl-exportExport JSONbutton
+      button class=sl-btn danger id=sl-clear-allClear allbutton
+    div
+
+    div class=sl-scopes id=sl-scopesdiv
+  section
+
+  !-- Mode B placeholder --
+  section class=sl-panel-tab id=sl-tab-org
+    div class=sl-modeb-preview
+      h3Organization discovery (coming soon)h3
+      pMode B will let you enter a single seed domain (e.g. codeacme.comcode) and discover related domains owned by the same organization throughp
+      ul
+        liCertificate SAN expansion (sister domains on the same TLS certs)li
+        liReverse-DNS clustering via Shodan InternetDBli
+        liWHOIS registrant overlap (where available)li
+      ul
+      pYou will then review candidates with confidence scores and confirm which ones to scan. Ship target after Mode A has been validated in production.p
+    div
+  section
+
+  !-- Scoring  what we check explainer --
+  section class=sl-explain
+    h2What SurfaceLens checksh2
+    p class=ledeRead this if you want to understand what each finding means and where the data comes from.p
+    div class=sl-explain-grid
+      div class=sl-explain-card
+        h3Subdomain discoveryh3
+        pWe query the public a href=httpssslmate.comcertspotter target=_blank rel=noopenerCertSpottera Certificate Transparency API for every TLS certificate ever issued to the domain. Each certificate's SAN entries become candidate subdomains. Coverage is excellent for HTTPS-facing assets but misses hosts that have never had a public cert.p
+      div
+      div class=sl-explain-card
+        h3DNS resolutionh3
+        pEach discovered subdomain is resolved through a href=httpsdevelopers.google.comspeedpublic-dnsdocsdoh target=_blank rel=noopenerGoogle DNS-over-HTTPSa for current A and AAAA records. Unresolvable hosts are kept in the inventory but marked as inactive — they may have been decommissioned.p
+      div
+      div class=sl-explain-card
+        h3Open ports &amp; CVEsh3
+        pEvery unique IP is looked up in a href=httpsinternetdb.shodan.io target=_blank rel=noopenerShodan InternetDBa, a free passive scan dataset refreshed weekly. We surface open ports, known CVEs and service tags. Data is passive — we never scan you or your assets directly.p
+      div
+      div class=sl-explain-card
+        h3Sensitive hostnamesh3
+        pHostnames containing tokens like codeadmincode, codestagingcode, codedevcode, codeinternalcode, codevpncode, codejenkinscode, codegitcode are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.p
+      div
+      div class=sl-explain-card
+        h3Limitationsh3
+        pBrowser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Very large orgs may hit CertSpotter rate limits.p
+      div
+      div class=sl-explain-card
+        h3Privacyh3
+        pAll results are stored in your browser's codelocalStoragecode. Nothing is sent to Owlglass. Outbound requests go directly to CertSpotter, Google DNS and Shodan from your browser.p
+      div
+    div
+  section
+
+  footer
+    a href=Owlglass homea
+    a href=posturelensPostureLensa
+    spanSurfaceLens runs entirely in your browser. No accounts, no servers.span
+  footer
+
+div
+main
+div
+
+script src=assetsshared.jsscript
+scriptOwlglass.mount({ active 'surfacelens' });script
+
+script
+(function(){
+  'use strict';
+
+   ---- Constants ----
+  const STORAGE_KEY      = 'owlglass_surfacelens_v1';
+  const DOH_URL          = 'httpsdns.googleresolve';
+  const CERTSPOTTER_API  = 'httpsapi.certspotter.comv1issuances';
+  const SHODAN_IDB       = 'httpsinternetdb.shodan.io';
+  const SOFT_CAP_SCOPES  = 20;
+  const SUBDOMAIN_CAP    = 200;      max subdomains to resolve per scope
+  const IP_CAP           = 100;      max IPs to query Shodan for per scope
+  const SCAN_CONCURRENCY = 6;
+  const HISTORY_CAP      = 8;
+
+  const SENSITIVE_PATTERNS = [
+    'admin','staging','stage','dev','test','qa','uat','internal','intranet',
+    'vpn','jenkins','jira','confluence','git','gitlab','bitbucket','ci',
+    'backup','db','database','mysql','postgres','redis','grafana','kibana',
+    'prometheus','sonar','phpmyadmin','wp-admin','api-internal','secret'
+  ];
+
+   ---- State ----
+  let state = { scopes [] };
+
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) state = JSON.parse(raw);
+    } catch(e){ console.warn('Load failed', e); }
+    if (!state.scopes) state.scopes = [];
+  }
+
+  function saveState(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.warn('Save failed', e); }
+  }
+
+   ---- Utilities ----
+  const $ = id = document.getElementById(id);
+  const status = (msg, isErr) = {
+    const el = $('sl-status');
+    el.textContent = msg  '';
+    el.classList.toggle('error', !!isErr);
+  };
+  const escapeHtml = s = String(s).replace([&']g, c = ({
+    '&''&amp;','''&lt;','''&gt;','''&quot;',''&#39;'
+  }[c]));
+
+  function normalizeDomain(input){
+    if (!input) return null;
+    let d = String(input).trim().toLowerCase();
+    d = d.replace(^https, '').replace(.$, '').replace(^www., '');
+    if (!^[a-z0-9.-]+.[a-z]{2,}$i.test(d)) return null;
+    return d;
+  }
+
+  function timeAgo(ts){
+    if (!ts) return 'never';
+    const s = Math.floor((Date.now() - new Date(ts).getTime())1000);
+    if (s  60) return `${s}s ago`;
+    if (s  3600) return `${Math.floor(s60)}m ago`;
+    if (s  86400) return `${Math.floor(s3600)}h ago`;
+    return `${Math.floor(s86400)}d ago`;
+  }
+
+  function isSensitive(host){
+    const lower = host.toLowerCase();
+    return SENSITIVE_PATTERNS.some(p = lower.includes(p));
+  }
+
+  async function withTimeout(promise, ms, label){
+    return Promise.race([
+      promise,
+      new Promise((_, rej) = setTimeout(() = rej(new Error(`Timeout ${label}`)), ms))
+    ]);
+  }
+
+  async function pool(items, concurrency, worker){
+    const results = new Array(items.length);
+    let i = 0;
+    const runners = Array.from({length Math.min(concurrency, items.length)}, async () = {
+      while (i  items.length){
+        const idx = i++;
+        try { results[idx] = await worker(items[idx], idx); }
+        catch(e){ results[idx] = { __error e.message }; }
+      }
+    });
+    await Promise.all(runners);
+    return results;
+  }
+
+   ---- Data sources ----
+
+  async function fetchCertSpotter(domain){
+    const url = `${CERTSPOTTER_API}domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names`;
+    const res = await withTimeout(fetch(url), 20000, 'CertSpotter');
+    if (res.status === 429) throw new Error('CertSpotter rate limit hit. Wait a minute and retry.');
+    if (!res.ok) throw new Error(`CertSpotter HTTP ${res.status}`);
+    const data = await res.json();
+    const subs = new Set();
+    const certs = [];
+    for (const issuance of data){
+      const names = issuance.dns_names  [];
+      for (const n of names){
+        const clean = n.toLowerCase().replace(^.,'');
+        if (clean === domain  clean.endsWith('.' + domain)) subs.add(clean);
+      }
+      certs.push({
+        id issuance.id,
+        notBefore issuance.not_before,
+        notAfter issuance.not_after,
+        issuer issuance.issuer && issuance.issuer.name,
+        names names
+      });
+    }
+    return { subdomains Array.from(subs), certificates certs };
+  }
+
+  async function resolveDoH(host){
+    const out = { host, a [], aaaa [] };
+    try {
+      const r = await withTimeout(fetch(`${DOH_URL}name=${encodeURIComponent(host)}&type=A`), 8000, 'DoH A');
+      if (r.ok){
+        const j = await r.json();
+        if (j.Answer) out.a = j.Answer.filter(x = x.type === 1).map(x = x.data);
+      }
+    } catch(e){}
+    try {
+      const r = await withTimeout(fetch(`${DOH_URL}name=${encodeURIComponent(host)}&type=AAAA`), 8000, 'DoH AAAA');
+      if (r.ok){
+        const j = await r.json();
+        if (j.Answer) out.aaaa = j.Answer.filter(x = x.type === 28).map(x = x.data);
+      }
+    } catch(e){}
+    return out;
+  }
+
+  async function fetchShodanIDB(ip){
+    try {
+      const res = await withTimeout(fetch(`${SHODAN_IDB}${ip}`), 8000, 'Shodan');
+      if (res.status === 404) return { ip, ports [], cves [], tags [], hostnames [], notFound true };
+      if (!res.ok) return { ip, error `HTTP ${res.status}` };
+      const j = await res.json();
+      return {
+        ip,
+        ports j.ports  [],
+        cves j.vulns  [],
+        tags j.tags  [],
+        hostnames j.hostnames  []
+      };
+    } catch(e){
+      return { ip, error e.message };
+    }
+  }
+
+   ---- Scan engine (shared by Mode A and future Mode B) ----
+
+  async function scanScope(scope, onProgress){
+    const startedAt = new Date().toISOString();
+    const rootDomain = scope.rootDomains[0];
+
+    onProgress && onProgress('Fetching certificate transparency data…');
+    const cs = await fetchCertSpotter(rootDomain);
+    let subdomains = cs.subdomains;
+    if (subdomains.length  SUBDOMAIN_CAP){
+      subdomains = subdomains.slice(0, SUBDOMAIN_CAP);
+    }
+
+    onProgress && onProgress(`Resolving ${subdomains.length} subdomains via DNS…`);
+    const resolved = await pool(subdomains, SCAN_CONCURRENCY, async (host) = {
+      return await resolveDoH(host);
+    });
+
+     Build unique IP set
+    const ipSet = new Set();
+    for (const r of resolved){
+      if (r && !r.__error){
+        r.a.forEach(ip = ipSet.add(ip));
+        r.aaaa.forEach(ip = ipSet.add(ip));
+      }
+    }
+    let ips = Array.from(ipSet);
+    if (ips.length  IP_CAP) ips = ips.slice(0, IP_CAP);
+
+    onProgress && onProgress(`Querying Shodan InternetDB for ${ips.length} IPs…`);
+    const idbResults = await pool(ips, SCAN_CONCURRENCY, async (ip) = fetchShodanIDB(ip));
+    const ipMap = {};
+    for (const r of idbResults){ if (r && r.ip) ipMap[r.ip] = r; }
+
+     Build asset records
+    const assets = resolved.filter(r = r && !r.__error).map(r = {
+      const allIps = [...r.a, ...r.aaaa];
+      const ports = new Set();
+      const cves = new Set();
+      const tags = new Set();
+      for (const ip of allIps){
+        const info = ipMap[ip];
+        if (info && !info.error){
+          (info.ports[]).forEach(p = ports.add(p));
+          (info.cves[]).forEach(c = cves.add(c));
+          (info.tags[]).forEach(t = tags.add(t));
+        }
+      }
+      return {
+        subdomain r.host,
+        rootDomain,
+        ips allIps,
+        active allIps.length  0,
+        ports Array.from(ports).sort((a,b)=a-b),
+        cves Array.from(cves),
+        tags Array.from(tags),
+        sensitive isSensitive(r.host),
+        lastSeen startedAt
+      };
+    });
+
+     Summary stats
+    const summary = {
+      subdomains assets.length,
+      active assets.filter(a = a.active).length,
+      uniqueIps ips.length,
+      openPorts assets.reduce((acc,a) = acc + a.ports.length, 0),
+      cves new Set(assets.flatMap(a = a.cves)).size,
+      sensitive assets.filter(a = a.sensitive).length,
+      certificates cs.certificates.length
+    };
+
+     History
+    const history = scope.history  [];
+    history.unshift({
+      at startedAt,
+      summary,
+      assetCount assets.length
+    });
+    if (history.length  HISTORY_CAP) history.length = HISTORY_CAP;
+
+    return {
+      ...scope,
+      lastScan startedAt,
+      assets,
+      certificates cs.certificates,
+      summary,
+      history
+    };
+  }
+
+   ---- UI rendering ----
+
+  function renderHeaderMeta(){
+    const el = $('sl-meta-summary');
+    const n = state.scopes.length;
+    if (!n){ el.textContent = 'No scopes tracked yet. Add a domain below to begin.'; return; }
+    const totalAssets = state.scopes.reduce((acc,s) = acc + (s.summary  s.summary.subdomains  0), 0);
+    const totalCves   = state.scopes.reduce((acc,s) = acc + (s.summary  s.summary.cves  0), 0);
+    const totalSens   = state.scopes.reduce((acc,s) = acc + (s.summary  s.summary.sensitive  0), 0);
+    el.innerHTML = `Tracking strong${n}strong scope${n1's'''} · strong${totalAssets}strong assets · strong${totalCves}strong known CVEs · strong${totalSens}strong sensitive hostnames`;
+  }
+
+  function renderScopes(){
+    const wrap = $('sl-scopes');
+    if (!state.scopes.length){
+      wrap.innerHTML = `div class=sl-emptyNo scopes yet. Try codestripe.comcode, codegithub.comcode, or your own domain above.div`;
+      return;
+    }
+    wrap.innerHTML = state.scopes.map((s, idx) = renderScope(s, idx)).join('');
+    wireScopeEvents();
+  }
+
+  function renderScope(scope, idx){
+    const sum = scope.summary  {subdomains0, active0, uniqueIps0, openPorts0, cves0, sensitive0, certificates0};
+    const assets = scope.assets  [];
+    const rows = assets.length
+       assets.slice().sort((a,b) = (b.cves.length - a.cves.length)  (b.ports.length - a.ports.length)  a.subdomain.localeCompare(b.subdomain))
+          .map(renderAssetRow).join('')
+       `trtd colspan=5 class=sl-emptyNo assets discovered yet. Click Scan.tdtr`;
+
+    return `
+      div class=sl-scope data-idx=${idx}
+        div class=sl-scope-head
+          div
+            div class=sl-scope-title
+              ${escapeHtml(scope.rootDomains[0])}
+              span class=sl-scope-mode${scope.mode === 'org'  'Org'  'Single'}span
+            div
+            div class=sl-scope-metaLast scan ${timeAgo(scope.lastScan)}div
+          div
+          div class=sl-scope-actions
+            button data-act=rescan data-idx=${idx}Rescanbutton
+            button data-act=export data-idx=${idx}Exportbutton
+            button data-act=remove data-idx=${idx} class=dangerRemovebutton
+          div
+        div
+        div class=sl-summary
+          div class=sl-summary-celldiv class=lblSubdomainsdivdiv class=val${sum.subdomains}divdiv
+          div class=sl-summary-celldiv class=lblActivedivdiv class=val${sum.active}divdiv
+          div class=sl-summary-celldiv class=lblUnique IPsdivdiv class=val${sum.uniqueIps}divdiv
+          div class=sl-summary-celldiv class=lblOpen portsdivdiv class=val${sum.openPorts}divdiv
+          div class=sl-summary-celldiv class=lblKnown CVEsdivdiv class=val ${sum.cves0'bad'''}${sum.cves}divdiv
+          div class=sl-summary-celldiv class=lblSensitivedivdiv class=val ${sum.sensitive0'warn'''}${sum.sensitive}divdiv
+          div class=sl-summary-celldiv class=lblCertificatesdivdiv class=val${sum.certificates}divdiv
+        div
+        div class=sl-assets-wrap
+          table class=sl-assets
+            thead
+              tr
+                thHostth
+                thIPsth
+                thPortsth
+                thCVEs  Tagsth
+                thNotesth
+              tr
+            thead
+            tbody${rows}tbody
+          table
+        div
+      div
+    `;
+  }
+
+  function renderAssetRow(a){
+    const portChips = a.ports.length  a.ports.map(p = `span class=sl-chip${p}span`).join('')  'span class=sl-ips—span';
+    const cveChips  = a.cves.slice(0,6).map(c = `span class=sl-chip cve${escapeHtml(c)}span`).join('');
+    const moreCves  = a.cves.length  6  `span class=sl-chip cve+${a.cves.length-6}span`  '';
+    const tagChips  = a.tags.map(t = `span class=sl-chip tag${escapeHtml(t)}span`).join('');
+    const notes     = [];
+    if (a.sensitive) notes.push('span class=sl-chip sensitivesensitive namespan');
+    if (!a.active)   notes.push('span class=sl-chipunresolvablespan');
+    return `
+      tr
+        td class=sl-host${escapeHtml(a.subdomain)}td
+        td class=sl-ips${a.ips.length  a.ips.map(escapeHtml).join('br')  '—'}td
+        tddiv class=sl-chips${portChips}divtd
+        tddiv class=sl-chips${cveChips}${moreCves}${tagChips}divtd
+        tddiv class=sl-chips${notes.join('')  'span class=sl-ips—span'}divtd
+      tr
+    `;
+  }
+
+  function wireScopeEvents(){
+    document.querySelectorAll('.sl-scope-actions button').forEach(btn = {
+      btn.addEventListener('click', async () = {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const act = btn.dataset.act;
+        const scope = state.scopes[idx];
+        if (!scope) return;
+        if (act === 'remove'){
+          if (!confirm(`Remove ${scope.rootDomains[0]}`)) return;
+          state.scopes.splice(idx, 1);
+          saveState(); renderAll();
+        } else if (act === 'rescan'){
+          await runScanForScope(idx);
+        } else if (act === 'export'){
+          downloadJson(scope, `surfacelens-${scope.rootDomains[0]}.json`);
+        }
+      });
+    });
+  }
+
+  function renderAll(){
+    renderHeaderMeta();
+    renderScopes();
+  }
+
+   ---- Scan flow ----
+
+  async function runScanForScope(idx){
+    const scope = state.scopes[idx];
+    if (!scope) return;
+    const scanBtn = $('sl-scan-btn');
+    scanBtn.disabled = true;
+    try {
+      const updated = await scanScope(scope, msg = status(`[${scope.rootDomains[0]}] ${msg}`));
+      state.scopes[idx] = updated;
+      saveState();
+      renderAll();
+      status(`Scan complete for ${scope.rootDomains[0]} — ${updated.summary.subdomains} assets, ${updated.summary.cves} CVEs.`);
+    } catch(e){
+      status(`Scan failed ${e.message}`, true);
+    } finally {
+      scanBtn.disabled = false;
+    }
+  }
+
+  async function addAndScan(domain){
+    const norm = normalizeDomain(domain);
+    if (!norm){ status('Please enter a valid domain (e.g. example.com).', true); return; }
+    if (state.scopes.some(s = s.rootDomains[0] === norm)){
+      status(`${norm} is already tracked.`, true); return;
+    }
+    if (state.scopes.length = SOFT_CAP_SCOPES){
+      status(`Soft cap of ${SOFT_CAP_SCOPES} scopes reached. Remove one to add more.`, true);
+      return;
+    }
+    const newScope = {
+      id 'scope_' + Date.now().toString(36),
+      mode 'single',
+      rootDomains [norm],
+      addedAt new Date().toISOString(),
+      lastScan null,
+      assets [],
+      summary null,
+      history []
+    };
+    state.scopes.unshift(newScope);
+    saveState(); renderAll();
+    await runScanForScope(0);
+  }
+
+   ---- Export ----
+
+  function downloadJson(data, filename){
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type'applicationjson'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() = { URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+   ---- Tabs ----
+
+  function wireTabs(){
+    document.querySelectorAll('.sl-tab').forEach(tab = {
+      tab.addEventListener('click', () = {
+        if (tab.disabled) return;
+        document.querySelectorAll('.sl-tab').forEach(t = t.classList.remove('active'));
+        document.querySelectorAll('.sl-panel-tab').forEach(p = p.classList.remove('active'));
+        tab.classList.add('active');
+        const name = tab.dataset.tab;
+        $(`sl-tab-${name}`).classList.add('active');
+      });
+    });
+  }
+
+   ---- Boot ----
+
+  function wireUI(){
+    $('sl-scan-btn').addEventListener('click', () = addAndScan($('sl-domain-input').value));
+    $('sl-domain-input').addEventListener('keydown', e = {
+      if (e.key === 'Enter') addAndScan($('sl-domain-input').value);
+    });
+    $('sl-rescan-all').addEventListener('click', async () = {
+      for (let i = 0; i  state.scopes.length; i++){
+        await runScanForScope(i);
+      }
+    });
+    $('sl-export').addEventListener('click', () = {
+      downloadJson(state, `surfacelens-export-${new Date().toISOString().slice(0,10)}.json`);
+    });
+    $('sl-clear-all').addEventListener('click', () = {
+      if (!state.scopes.length) return;
+      if (!confirm('Remove all scopes This cannot be undone.')) return;
+      state.scopes = [];
+      saveState(); renderAll();
+    });
+    wireTabs();
+  }
+
+  function boot(){
+    loadState();
+    wireUI();
+    renderAll();
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
+script
+
+body
+html

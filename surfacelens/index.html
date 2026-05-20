@@ -100,9 +100,9 @@
   .sl-explain-card h3{margin:0 0 6px;font-size:13px;font-weight:600}
   .sl-explain-card p{margin:0;font-size:12px;color:var(--sl-muted);line-height:1.5}
 
-  footer{margin-top:32px;padding:16px 0;border-top:1px solid var(--sl-border);font-size:12px;color:var(--sl-muted);display:flex;gap:16px;flex-wrap:wrap}
-  footer a{color:var(--sl-muted);text-decoration:none}
-  footer a:hover{color:var(--sl-text)}
+  .sl-footer{margin-top:32px;padding:16px 0;border-top:1px solid var(--sl-border);font-size:12px;color:var(--sl-muted);display:flex;gap:16px;flex-wrap:wrap}
+  .sl-footer a{color:var(--sl-muted);text-decoration:none}
+  .sl-footer a:hover{color:var(--sl-text)}
 
   @media(max-width:700px){
     .sl-scope-head{flex-direction:column;align-items:flex-start}
@@ -111,106 +111,111 @@
 </style>
 </head>
 <body>
+  <div class="app">
+    <div id="sidebar-slot"></div>
 
-<div id="sidebar-slot"></div>
+    <main class="main">
+      <div class="main-inner">
 
-<div class="app">
-<main class="content">
-<div class="sl-wrap">
+        <button class="mobile-toggle" aria-label="Toggle menu"></button>
 
-  <header class="sl-header">
-    <div>
-      <h1>SurfaceLens</h1>
-      <p class="sl-tagline">Free, browser-based attack surface mapping. Discover subdomains, IPs, open ports, CVEs and certificates from public data.</p>
-      <div class="sl-header-meta" id="sl-meta-summary">No scopes tracked yet.</div>
-    </div>
-  </header>
+        <div class="sl-wrap">
 
-  <nav class="sl-tabs" role="tablist">
-    <button class="sl-tab active" role="tab" data-tab="single" aria-selected="true">Single domain</button>
-    <button class="sl-tab" role="tab" data-tab="org" disabled title="Coming in v2">
-      Organization <span class="sl-soon">Soon</span>
-    </button>
-  </nav>
+          <header class="sl-header">
+            <div>
+              <h1>SurfaceLens</h1>
+              <p class="sl-tagline">Free, browser-based attack surface mapping. Discover subdomains, IPs, open ports, CVEs and certificates from public data.</p>
+              <div class="sl-header-meta" id="sl-meta-summary">No scopes tracked yet.</div>
+            </div>
+          </header>
 
-  <!-- Mode A: Single domain -->
-  <section class="sl-panel-tab active" id="sl-tab-single">
-    <div class="sl-input">
-      <div class="sl-input-row">
-        <input type="text" id="sl-domain-input" placeholder="example.com" autocomplete="off" spellcheck="false">
-        <button class="sl-btn" id="sl-scan-btn">Scan domain</button>
+          <nav class="sl-tabs" role="tablist">
+            <button class="sl-tab active" role="tab" data-tab="single" aria-selected="true">Single domain</button>
+            <button class="sl-tab" role="tab" data-tab="org" disabled title="Coming in v2">
+              Organization <span class="sl-soon">Soon</span>
+            </button>
+          </nav>
+
+          <!-- Mode A: Single domain -->
+          <section class="sl-panel-tab active" id="sl-tab-single">
+            <div class="sl-input">
+              <div class="sl-input-row">
+                <input type="text" id="sl-domain-input" placeholder="example.com" autocomplete="off" spellcheck="false">
+                <button class="sl-btn" id="sl-scan-btn">Scan domain</button>
+              </div>
+              <div class="sl-hint">Enter a registered domain. SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.</div>
+              <div class="sl-status" id="sl-status"></div>
+            </div>
+
+            <div class="sl-toolbar">
+              <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
+              <button class="sl-btn ghost" id="sl-export">Export JSON</button>
+              <button class="sl-btn danger" id="sl-clear-all">Clear all</button>
+            </div>
+
+            <div class="sl-scopes" id="sl-scopes"></div>
+          </section>
+
+          <!-- Mode B placeholder -->
+          <section class="sl-panel-tab" id="sl-tab-org">
+            <div class="sl-modeb-preview">
+              <h3>Organization discovery (coming soon)</h3>
+              <p>Mode B will let you enter a single seed domain (e.g. <code>acme.com</code>) and discover related domains owned by the same organization through:</p>
+              <ul>
+                <li>Certificate SAN expansion (sister domains on the same TLS certs)</li>
+                <li>Reverse-DNS clustering via Shodan InternetDB</li>
+                <li>WHOIS registrant overlap (where available)</li>
+              </ul>
+              <p>You will then review candidates with confidence scores and confirm which ones to scan. Ship target: after Mode A has been validated in production.</p>
+            </div>
+          </section>
+
+          <!-- Scoring / what we check explainer -->
+          <section class="sl-explain">
+            <h2>What SurfaceLens checks</h2>
+            <p class="lede">Read this if you want to understand what each finding means and where the data comes from.</p>
+            <div class="sl-explain-grid">
+              <div class="sl-explain-card">
+                <h3>Subdomain discovery</h3>
+                <p>We query the public <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">CertSpotter</a> Certificate Transparency API for every TLS certificate ever issued to the domain. Each certificate's SAN entries become candidate subdomains. Coverage is excellent for HTTPS-facing assets but misses hosts that have never had a public cert.</p>
+              </div>
+              <div class="sl-explain-card">
+                <h3>DNS resolution</h3>
+                <p>Each discovered subdomain is resolved through <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google DNS-over-HTTPS</a> for current A and AAAA records. Unresolvable hosts are kept in the inventory but marked as inactive — they may have been decommissioned.</p>
+              </div>
+              <div class="sl-explain-card">
+                <h3>Open ports &amp; CVEs</h3>
+                <p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>, a free passive scan dataset refreshed weekly. We surface open ports, known CVEs and service tags. Data is passive — we never scan you or your assets directly.</p>
+              </div>
+              <div class="sl-explain-card">
+                <h3>Sensitive hostnames</h3>
+                <p>Hostnames containing tokens like <code>admin</code>, <code>staging</code>, <code>dev</code>, <code>internal</code>, <code>vpn</code>, <code>jenkins</code>, <code>git</code> are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.</p>
+              </div>
+              <div class="sl-explain-card">
+                <h3>Limitations</h3>
+                <p>Browser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Very large orgs may hit CertSpotter rate limits.</p>
+              </div>
+              <div class="sl-explain-card">
+                <h3>Privacy</h3>
+                <p>All results are stored in your browser's <code>localStorage</code>. Nothing is sent to Owlglass. Outbound requests go directly to CertSpotter, Google DNS and Shodan from your browser.</p>
+              </div>
+            </div>
+          </section>
+
+          <div class="sl-footer">
+            <a href="/">Owlglass home</a>
+            <a href="/posturelens/">PostureLens</a>
+            <span>SurfaceLens runs entirely in your browser. No accounts, no servers.</span>
+          </div>
+
+        </div>
+
       </div>
-      <div class="sl-hint">Enter a registered domain. SurfaceLens enumerates subdomains via Certificate Transparency (CertSpotter), resolves them via DNS-over-HTTPS, and queries Shodan InternetDB for open ports and known CVEs. All processing happens in your browser.</div>
-      <div class="sl-status" id="sl-status"></div>
-    </div>
+    </main>
+  </div>
 
-    <div class="sl-toolbar">
-      <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
-      <button class="sl-btn ghost" id="sl-export">Export JSON</button>
-      <button class="sl-btn danger" id="sl-clear-all">Clear all</button>
-    </div>
-
-    <div class="sl-scopes" id="sl-scopes"></div>
-  </section>
-
-  <!-- Mode B placeholder -->
-  <section class="sl-panel-tab" id="sl-tab-org">
-    <div class="sl-modeb-preview">
-      <h3>Organization discovery (coming soon)</h3>
-      <p>Mode B will let you enter a single seed domain (e.g. <code>acme.com</code>) and discover related domains owned by the same organization through:</p>
-      <ul>
-        <li>Certificate SAN expansion (sister domains on the same TLS certs)</li>
-        <li>Reverse-DNS clustering via Shodan InternetDB</li>
-        <li>WHOIS registrant overlap (where available)</li>
-      </ul>
-      <p>You will then review candidates with confidence scores and confirm which ones to scan. Ship target: after Mode A has been validated in production.</p>
-    </div>
-  </section>
-
-  <!-- Scoring / what we check explainer -->
-  <section class="sl-explain">
-    <h2>What SurfaceLens checks</h2>
-    <p class="lede">Read this if you want to understand what each finding means and where the data comes from.</p>
-    <div class="sl-explain-grid">
-      <div class="sl-explain-card">
-        <h3>Subdomain discovery</h3>
-        <p>We query the public <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">CertSpotter</a> Certificate Transparency API for every TLS certificate ever issued to the domain. Each certificate's SAN entries become candidate subdomains. Coverage is excellent for HTTPS-facing assets but misses hosts that have never had a public cert.</p>
-      </div>
-      <div class="sl-explain-card">
-        <h3>DNS resolution</h3>
-        <p>Each discovered subdomain is resolved through <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google DNS-over-HTTPS</a> for current A and AAAA records. Unresolvable hosts are kept in the inventory but marked as inactive — they may have been decommissioned.</p>
-      </div>
-      <div class="sl-explain-card">
-        <h3>Open ports &amp; CVEs</h3>
-        <p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>, a free passive scan dataset refreshed weekly. We surface open ports, known CVEs and service tags. Data is passive — we never scan you or your assets directly.</p>
-      </div>
-      <div class="sl-explain-card">
-        <h3>Sensitive hostnames</h3>
-        <p>Hostnames containing tokens like <code>admin</code>, <code>staging</code>, <code>dev</code>, <code>internal</code>, <code>vpn</code>, <code>jenkins</code>, <code>git</code> are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.</p>
-      </div>
-      <div class="sl-explain-card">
-        <h3>Limitations</h3>
-        <p>Browser-only means no port scanning, no banner grabbing, no screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery. Very large orgs may hit CertSpotter rate limits.</p>
-      </div>
-      <div class="sl-explain-card">
-        <h3>Privacy</h3>
-        <p>All results are stored in your browser's <code>localStorage</code>. Nothing is sent to Owlglass. Outbound requests go directly to CertSpotter, Google DNS and Shodan from your browser.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <a href="/">Owlglass home</a>
-    <a href="/posturelens/">PostureLens</a>
-    <span>SurfaceLens runs entirely in your browser. No accounts, no servers.</span>
-  </footer>
-
-</div>
-</main>
-</div>
-
-<script src="/assets/shared.js"></script>
-<script>Owlglass.mount({ active: 'surfacelens' });</script>
+  <script src="/assets/shared.js"></script>
+  <script>Owlglass.mount({ active: 'surfacelens' });</script>
 
 <script>
 (function(){
@@ -222,8 +227,8 @@
   const CERTSPOTTER_API  = 'https://api.certspotter.com/v1/issuances';
   const SHODAN_IDB       = 'https://internetdb.shodan.io';
   const SOFT_CAP_SCOPES  = 20;
-  const SUBDOMAIN_CAP    = 200;     // max subdomains to resolve per scope
-  const IP_CAP           = 100;     // max IPs to query Shodan for per scope
+  const SUBDOMAIN_CAP    = 200;
+  const IP_CAP           = 100;
   const SCAN_CONCURRENCY = 6;
   const HISTORY_CAP      = 8;
 
@@ -368,7 +373,7 @@
     }
   }
 
-  // ---- Scan engine (shared by Mode A and future Mode B) ----
+  // ---- Scan engine ----
 
   async function scanScope(scope, onProgress){
     const startedAt = new Date().toISOString();
@@ -386,7 +391,6 @@
       return await resolveDoH(host);
     });
 
-    // Build unique IP set
     const ipSet = new Set();
     for (const r of resolved){
       if (r && !r.__error){
@@ -402,7 +406,6 @@
     const ipMap = {};
     for (const r of idbResults){ if (r && r.ip) ipMap[r.ip] = r; }
 
-    // Build asset records
     const assets = resolved.filter(r => r && !r.__error).map(r => {
       const allIps = [...r.a, ...r.aaaa];
       const ports = new Set();
@@ -429,7 +432,6 @@
       };
     });
 
-    // Summary stats
     const summary = {
       subdomains: assets.length,
       active: assets.filter(a => a.active).length,
@@ -440,13 +442,8 @@
       certificates: cs.certificates.length
     };
 
-    // History
     const history = scope.history || [];
-    history.unshift({
-      at: startedAt,
-      summary,
-      assetCount: assets.length
-    });
+    history.unshift({ at: startedAt, summary, assetCount: assets.length });
     if (history.length > HISTORY_CAP) history.length = HISTORY_CAP;
 
     return {

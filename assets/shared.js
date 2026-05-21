@@ -11,6 +11,7 @@ const ICONS = {
     dopplerlens: '<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="8" r="3"/><circle cx="11" cy="8" r="3"/></svg>',
     posturelens: '<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L13 4V8C13 11 10.5 13 8 14C5.5 13 3 11 3 8V4L8 2Z"/></svg>',
     surfacelens: '<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="0.5" fill="currentColor"/><path d="M8 8L12.5 3.5"/></svg>',
+    reportlens:  '<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 11V8M8 11V5M11 11V9"/></svg>',
     maillens:    '<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 5L8 9L14 5"/></svg>',
     about:       '<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 7V11M8 5V5.01"/></svg>',
     github:      '<svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8c0 3.5 2.3 6.5 5.5 7.6.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1.1-2.7-1.1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.2-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8.6-.2 1.3-.3 2-.3s1.4.1 2 .3c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.6.8 1.3.8 2.2 0 3.1-1.9 3.8-3.7 4 .3.3.6.8.6 1.6v2.3c0 .2.1.5.5.4C13.7 14.5 16 11.5 16 8c0-4.4-3.6-8-8-8z"/></svg>'
@@ -21,6 +22,7 @@ const ICONS = {
   { slug: 'dopplerlens',  label: 'DopplerLens',  href: '/dopplerlens/',  ready: true },
   { slug: 'posturelens',  label: 'PostureLens',  href: '/posturelens/',  ready: true },
   { slug: 'surfacelens',  label: 'SurfaceLens',  href: '/surfacelens/',  ready: true },
+  { slug: 'reportlens',   label: 'ReportLens',   href: '/reportlens/',   ready: true },
   { slug: 'maillens',     label: 'MailLens',     href: '/maillens/',     ready: false },
 ];
 

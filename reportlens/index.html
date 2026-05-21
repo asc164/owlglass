@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReportLens — Owlglass</title>
-<link rel="stylesheet" href="/assets/style.css">
-<script src="/assets/shared.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReportLens · Owlglass</title>
+  <meta name="description" content="Turn CSV, TSV, or JSON exports into KPIs, charts, and filterable tables — all in your browser.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
 <style>
 :root{
   --rl-accent:#7c3aed;
@@ -13,219 +16,212 @@
   --rl-ok:#16a34a;
   --rl-warn:#d97706;
   --rl-danger:#dc2626;
-  --rl-border:#e5e7eb;
-  --rl-muted:#6b7280;
-  --rl-card:#ffffff;
-  --rl-bg-soft:#f9fafb;
 }
 
-/* ReportLens-specific UI inside .main-inner */
-.rl-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.rl-topbar h1{margin:0;font-size:20px;font-weight:700}
-.rl-topbar .sub{color:var(--rl-muted);font-size:13px;margin-top:2px}
-.rl-actions{display:flex;gap:8px;flex-wrap:wrap}
-.rl-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--rl-border);background:#fff;border-radius:6px;cursor:pointer;font-size:13px;color:#1f2937;text-decoration:none}
-.rl-btn:hover{background:var(--rl-bg-soft)}
-.rl-btn.primary{background:var(--rl-accent);color:#fff;border-color:var(--rl-accent)}
-.rl-btn.primary:hover{background:#6d28d9}
-.rl-btn.ghost{background:transparent;border-color:transparent;color:var(--rl-muted)}
-.rl-btn.danger{color:var(--rl-danger);border-color:#fecaca}
-.rl-btn.sm{padding:4px 8px;font-size:12px}
-.rl-btn[disabled]{opacity:.5;cursor:not-allowed}
-
-.rl-empty{border:2px dashed var(--rl-border);border-radius:12px;padding:48px 24px;text-align:center;background:var(--rl-bg-soft);margin-top:8px}
-.rl-empty.drag{border-color:var(--rl-accent);background:var(--rl-accent-soft)}
-.rl-empty h2{margin:0 0 8px;font-size:22px}
-.rl-empty p{color:var(--rl-muted);max-width:640px;margin:0 auto 16px;line-height:1.5}
+/* ReportLens-specific UI. Inherits font/colors from platform style.css */
+.rl-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.rl-empty{text-align:center;padding:32px 16px}
+.rl-empty.drag{background:var(--rl-accent-soft);border-radius:8px}
+.rl-empty h2{margin:0 0 8px}
+.rl-empty p{color:var(--muted,#71717a);max-width:640px;margin:0 auto 16px;line-height:1.5}
 .rl-feature-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 20px}
-.rl-feature-pills span{background:#fff;border:1px solid var(--rl-border);padding:4px 10px;border-radius:999px;font-size:12px;color:#374151}
+.rl-feature-pills span{background:#fff;border:1px solid var(--border,#e4e4e7);padding:4px 10px;border-radius:999px;font-size:0.78rem;color:var(--text,#18181b)}
 
-.rl-section{margin:20px 0}
-.rl-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px;flex-wrap:wrap}
-.rl-section-head h2{margin:0;font-size:15px;font-weight:600;color:#111827;text-transform:uppercase;letter-spacing:.04em}
-.rl-section-head .meta{font-size:12px;color:var(--rl-muted)}
+.rl-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+.rl-section-head .meta{font-size:0.78rem;color:var(--muted,#71717a)}
 
 /* Filter bar */
-.rl-filter-bar{background:#fff;border:1px solid var(--rl-border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.rl-chip{display:inline-flex;align-items:center;gap:6px;background:var(--rl-accent-soft);color:#5b21b6;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid #ddd6fe}
+.rl-filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rl-chip{display:inline-flex;align-items:center;gap:6px;background:var(--rl-accent-soft);color:#5b21b6;padding:4px 10px;border-radius:999px;font-size:0.78rem;border:1px solid #ddd6fe}
 .rl-chip .x{cursor:pointer;opacity:.7;font-weight:700}
 .rl-chip .x:hover{opacity:1}
-.rl-joiner{display:inline-flex;border:1px solid var(--rl-border);border-radius:999px;overflow:hidden;font-size:11px}
-.rl-joiner button{background:#fff;border:0;padding:2px 8px;cursor:pointer;color:var(--rl-muted)}
-.rl-joiner button.active{background:#1f2937;color:#fff}
-.rl-row-count{margin-left:auto;font-size:12px;color:var(--rl-muted)}
+.rl-joiner{display:inline-flex;border:1px solid var(--border,#e4e4e7);border-radius:999px;overflow:hidden;font-size:0.72rem}
+.rl-joiner button{background:#fff;border:0;padding:2px 8px;cursor:pointer;color:var(--muted,#71717a);font-family:inherit}
+.rl-joiner button.active{background:#18181b;color:#fff}
 
 /* KPI */
 .rl-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.rl-kpi{background:#fff;border:1px solid var(--rl-border);border-radius:8px;padding:12px;position:relative}
-.rl-kpi .label{font-size:11px;color:var(--rl-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.rl-kpi .value{font-size:22px;font-weight:700;color:#111827}
-.rl-kpi .sub{font-size:12px;color:var(--rl-muted);margin-top:2px}
-.rl-kpi .remove{position:absolute;top:6px;right:6px;background:transparent;border:0;color:#9ca3af;cursor:pointer;font-size:14px}
+.rl-kpi{background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:8px;padding:14px;position:relative}
+.rl-kpi .label{font-size:0.72rem;color:var(--muted,#71717a);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;font-weight:600}
+.rl-kpi .value{font-size:1.5rem;font-weight:700;color:var(--text,#18181b);font-family:inherit}
+.rl-kpi .sub{font-size:0.78rem;color:var(--muted,#71717a);margin-top:2px}
+.rl-kpi .remove{position:absolute;top:8px;right:8px;background:transparent;border:0;color:#a1a1aa;cursor:pointer;font-size:14px}
 .rl-kpi .remove:hover{color:var(--rl-danger)}
-.rl-kpi .topn{margin-top:8px;font-size:12px}
-.rl-kpi .topn .row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed #f3f4f6}
-.rl-kpi .topn .row:last-child{border-bottom:0}
-.rl-kpi .topn .more{margin-top:6px;background:transparent;border:0;color:var(--rl-accent);cursor:pointer;padding:2px 0;font-size:12px}
+.rl-kpi .topn{margin-top:10px;font-size:0.8rem}
+.rl-kpi .topn .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #f4f4f5}
+.rl-kpi .topn .row:last-of-type{border-bottom:0}
+.rl-kpi .topn .more{margin-top:6px;background:transparent;border:0;color:var(--rl-accent);cursor:pointer;padding:2px 0;font-size:0.78rem;font-family:inherit}
 
 /* Charts */
 .rl-chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
-.rl-chart{background:#fff;border:1px solid var(--rl-border);border-radius:8px;padding:12px;position:relative;min-height:240px}
-.rl-chart h3{margin:0 0 8px;font-size:13px;font-weight:600}
-.rl-chart .remove{position:absolute;top:6px;right:6px;background:transparent;border:0;color:#9ca3af;cursor:pointer;font-size:14px}
+.rl-chart{background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:8px;padding:14px;position:relative;min-height:240px}
+.rl-chart h3{margin:0 0 8px;font-size:0.88rem;font-weight:600}
+.rl-chart .remove{position:absolute;top:8px;right:8px;background:transparent;border:0;color:#a1a1aa;cursor:pointer;font-size:14px}
 .rl-chart canvas{max-height:240px}
 
 /* Suggestions */
 .rl-suggestions{display:flex;flex-wrap:wrap;gap:8px}
-.rl-suggestion{background:#fff;border:1px solid var(--rl-border);border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer;color:#374151}
+.rl-suggestion{background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:999px;padding:5px 12px;font-size:0.78rem;cursor:pointer;color:var(--text,#18181b);font-family:inherit}
 .rl-suggestion:hover{background:var(--rl-accent-soft);border-color:#ddd6fe;color:#5b21b6}
 .rl-suggestion.add{background:var(--rl-accent);color:#fff;border-color:var(--rl-accent)}
 .rl-suggestion.add:hover{background:#6d28d9}
 
 /* Table view */
-.rl-tv{background:#fff;border:1px solid var(--rl-border);border-radius:8px;padding:12px;margin-top:12px}
-.rl-tv-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-.rl-tv-head input.name{border:0;font-size:14px;font-weight:600;background:transparent;padding:2px 4px}
-.rl-tv-head input.name:focus{outline:1px solid var(--rl-border);background:#fff}
-.rl-qb{border:1px solid var(--rl-border);border-radius:6px;padding:8px;background:var(--rl-bg-soft);margin-bottom:10px}
-.rl-qb-group{padding:6px;border-left:3px solid #c4b5fd;margin:4px 0;background:#fff;border-radius:4px}
+.rl-tv{margin-top:12px}
+.rl-tv-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.rl-tv-head input.name{border:0;font-size:0.95rem;font-weight:600;background:transparent;padding:4px 6px;font-family:inherit;color:var(--text,#18181b)}
+.rl-tv-head input.name:focus{outline:1px solid var(--border,#e4e4e7);background:#fff;border-radius:4px}
+.rl-qb{border:1px solid var(--border,#e4e4e7);border-radius:6px;padding:10px;background:#fafafa;margin-bottom:12px}
+.rl-qb-group{padding:8px;border-left:3px solid #c4b5fd;margin:4px 0;background:#fff;border-radius:4px}
 .rl-qb-group[data-depth="1"]{border-left-color:#fbbf24}
 .rl-qb-group[data-depth="2"]{border-left-color:#34d399}
 .rl-qb-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 0}
-.rl-qb-row select,.rl-qb-row input{padding:4px 6px;border:1px solid var(--rl-border);border-radius:4px;font-size:12px;background:#fff}
-.rl-qb-row .joiner{display:inline-flex;border:1px solid var(--rl-border);border-radius:4px;overflow:hidden;font-size:11px}
-.rl-qb-row .joiner button{background:#fff;border:0;padding:2px 8px;cursor:pointer;color:var(--rl-muted)}
-.rl-qb-row .joiner button.active{background:#1f2937;color:#fff}
-.rl-qb-row .del{background:transparent;border:0;color:#9ca3af;cursor:pointer}
+.rl-qb-row select,.rl-qb-row input{padding:5px 8px;border:1px solid var(--border,#e4e4e7);border-radius:4px;font-size:0.8rem;background:#fff;font-family:inherit;color:var(--text,#18181b)}
+.rl-qb-row .joiner{display:inline-flex;border:1px solid var(--border,#e4e4e7);border-radius:4px;overflow:hidden;font-size:0.72rem}
+.rl-qb-row .joiner button{background:#fff;border:0;padding:3px 8px;cursor:pointer;color:var(--muted,#71717a);font-family:inherit}
+.rl-qb-row .joiner button.active{background:#18181b;color:#fff}
+.rl-qb-row .del{background:transparent;border:0;color:#a1a1aa;cursor:pointer;font-size:14px}
 .rl-qb-row .del:hover{color:var(--rl-danger)}
-.rl-qb-actions{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
-.rl-table-wrap{overflow:auto;max-height:480px;border:1px solid var(--rl-border);border-radius:6px}
-.rl-table{width:100%;border-collapse:collapse;font-size:12px}
-.rl-table th,.rl-table td{padding:6px 10px;text-align:left;border-bottom:1px solid #f3f4f6;white-space:nowrap}
-.rl-table th{background:var(--rl-bg-soft);position:sticky;top:0;font-weight:600;cursor:pointer;user-select:none}
-.rl-table th:hover{background:#f3f4f6}
+.rl-qb-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.rl-table-wrap{overflow:auto;max-height:480px;border:1px solid var(--border,#e4e4e7);border-radius:6px}
+.rl-table{width:100%;border-collapse:collapse;font-size:0.8rem}
+.rl-table th,.rl-table td{padding:8px 12px;text-align:left;border-bottom:1px solid #f4f4f5;white-space:nowrap}
+.rl-table th{background:#fafafa;position:sticky;top:0;font-weight:600;cursor:pointer;user-select:none;color:var(--text,#18181b)}
+.rl-table th:hover{background:#f4f4f5}
 .rl-table tr:hover td{background:#fafafa}
 
 /* Modal */
 .rl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200}
-.rl-modal{background:#fff;border-radius:8px;padding:20px;max-width:520px;width:90%;max-height:90vh;overflow:auto}
-.rl-modal h3{margin:0 0 12px}
-.rl-modal .field{margin-bottom:10px}
-.rl-modal .field label{display:block;font-size:12px;color:var(--rl-muted);margin-bottom:3px}
-.rl-modal .field select,.rl-modal .field input{width:100%;padding:6px 8px;border:1px solid var(--rl-border);border-radius:4px;font-size:13px}
-.rl-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.rl-modal{background:#fff;border-radius:8px;padding:20px;max-width:520px;width:90%;max-height:90vh;overflow:auto;font-family:inherit}
+.rl-modal h3{margin:0 0 14px;font-size:1rem}
+.rl-modal .field{margin-bottom:12px}
+.rl-modal .field label{display:block;font-size:0.78rem;color:var(--muted,#71717a);margin-bottom:4px;font-weight:500}
+.rl-modal .field select,.rl-modal .field input{width:100%;padding:7px 10px;border:1px solid var(--border,#e4e4e7);border-radius:4px;font-size:0.85rem;font-family:inherit}
+.rl-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
 /* Notes */
-.rl-notes{background:#fff;border:1px solid var(--rl-border);border-radius:8px;padding:10px}
-.rl-notes textarea{width:100%;border:0;resize:vertical;min-height:60px;font-family:inherit;font-size:13px;outline:none}
+.rl-notes textarea{width:100%;border:0;resize:vertical;min-height:60px;font-family:inherit;font-size:0.85rem;outline:none;color:var(--text,#18181b)}
 
 /* Column popover */
-.rl-popover{position:absolute;background:#fff;border:1px solid var(--rl-border);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:8px;z-index:100;max-height:300px;overflow:auto;min-width:200px}
-.rl-popover label{display:flex;gap:6px;align-items:center;padding:3px 0;font-size:12px;cursor:pointer}
+.rl-popover{position:absolute;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:10px;z-index:100;max-height:300px;overflow:auto;min-width:200px;font-size:0.8rem}
+.rl-popover label{display:flex;gap:6px;align-items:center;padding:3px 0;cursor:pointer}
 
 /* Toast */
-.rl-toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.rl-toast{position:fixed;bottom:20px;right:20px;background:#18181b;color:#fff;padding:10px 16px;border-radius:6px;font-size:0.85rem;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.2);font-family:inherit}
 
 @media print{
-  .rl-actions,.rl-btn,.rl-suggestions,.rl-qb,.rl-tv-head .rl-btn,.sidebar,.mobile-toggle{display:none !important}
-  .main{margin-left:0 !important}
+  .rl-actions,.rl-suggestions,.rl-qb,.sidebar,.mobile-toggle,.btn{display:none !important}
 }
 </style>
 </head>
 <body>
 <div class="app">
   <div id="sidebar-slot"></div>
-  <button class="mobile-toggle" aria-label="Menu">☰</button>
+
   <main class="main">
     <div class="main-inner">
+      <button class="mobile-toggle" aria-label="Toggle menu"></button>
 
-      <div class="rl-topbar">
-        <div>
-          <h1 id="rl-title">ReportLens</h1>
-          <div class="sub" id="rl-source">No data loaded</div>
-        </div>
-        <div class="rl-actions">
-          <input type="file" id="rl-file" accept=".csv,.tsv,.json,.txt" style="display:none">
-          <button class="rl-btn primary" id="rl-upload-btn">Upload data</button>
-          <button class="rl-btn" id="rl-replace-btn" disabled>Replace</button>
-          <button class="rl-btn" id="rl-export-btn" disabled>Export PDF</button>
-          <button class="rl-btn danger" id="rl-clear-btn" disabled>Clear</button>
+      <div class="topbar">
+        <div class="titles">
+          <div class="breadcrumb"><a href="/">Owlglass</a> / ReportLens</div>
+          <h1>ReportLens</h1>
+          <p class="tagline" id="rl-source">Turn CSV, TSV, or JSON exports into KPIs, charts, and filterable tables — all in your browser. No data leaves your device.</p>
         </div>
       </div>
 
-      <div id="rl-empty" class="rl-empty">
-        <h2>Turn raw data into a report in seconds</h2>
-        <p>ReportLens loads a CSV, TSV, or JSON export and auto-generates KPIs, charts, and filterable tables — all locally in your browser. No data leaves your device.</p>
-        <div class="rl-feature-pills">
-          <span>Auto KPIs</span>
-          <span>Suggested charts</span>
-          <span>Mixed AND/OR filters</span>
-          <span>Nested query builder</span>
-          <span>CSV export</span>
-          <span>Print to PDF</span>
+      <div class="card" style="padding: 16px 18px;">
+        <div class="input-row" style="margin-bottom: 0;">
+          <input type="file" id="rl-file" accept=".csv,.tsv,.json,.txt" style="display:none">
+          <button class="btn primary" id="rl-upload-btn">Upload data</button>
+          <button class="btn" id="rl-replace-btn" disabled>Replace</button>
+          <button class="btn" id="rl-export-btn" disabled>Export PDF</button>
+          <button class="btn" id="rl-clear-btn" disabled>Clear</button>
         </div>
-        <button class="rl-btn primary" id="rl-empty-upload">Choose file or drag & drop</button>
-        <p style="margin-top:14px;font-size:12px">Supports up to 50,000 rows. CSV / TSV / JSON.</p>
+      </div>
+
+      <div id="rl-empty" class="card">
+        <div class="rl-empty">
+          <h2>Turn raw data into a report in seconds</h2>
+          <p>ReportLens loads a CSV, TSV, or JSON export and auto-generates KPIs, charts, and filterable tables — all locally in your browser. No data leaves your device.</p>
+          <div class="rl-feature-pills">
+            <span>Auto KPIs</span>
+            <span>Suggested charts</span>
+            <span>Mixed AND/OR filters</span>
+            <span>Nested query builder</span>
+            <span>CSV export</span>
+            <span>Print to PDF</span>
+          </div>
+          <button class="btn primary" id="rl-empty-upload">Choose file or drag &amp; drop</button>
+          <p class="muted" style="margin-top:14px;font-size:0.78rem">Supports up to 50,000 rows. CSV / TSV / JSON.</p>
+        </div>
       </div>
 
       <div id="rl-app" style="display:none">
-        <div class="rl-section">
-          <div class="rl-section-head">
+
+        <div class="card">
+          <div class="card-header">
             <h2>Filters</h2>
-            <span class="meta" id="rl-filter-count"></span>
+            <span class="rl-section-head meta" id="rl-filter-count"></span>
           </div>
           <div class="rl-filter-bar" id="rl-filter-bar">
-            <span style="color:var(--rl-muted);font-size:12px">No filters applied</span>
-            <button class="rl-btn sm" id="rl-add-filter">+ Add filter</button>
+            <span class="muted" style="font-size:0.8rem">No filters applied</span>
+            <button class="btn" id="rl-add-filter" style="padding:4px 10px;font-size:0.78rem">+ Add filter</button>
           </div>
         </div>
 
-        <div class="rl-section">
-          <div class="rl-section-head">
+        <div class="card">
+          <div class="card-header">
             <h2>Key Metrics</h2>
-            <button class="rl-btn sm" id="rl-add-kpi">+ Add KPI</button>
+            <button class="btn" id="rl-add-kpi" style="padding:4px 10px;font-size:0.78rem">+ Add KPI</button>
           </div>
           <div class="rl-kpi-grid" id="rl-kpis"></div>
         </div>
 
-        <div class="rl-section">
-          <div class="rl-section-head">
+        <div class="card">
+          <div class="card-header">
             <h2>Charts</h2>
-            <button class="rl-btn sm" id="rl-add-chart">+ Add chart</button>
+            <button class="btn" id="rl-add-chart" style="padding:4px 10px;font-size:0.78rem">+ Add chart</button>
           </div>
           <div class="rl-chart-grid" id="rl-charts"></div>
         </div>
 
-        <div class="rl-section">
-          <div class="rl-section-head">
+        <div class="card">
+          <div class="card-header">
             <h2>Suggested views</h2>
           </div>
           <div class="rl-suggestions" id="rl-suggestions"></div>
         </div>
 
-        <div class="rl-section">
-          <div class="rl-section-head">
+        <div class="card">
+          <div class="card-header">
             <h2>Data tables</h2>
-            <button class="rl-btn sm" id="rl-add-tv">+ New table view</button>
+            <button class="btn" id="rl-add-tv" style="padding:4px 10px;font-size:0.78rem">+ New table view</button>
           </div>
           <div id="rl-tvs"></div>
         </div>
 
-        <div class="rl-section">
-          <div class="rl-section-head">
+        <div class="card">
+          <div class="card-header">
             <h2>Notes</h2>
           </div>
           <div class="rl-notes">
             <textarea id="rl-notes" placeholder="Add notes about this report (saved with PDF export)..."></textarea>
           </div>
         </div>
+
       </div>
 
     </div>
   </main>
 </div>
 
+<script src="/assets/shared.js"></script>
+<script>Owlglass.mount({ active: 'reportlens' });</script>
+
 <script>
+'use strict';
+
 // ---------- Library loader ----------
 window.__rlLibsReady = false;
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Failed: '+src));document.head.appendChild(s)})}
@@ -233,29 +229,15 @@ async function loadLibs(){
   try{await loadScript('/assets/papaparse.min.js')}catch(e){await loadScript('https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js')}
   try{await loadScript('/assets/chart.umd.min.js')}catch(e){await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js')}
   window.__rlLibsReady=true;
-  if(window.__rlOnReady)window.__rlOnReady();
 }
 loadLibs().catch(e=>{console.error('[ReportLens]',e);alert('Failed to load required libraries. Check console.')});
 
-// ---------- Constants & state ----------
 const MAX_ROWS=50000, LOW_CARDINALITY=50;
 const PALETTE=['#7c3aed','#2563eb','#16a34a','#d97706','#dc2626','#0891b2','#db2777','#65a30d','#9333ea','#ea580c'];
 
-const state={
-  fileName:null,
-  rows:[],
-  cols:[], // {name,type,values?,unique}
-  filters:[], // {id,col,op,val,val2,join} join applies between this and previous
-  kpis:[], // {id,type,col,expanded}
-  charts:[], // {id,type,xCol,yCol,agg,title}
-  tvs:[], // table views
-  notes:'',
-  chartInstances:{},
-  nextId:1
-};
+const state={fileName:null,rows:[],cols:[],filters:[],kpis:[],charts:[],tvs:[],notes:'',chartInstances:{},nextId:1};
 const nextId=()=>state.nextId++;
 
-// ---------- Utility ----------
 const $=s=>document.querySelector(s);
 const el=(tag,attrs={},...children)=>{
   const n=document.createElement(tag);
@@ -270,9 +252,7 @@ const el=(tag,attrs={},...children)=>{
 };
 function toast(msg){const t=el('div',{class:'rl-toast'},msg);document.body.appendChild(t);setTimeout(()=>t.remove(),2500)}
 
-// ---------- File loading ----------
 function loadFile(file){
-  console.log('[ReportLens] loading',file.name);
   state.fileName=file.name;
   const ext=file.name.split('.').pop().toLowerCase();
   const reader=new FileReader();
@@ -341,7 +321,7 @@ function ingestRows(rawRows){
   autoAnalyze();
   $('#rl-empty').style.display='none';
   $('#rl-app').style.display='block';
-  $('#rl-source').textContent=`${state.fileName} • ${state.rows.length.toLocaleString()} rows • ${state.cols.length} columns`;
+  $('#rl-source').textContent=`${state.fileName} — ${state.rows.length.toLocaleString()} rows · ${state.cols.length} columns`;
   $('#rl-replace-btn').disabled=false;$('#rl-export-btn').disabled=false;$('#rl-clear-btn').disabled=false;
   renderAll();
 }
@@ -352,11 +332,9 @@ function autoAnalyze(){
   nums.forEach(c=>state.kpis.push({id:nextId(),type:'sum',col:c.name}));
   const cats=state.cols.filter(c=>c.type==='text'&&c.unique>1&&c.unique<=LOW_CARDINALITY).slice(0,2);
   cats.forEach(c=>state.kpis.push({id:nextId(),type:'topn',col:c.name,expanded:false}));
-  // Default table view
   state.tvs.push({id:nextId(),name:'All data',cols:state.cols.slice(0,8).map(c=>c.name),rules:newGroup(0),sortCol:null,sortDir:'asc'});
 }
 
-// ---------- Filtering ----------
 function evalRule(row,r){
   const v=row[r.col];
   if(r.op==='is_empty')return v==null||v==='';
@@ -383,10 +361,7 @@ function evalRule(row,r){
 }
 function evalGroup(row,g){
   if(!g.children||!g.children.length)return true;
-  // Build expression: with AND tighter than OR
-  // Convert flat list with per-item joiners into nested by AND precedence
   const items=g.children.map(c=>({val:c.type==='group'?evalGroup(row,c):evalRule(row,c),join:c.join||'and'}));
-  // OR-separated AND-groups
   let orResult=false;let andResult=items[0].val;
   for(let i=1;i<items.length;i++){
     if(items[i].join==='or'){orResult=orResult||andResult;andResult=items[i].val}
@@ -400,11 +375,10 @@ function applyGlobalFilters(rows){
   return rows.filter(r=>evalGroup(r,fakeGroup));
 }
 
-// ---------- Filter bar ----------
 function renderFilterBar(){
   const bar=$('#rl-filter-bar');bar.innerHTML='';
   if(!state.filters.length){
-    bar.appendChild(el('span',{style:'color:var(--rl-muted);font-size:12px'},'No filters applied'));
+    bar.appendChild(el('span',{class:'muted',style:'font-size:0.8rem'},'No filters applied'));
   } else {
     state.filters.forEach((f,i)=>{
       if(i>0){
@@ -422,7 +396,8 @@ function renderFilterBar(){
       bar.appendChild(chip);
     });
   }
-  bar.appendChild(el('button',{class:'rl-btn sm',onClick:openFilterModal},'+ Add filter'));
+  const addBtn=el('button',{class:'btn',style:'padding:4px 10px;font-size:0.78rem',onClick:openFilterModal},'+ Add filter');
+  bar.appendChild(addBtn);
   const filtered=applyGlobalFilters(state.rows);
   $('#rl-filter-count').textContent=`${filtered.length.toLocaleString()} of ${state.rows.length.toLocaleString()} rows`;
 }
@@ -431,7 +406,6 @@ function opLabel(op){
   return map[op]||op;
 }
 
-// ---------- Filter modal ----------
 function openFilterModal(existing){
   const bg=el('div',{class:'rl-modal-bg'});
   const modal=el('div',{class:'rl-modal'});
@@ -480,7 +454,7 @@ function openFilterModal(existing){
     };
     const i1=mkInput();i1.id='rl-fval1';valWrap.appendChild(i1);
     if(op==='between'||op==='date_between'){
-      valWrap.appendChild(el('div',{style:'font-size:11px;color:var(--rl-muted);margin:4px 0'},'and'));
+      valWrap.appendChild(el('div',{style:'font-size:0.72rem;color:#71717a;margin:4px 0'},'and'));
       const i2=mkInput();i2.id='rl-fval2';valWrap.appendChild(i2);
     }
     if(existing&&existing.col===colSel.value){i1.value=existing.val??'';const i2=valWrap.querySelector('#rl-fval2');if(i2&&existing.val2!=null)i2.value=existing.val2}
@@ -489,8 +463,8 @@ function openFilterModal(existing){
   opSel.addEventListener('change',refreshVal);
   refreshOps();
   const actions=el('div',{class:'rl-modal-actions'},
-    el('button',{class:'rl-btn',onClick:()=>bg.remove()},'Cancel'),
-    el('button',{class:'rl-btn primary',onClick:()=>{
+    el('button',{class:'btn',onClick:()=>bg.remove()},'Cancel'),
+    el('button',{class:'btn primary',onClick:()=>{
       const f={id:existing?existing.id:nextId(),col:colSel.value,op:opSel.value,join:existing?existing.join:'and'};
       const i1=valWrap.querySelector('#rl-fval1');if(i1)f.val=i1.value;
       const i2=valWrap.querySelector('#rl-fval2');if(i2)f.val2=i2.value;
@@ -504,7 +478,6 @@ function openFilterModal(existing){
   document.body.appendChild(bg);
 }
 
-// ---------- KPIs ----------
 function computeKpi(k,rows){
   if(k.type==='count')return {label:'Total rows',value:rows.length.toLocaleString()};
   if(!k.col)return {label:'?',value:'-'};
@@ -546,7 +519,6 @@ function renderKpis(){
   });
 }
 
-// ---------- Charts ----------
 function aggregate(rows,xCol,yCol,agg){
   const groups={};
   rows.forEach(r=>{
@@ -601,8 +573,8 @@ function openChartModal(){
   state.cols.filter(c=>c.type==='number').forEach(c=>ySel.appendChild(el('option',{value:c.name},c.name)));
   f4.appendChild(ySel);modal.appendChild(f4);
   modal.appendChild(el('div',{class:'rl-modal-actions'},
-    el('button',{class:'rl-btn',onClick:()=>bg.remove()},'Cancel'),
-    el('button',{class:'rl-btn primary',onClick:()=>{
+    el('button',{class:'btn',onClick:()=>bg.remove()},'Cancel'),
+    el('button',{class:'btn primary',onClick:()=>{
       state.charts.push({id:nextId(),type:typeSel.value,xCol:xSel.value,yCol:ySel.value,agg:agSel.value});
       bg.remove();renderAll();
     }},'Add')
@@ -623,8 +595,8 @@ function openKpiModal(){
   const colSel=el('select');state.cols.forEach(c=>colSel.appendChild(el('option',{value:c.name},`${c.name} (${c.type})`)));
   f2.appendChild(colSel);modal.appendChild(f2);
   modal.appendChild(el('div',{class:'rl-modal-actions'},
-    el('button',{class:'rl-btn',onClick:()=>bg.remove()},'Cancel'),
-    el('button',{class:'rl-btn primary',onClick:()=>{
+    el('button',{class:'btn',onClick:()=>bg.remove()},'Cancel'),
+    el('button',{class:'btn primary',onClick:()=>{
       state.kpis.push({id:nextId(),type:typeSel.value,col:typeSel.value==='count'?null:colSel.value,expanded:false});
       bg.remove();renderAll();
     }},'Add')
@@ -633,7 +605,6 @@ function openKpiModal(){
   document.body.appendChild(bg);
 }
 
-// ---------- Suggestions ----------
 function renderSuggestions(){
   const box=$('#rl-suggestions');box.innerHTML='';
   const cats=state.cols.filter(c=>c.type==='text'&&c.unique>1&&c.unique<=LOW_CARDINALITY).slice(0,4);
@@ -656,7 +627,6 @@ function renderSuggestions(){
   box.appendChild(el('button',{class:'rl-suggestion add',onClick:openChartModal},'+ Add custom view'));
 }
 
-// ---------- Table views ----------
 function newGroup(depth){return {id:nextId(),type:'group',depth,join:'and',children:[]}}
 function newRule(){return {id:nextId(),type:'rule',col:state.cols[0]?.name,op:'contains',val:'',join:'and'}}
 
@@ -671,7 +641,7 @@ function renderQB(group,container,tv){
         const jr=el('div',{class:'rl-qb-row'});
         const j=el('div',{class:'joiner'});
         ['and','or'].forEach(op=>j.appendChild(el('button',{class:child.join===op?'active':'',onClick:()=>{child.join=op;refreshTable(tv)}},op.toUpperCase())));
-        jr.appendChild(j);jr.appendChild(el('span',{style:'font-size:11px;color:var(--rl-muted)'},'(group)'));
+        jr.appendChild(j);jr.appendChild(el('span',{class:'muted',style:'font-size:0.72rem'},'(group)'));
         jr.appendChild(el('button',{class:'del',onClick:()=>{group.children.splice(i,1);renderTvs()}},'×'));
         wrap.appendChild(jr);
       }
@@ -718,7 +688,7 @@ function renderQB(group,container,tv){
         i1.addEventListener('change',()=>{child.val=i1.value;refreshTable(tv)});
         valHolder.appendChild(i1);
         if(child.op==='between'||child.op==='date_between'){
-          const sep=el('span',{style:'margin:0 4px;font-size:11px;color:var(--rl-muted)'},'and');
+          const sep=el('span',{style:'margin:0 4px;font-size:0.72rem;color:#71717a'},'and');
           valHolder.appendChild(sep);
           const i2=mk();i2.value=child.val2??'';
           i2.addEventListener('input',()=>{child.val2=i2.value;refreshTable(tv)});
@@ -732,9 +702,9 @@ function renderQB(group,container,tv){
     }
   });
   const actions=el('div',{class:'rl-qb-actions'});
-  actions.appendChild(el('button',{class:'rl-btn sm',onClick:()=>{group.children.push(newRule());renderTvs()}},'+ Add condition'));
+  actions.appendChild(el('button',{class:'btn',style:'padding:4px 10px;font-size:0.78rem',onClick:()=>{group.children.push(newRule());renderTvs()}},'+ Add condition'));
   if((group.depth||0)<2){
-    actions.appendChild(el('button',{class:'rl-btn sm',onClick:()=>{const g=newGroup((group.depth||0)+1);g.children.push(newRule());group.children.push(g);renderTvs()}},'+ Add group'));
+    actions.appendChild(el('button',{class:'btn',style:'padding:4px 10px;font-size:0.78rem',onClick:()=>{const g=newGroup((group.depth||0)+1);g.children.push(newRule());group.children.push(g);renderTvs()}},'+ Add group'));
   }
   wrap.appendChild(actions);
   container.appendChild(wrap);
@@ -826,26 +796,24 @@ function renderTvs(){
     const nameInput=el('input',{class:'name',value:tv.name,onInput:e=>tv.name=e.target.value});
     head.appendChild(nameInput);
     const actions=el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'});
-    const colBtn=el('button',{class:'rl-btn sm',onClick:()=>openColumnPopover(tv,colBtn)},'Columns');
+    const colBtn=el('button',{class:'btn',style:'padding:4px 10px;font-size:0.78rem',onClick:()=>openColumnPopover(tv,colBtn)},'Columns');
     actions.appendChild(colBtn);
-    actions.appendChild(el('button',{class:'rl-btn sm',onClick:()=>exportTvCsv(tv)},'Export CSV'));
-    actions.appendChild(el('button',{class:'rl-btn sm danger',onClick:()=>{state.tvs=state.tvs.filter(x=>x.id!==tv.id);renderTvs()}},'Delete view'));
+    actions.appendChild(el('button',{class:'btn',style:'padding:4px 10px;font-size:0.78rem',onClick:()=>exportTvCsv(tv)},'Export CSV'));
+    actions.appendChild(el('button',{class:'btn',style:'padding:4px 10px;font-size:0.78rem',onClick:()=>{state.tvs=state.tvs.filter(x=>x.id!==tv.id);renderTvs()}},'Delete view'));
     head.appendChild(actions);
     card.appendChild(head);
-    const qb=el('div');renderQB(tv.rules,qb,tv);card.appendChild(qb);
-    card.appendChild(el('div',{id:`info-${tv.id}`,style:'font-size:12px;color:var(--rl-muted);margin:6px 0'}));
+    const qb=el('div',{class:'rl-qb'});renderQB(tv.rules,qb,tv);card.appendChild(qb);
+    card.appendChild(el('div',{class:'muted',id:`info-${tv.id}`,style:'font-size:0.78rem;margin:6px 0'}));
     const tblWrap=el('div',{class:'rl-table-wrap',id:`tbl-${tv.id}`});card.appendChild(tblWrap);
     host.appendChild(card);
     refreshTable(tv);
   });
 }
 
-// ---------- Render all ----------
 function renderAll(){
   renderFilterBar();renderKpis();renderCharts();renderSuggestions();renderTvs();
 }
 
-// ---------- Wire up ----------
 function wireUp(){
   $('#rl-upload-btn').addEventListener('click',()=>{
     if(!window.__rlLibsReady){toast('Libraries still loading…');return}
@@ -861,7 +829,7 @@ function wireUp(){
     state.rows=[];state.cols=[];state.filters=[];state.kpis=[];state.charts=[];state.tvs=[];
     Object.values(state.chartInstances).forEach(c=>c.destroy());state.chartInstances={};
     $('#rl-app').style.display='none';$('#rl-empty').style.display='block';
-    $('#rl-source').textContent='No data loaded';
+    $('#rl-source').textContent='Turn CSV, TSV, or JSON exports into KPIs, charts, and filterable tables — all in your browser. No data leaves your device.';
     $('#rl-replace-btn').disabled=true;$('#rl-export-btn').disabled=true;$('#rl-clear-btn').disabled=true;
   });
   $('#rl-export-btn').addEventListener('click',()=>window.print());
@@ -878,8 +846,7 @@ function wireUp(){
   });
   $('#rl-notes').addEventListener('input',e=>state.notes=e.target.value);
 
-  // Drag-drop overlay
-  const dropOverlay=el('div',{style:'position:fixed;inset:0;background:rgba(124,58,237,.15);border:4px dashed #7c3aed;z-index:9999;display:none;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#5b21b6;pointer-events:none'},'Drop file to load');
+  const dropOverlay=el('div',{style:'position:fixed;inset:0;background:rgba(124,58,237,.15);border:4px dashed #7c3aed;z-index:9999;display:none;align-items:center;justify-content:center;font-size:1.5rem;font-weight:600;color:#5b21b6;pointer-events:none;font-family:inherit'},'Drop file to load');
   document.body.appendChild(dropOverlay);
   let dragDepth=0;
   window.addEventListener('dragenter',e=>{if(!e.dataTransfer||!Array.from(e.dataTransfer.types||[]).includes('Files'))return;e.preventDefault();dragDepth++;dropOverlay.style.display='flex'});
@@ -888,10 +855,7 @@ function wireUp(){
   window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;dropOverlay.style.display='none';const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadFile(f)});
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  if(window.Owlglass)window.Owlglass.mount({active:'reportlens'});
-  wireUp();
-});
+wireUp();
 </script>
 </body>
 </html>

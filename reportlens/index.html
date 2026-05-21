@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ReportLens · Owlglass</title>
 <link rel="stylesheet" href="/assets/style.css">
-<script src="/assets/shared.js" defer></script>  
+<script src="/assets/shared.js" defer></script>
 <script>
 function loadScript(src, fallback, cb){
   const s=document.createElement('script');
@@ -32,6 +32,9 @@ loadScript('/assets/chart.umd.min.js','https://cdn.jsdelivr.net/npm/chart.js@4.4
     --rl-radius:8px;
   }
   .rl-app{max-width:1400px;margin:0 auto;padding:16px;color:var(--rl-text);font-family:system-ui,-apple-system,sans-serif;font-size:14px}
+  @media (min-width: 768px){
+    .rl-app{margin-left:220px}
+  }
   .rl-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
   .rl-header h1{margin:0;font-size:22px}
   .rl-header .crumb{color:var(--rl-muted);font-size:13px}
@@ -142,6 +145,7 @@ loadScript('/assets/chart.umd.min.js','https://cdn.jsdelivr.net/npm/chart.js@4.4
     .rl-topbar,.rl-empty,.rl-suggestions,.rl-tv-tools,.rl-qb,.rl-chart-actions,.rl-kpi .actions,.rl-add-btn,.rl-tbl-wrap{display:none!important}
     .rl-section{break-inside:avoid;border:1px solid #ddd}
     .rl-chart-canvas-wrap{height:300px}
+    .rl-app{margin-left:0!important}
   }
 </style>
 </head>
@@ -238,7 +242,7 @@ const PALETTE = ['#2563eb','#dc2626','#16a34a','#d97706','#7c3aed','#0891b2','#d
 const state = {
   rawFileName:'', rows:[], columns:[],
   title:'Untitled report', notes:'',
-  filters:[], // each: {id, column, op, value, value2, joiner:'AND'|'OR'} — joiner ignored on first
+  filters:[],
   kpis:[], charts:[], tableViews:[],
   chartInstances:{},
   nextId:1
@@ -401,12 +405,9 @@ function autoAnalyze(){
   state.charts=state.charts.slice(0,3);
 }
 
-/* ============ GLOBAL FILTERS — mixed AND/OR with precedence ============ */
+/* ============ GLOBAL FILTERS ============ */
 function evalFilters(r){
   if(!state.filters.length)return true;
-  // Build list of {match, joiner} where joiner applies between i-1 and i (first ignored)
-  // Precedence: AND binds tighter than OR.
-  // Convert: walk through, build OR-groups (lists of ANDs), then OR them.
   const orGroups=[[]];
   state.filters.forEach((f,i)=>{
     const m=matchFilter(r,f);
@@ -441,7 +442,7 @@ function getVisibleRows(){
   return state.rows.filter(evalFilters);
 }
 
-/* ============ FILTER BAR RENDERING ============ */
+/* ============ FILTER BAR ============ */
 function renderFilterBar(){
   const bar=$('#rl-filter-bar');
   bar.innerHTML='';
@@ -720,7 +721,7 @@ function openChartModal(existing){
   });
 }
 
-/* ============ SUGGESTIONS — count default + custom view button ============ */
+/* ============ SUGGESTIONS ============ */
 function renderSuggestions(){
   const box=$('#rl-suggestions');box.innerHTML='';
   const cats=state.columns.filter(c=>c.type==='text'&&c.unique>1&&c.unique<=LOW_CARDINALITY);
@@ -737,12 +738,7 @@ function renderSuggestions(){
   if(!ideas.length)box.appendChild(el('span',{class:'rl-row-count'},'No suggestions yet.'));
 }
 
-/* ============ TABLE VIEWS — nested group query builder ============ */
-/*
-Group node: {kind:'group', id, joiner:'AND'|'OR', children:[node,...]}
-Rule node:  {kind:'rule', id, joiner:'AND'|'OR', column, op, value, value2}
-First child in any group ignores its joiner.
-*/
+/* ============ TABLE VIEWS ============ */
 function newRule(){const c=state.columns[0];return {kind:'rule',id:uid(),joiner:'AND',column:c?.name||'',op:opsForType(c?.type||'text')[0].v,value:'',value2:''};}
 function newGroup(){return {kind:'group',id:uid(),joiner:'AND',children:[newRule()]};}
 function addTableView(name){
@@ -760,7 +756,6 @@ function evalNode(r,node){
   if(node.kind==='rule')return matchRule(r,node);
   const kids=node.children;
   if(!kids.length)return true;
-  // AND tighter than OR
   const orGroups=[[]];
   kids.forEach((k,i)=>{
     const m=evalNode(r,k);
@@ -859,7 +854,6 @@ function buildGroupNode(group,depth,tv,card,redrawParent){
 }
 function buildChildNode(node,idx,parent,depth,tv,card,redrawSiblings){
   const wrap=el('div');
-  // Joiner control (skip for first)
   if(idx>0){
     const j=el('button',{class:`rl-joiner ${node.joiner==='OR'?'or':'and'}`,title:'Click to toggle AND/OR',onclick:()=>{node.joiner=node.joiner==='OR'?'AND':'OR';redrawSiblings();refreshTable(tv,card);}},node.joiner||'AND');
     wrap.appendChild(el('div',{style:'padding:2px 0 2px 2px'},j));
@@ -867,9 +861,7 @@ function buildChildNode(node,idx,parent,depth,tv,card,redrawSiblings){
   if(node.kind==='rule'){
     wrap.appendChild(buildRuleRow(node,parent,tv,card,redrawSiblings));
   }else{
-    // group
     const grpWrap=buildGroupNode(node,depth+1,tv,card,redrawSiblings);
-    // add remove button for the group
     const rmBar=el('div',{style:'display:flex;justify-content:flex-end;margin-top:-2px'},
       el('button',{class:'rl-btn ghost small',title:'Remove group',onclick:()=>{const i=parent.children.indexOf(node);if(i>=0){parent.children.splice(i,1);redrawSiblings();refreshTable(tv,card);}}},'Remove group')
     );
@@ -1004,7 +996,7 @@ function openColumnPopover(tv,card){
   pop.style.left=(rect.right-220)+'px';
   setTimeout(()=>{
     const close=e=>{if(!pop.contains(e.target)){pop.remove();document.removeEventListener('click',close);}};
-    <style>('click',close);
+    document.addEventListener('click',close);
   },0);
 }
 function exportTvCsv(tv){
@@ -1099,7 +1091,7 @@ function onLibsReady(){
     setTimeout(()=>{if(ls)ls.style.display='none';},1500);
   }
 }
-<style>('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',()=>{
   if(window.Owlglass)window.Owlglass.mount({active:'reportlens'});
   wireUp();
   if(window.__rlLibsReady)onLibsReady();

@@ -201,7 +201,7 @@
 
           <div class="rl-card" id="rl-charts-card" style="display:none">
             <h2><span class="rl-step">5</span> Charts</h2>
-            <p class="rl-help">Build one or more charts from the filtered data. Each chart updates live as filters or column selections change.</p>
+            <p class="rl-help">Build one or more charts from the filtered data. Group by up to 4 columns — use Stack mode for cross-tab views, or Combine for one bar per unique combination.</p>
             <div class="rl-charts" id="rl-charts"></div>
             <button class="rl-btn secondary" id="rl-add-chart" style="margin-top:12px">+ Add chart</button>
           </div>
@@ -239,27 +239,29 @@
     // ============================================================
     // Constants & state
     // ============================================================
-    const MAX_BYTES = 10 * 1024 * 1024;     // 10 MB
+    const MAX_BYTES = 10 * 1024 * 1024;
     const MAX_ROWS = 50000;
-    const TABLE_RENDER_CAP = 1000;          // virtualization-lite: render first N filtered rows
+    const TABLE_RENDER_CAP = 1000;
     const TYPE_SAMPLE_SIZE = 100;
     const MULTI_TOP_N = 1000;
+    const MAX_GROUPS = 4;
+    const COMBO_WARN_THRESHOLD = 80;
 
     const state = {
       rawFileName: null,
-      rows: [],              // array of objects
-      columns: [],           // [{name, type, selected}]
-      filters: [],           // [{id, column, op, value, mode}]
-      filterMode: 'and',     // 'and' | 'or'
+      rows: [],
+      columns: [],
+      filters: [],
+      filterMode: 'and',
       filtersCollapsed: false,
-      checkedRows: new Set(),// Set<rowIndex>
-      checkOnly: false,      // chart from checked rows only
+      checkedRows: new Set(),
+      checkOnly: false,
       sort: { column: null, dir: 'asc' },
       search: '',
-      charts: [],            // [{id, type, x, y, agg, instance}]
+      charts: [],
       nextChartId: 1,
       nextFilterId: 1,
-      editingFilter: null,   // id being edited, or null
+      editingFilter: null,
     };
 
     // ============================================================
@@ -312,7 +314,6 @@
         if (boolish.has(s)) bools++;
         const n = Number(s);
         if (Number.isFinite(n) && s !== '') nums++;
-        // date check: only if doesn't look numeric
         if (!(Number.isFinite(n) && s !== '')) {
           const d = Date.parse(v);
           if (!isNaN(d)) {
@@ -368,11 +369,9 @@
     }
 
     function findRowArray(json) {
-      // If json is array of objects, that's the rows
       if (Array.isArray(json) && json.length && typeof json[0] === 'object' && !Array.isArray(json[0])) {
         return json;
       }
-      // Otherwise walk and pick the longest array of objects
       let best = null, bestLen = 0;
       function walk(node) {
         if (Array.isArray(node) && node.length && typeof node[0] === 'object' && !Array.isArray(node[0])) {
@@ -452,18 +451,15 @@
         status('rl-upload-status', 'No rows found.', 'err');
         return;
       }
-      // Collect all unique keys across rows
       const keySet = new Set();
       rows.forEach(r => { for (const k in r) keySet.add(k); });
       const cols = Array.from(keySet);
 
-      // Infer types
       const columns = cols.map(name => {
         const values = rows.map(r => r[name]);
         return { name, type: inferType(values), selected: true };
       });
 
-      // Try to reapply prior config if column names match
       const priorConfig = state.columns.length ? captureConfig() : null;
 
       state.rawFileName = fileName;
@@ -478,12 +474,10 @@
 
       let reapplied = 0, dropped = 0;
       if (priorConfig) {
-        // reapply selected columns
         priorConfig.columns.forEach(pc => {
           const c = columns.find(x => x.name === pc.name);
           if (c) { c.selected = pc.selected; if (pc.type) c.type = pc.type; }
         });
-        // reapply filters where columns + types match
         (priorConfig.filters || []).forEach(f => {
           const c = columns.find(x => x.name === f.column);
           if (c && c.type === f.type) { state.filters.push({ ...f, id: state.nextFilterId++ }); reapplied++; }
@@ -514,7 +508,7 @@
     function renderColumns() {
       const host = $('rl-cols');
       host.innerHTML = '';
-      state.columns.forEach((c, idx) => {
+      state.columns.forEach((c) => {
         const node = el('label', { class: 'rl-col' + (c.selected ? ' selected' : '') },
           el('input', { type: 'checkbox', ...(c.selected ? { checked: '' } : {}) }),
           c.name,
@@ -525,7 +519,7 @@
           node.classList.toggle('selected', c.selected);
           updateColsCount();
           renderTable();
-          renderChartsControls();
+          renderCharts();
         });
         node.querySelector('.rl-type').addEventListener('click', e => {
           e.preventDefault();
@@ -534,9 +528,9 @@
           const next = types[(types.indexOf(c.type) + 1) % types.length];
           c.type = next;
           renderColumns();
-          renderFilters(); // operators depend on type
+          renderFilters();
           renderTable();
-          renderChartsControls();
+          renderCharts();
         });
         host.appendChild(node);
       });
@@ -591,7 +585,6 @@
         b.classList.toggle('active', b.dataset.mode === state.filterMode);
       });
 
-      // Summary
       const filtered = applyFilters(state.rows);
       const total = state.rows.length;
       const summary = $('rl-filter-summary');
@@ -692,7 +685,6 @@
 
     function buildMultiSelect(col, initialSelected) {
       const selected = new Set(initialSelected);
-      // gather value frequencies
       const freq = new Map();
       state.rows.forEach(r => {
         const v = r[col.name];
@@ -719,7 +711,6 @@
         let source = top;
         if (query) {
           const q = query.toLowerCase();
-          // search across full set
           source = sorted.filter(([v]) => v.toLowerCase().includes(q)).slice(0, MULTI_TOP_N);
         }
         if (source.length === 0) {
@@ -821,13 +812,11 @@
 
     function getVisibleRows() {
       let rows = applyFilters(state.rows);
-      // search
       if (state.search) {
         const q = state.search.toLowerCase();
         const selCols = state.columns.filter(c => c.selected).map(c => c.name);
         rows = rows.filter(r => selCols.some(c => String(r[c] ?? '').toLowerCase().includes(q)));
       }
-      // sort
       if (state.sort.column) {
         const col = state.columns.find(c => c.name === state.sort.column);
         if (col) {
@@ -858,7 +847,6 @@
 
       const selCols = state.columns.filter(c => c.selected);
 
-      // header
       head.appendChild(el('th', { class: 'rl-check' },
         el('input', { type: 'checkbox', title: 'Check/uncheck all visible' })
       ));
@@ -889,7 +877,6 @@
         head.appendChild(th);
       });
 
-      // body
       const rows = getVisibleRows();
       const cap = Math.min(rows.length, TABLE_RENDER_CAP);
 
@@ -934,7 +921,8 @@
       const chart = {
         id: state.nextChartId++,
         type: 'bar',
-        x: anyCol ? anyCol.name : null,
+        groups: anyCol ? [anyCol.name] : [],
+        groupMode: 'stack',
         y: numericCols[0] ? numericCols[0].name : null,
         agg: 'count',
         instance: null
@@ -948,10 +936,7 @@
     }
     function destroyCharts() { state.charts.forEach(destroyChart); }
 
-    function renderChartsControls() {
-      // re-render full charts panel when columns change
-      renderCharts();
-    }
+    function renderChartsControls() { renderCharts(); }
 
     function renderCharts() {
       const host = $('rl-charts');
@@ -965,6 +950,11 @@
       const selCols = state.columns.filter(c => c.selected);
       const numericCols = selCols.filter(c => c.type === 'number');
 
+      // Migrate legacy single-x charts
+      if (!chart.groups && chart.x) chart.groups = [chart.x];
+      if (!chart.groups) chart.groups = [];
+      if (!chart.groupMode) chart.groupMode = 'stack';
+
       const controls = el('div', { class: 'rl-chart-controls' });
 
       const typeSel = el('select');
@@ -976,14 +966,61 @@
       controls.appendChild(el('label', {}, 'Type'));
       controls.appendChild(typeSel);
 
-      const xSel = el('select');
-      selCols.forEach(c => {
-        const o = el('option', { value: c.name }, c.name);
-        if (c.name === chart.x) o.selected = true;
-        xSel.appendChild(o);
-      });
+      // Group-by chip picker
       controls.appendChild(el('label', {}, chart.type === 'scatter' ? 'X' : 'Group by'));
-      controls.appendChild(xSel);
+      const groupHost = el('div', { class: 'rl-filters', style: 'gap:6px;margin:0' });
+
+      const renderGroupChips = () => {
+        groupHost.innerHTML = '';
+        chart.groups.forEach((g, idx) => {
+          const chip = el('span', { class: 'rl-filter-chip' },
+            g,
+            el('span', { class: 'rl-x', title: 'Remove' }, '×')
+          );
+          chip.querySelector('.rl-x').addEventListener('click', () => {
+            chart.groups.splice(idx, 1);
+            renderCharts();
+          });
+          groupHost.appendChild(chip);
+        });
+
+        const maxForType = (chart.type === 'pie' || chart.type === 'doughnut' || chart.type === 'scatter') ? 1 : MAX_GROUPS;
+        if (chart.groups.length < maxForType) {
+          const addSel = el('select');
+          addSel.appendChild(el('option', { value: '' }, chart.groups.length ? '+ Add group' : 'Pick a column'));
+          selCols.forEach(c => {
+            if (chart.groups.includes(c.name)) return;
+            addSel.appendChild(el('option', { value: c.name }, c.name));
+          });
+          addSel.addEventListener('change', e => {
+            if (!e.target.value) return;
+            chart.groups.push(e.target.value);
+            renderCharts();
+          });
+          groupHost.appendChild(addSel);
+        } else if (chart.groups.length >= MAX_GROUPS) {
+          groupHost.appendChild(el('span', { style: 'font-size:.78rem;color:var(--rl-text-faint)' }, `(max ${MAX_GROUPS})`));
+        }
+      };
+      renderGroupChips();
+      controls.appendChild(groupHost);
+
+      // Stack vs Combine toggle
+      const canStack = (chart.type === 'bar' || chart.type === 'line') && chart.groups.length >= 2;
+      if (canStack) {
+        const modeWrap = el('div', { class: 'rl-filter-mode' });
+        const stackBtn = el('button', { 'data-mode': 'stack' }, 'Stack');
+        const comboBtn = el('button', { 'data-mode': 'combine' }, 'Combine');
+        if (chart.groupMode === 'stack') stackBtn.classList.add('active');
+        else comboBtn.classList.add('active');
+        stackBtn.addEventListener('click', () => { chart.groupMode = 'stack'; renderCharts(); });
+        comboBtn.addEventListener('click', () => { chart.groupMode = 'combine'; renderCharts(); });
+        modeWrap.appendChild(stackBtn);
+        modeWrap.appendChild(comboBtn);
+        controls.appendChild(modeWrap);
+      } else if (chart.groups.length >= 2) {
+        chart.groupMode = 'combine';
+      }
 
       const aggSel = el('select');
       AGGS.forEach(([v,l]) => {
@@ -995,8 +1032,7 @@
       controls.appendChild(aggSel);
 
       const ySel = el('select');
-      const noneOpt = el('option', { value: '' }, '— none —');
-      ySel.appendChild(noneOpt);
+      ySel.appendChild(el('option', { value: '' }, '— none —'));
       numericCols.forEach(c => {
         const o = el('option', { value: c.name }, c.name);
         if (c.name === chart.y) o.selected = true;
@@ -1013,11 +1049,13 @@
       });
       controls.appendChild(removeBtn);
 
-      [typeSel, xSel, ySel, aggSel].forEach(s => s.addEventListener('change', () => {
+      [typeSel, ySel, aggSel].forEach(s => s.addEventListener('change', () => {
         chart.type = typeSel.value;
-        chart.x = xSel.value;
         chart.y = ySel.value || null;
         chart.agg = aggSel.value;
+        if ((chart.type === 'pie' || chart.type === 'doughnut' || chart.type === 'scatter') && chart.groups.length > 1) {
+          chart.groups = chart.groups.slice(0, 1);
+        }
         renderCharts();
       }));
 
@@ -1031,55 +1069,84 @@
       const badge = el('div', { class: 'rl-chart-badge' });
       card.appendChild(badge);
 
-      // build data
       const sourceRows = state.checkOnly
         ? Array.from(state.checkedRows).map(i => state.rows[i]).filter(Boolean)
         : applyFilters(state.rows);
 
-      if (!sourceRows.length || !chart.x) {
-        body.innerHTML = '<div class="rl-chart-empty">No data to chart. Adjust filters or column selection.</div>';
+      if (!sourceRows.length || chart.groups.length === 0) {
+        body.innerHTML = '<div class="rl-chart-empty">Pick at least one group column to chart.</div>';
         badge.textContent = '';
         return card;
       }
 
       try {
-        const { labels, values, datasetLabel } = aggregate(sourceRows, chart);
-        if (!labels.length) {
+        const built = buildChartData(sourceRows, chart);
+        if (!built || (built.labels && !built.labels.length && !built.scatterPoints)) {
           body.innerHTML = '<div class="rl-chart-empty">Nothing to plot for the current selection.</div>';
           return card;
         }
         const ctx = canvas.getContext('2d');
-        const palette = ['#6b4eff','#2563eb','#16a34a','#d97706','#dc2626','#0891b2','#7c3aed','#db2777','#65a30d','#ea580c'];
-        const config = {
-          type: chart.type === 'scatter' ? 'scatter' : chart.type,
-          data: chart.type === 'scatter' ? {
-            datasets: [{
-              label: `${chart.y || 'value'} vs ${chart.x}`,
-              data: values,
-              backgroundColor: palette[0]
-            }]
-          } : {
-            labels,
-            datasets: [{
-              label: datasetLabel,
-              data: values,
-              backgroundColor: (chart.type === 'pie' || chart.type === 'doughnut') ? palette : palette[0],
-              borderColor: palette[0],
-              borderWidth: chart.type === 'line' ? 2 : 1,
-              fill: chart.type === 'line' ? false : true
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: chart.type === 'pie' || chart.type === 'doughnut' }
+        const palette = ['#6b4eff','#2563eb','#16a34a','#d97706','#dc2626','#0891b2','#7c3aed','#db2777','#65a30d','#ea580c','#0ea5e9','#84cc16'];
+
+        let config;
+        if (chart.type === 'scatter') {
+          config = {
+            type: 'scatter',
+            data: { datasets: [{ label: built.datasetLabel, data: built.scatterPoints, backgroundColor: palette[0] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (built.datasets) {
+          // multi-dataset (stacked)
+          config = {
+            type: chart.type,
+            data: {
+              labels: built.labels,
+              datasets: built.datasets.map((ds, i) => ({
+                label: ds.label,
+                data: ds.values,
+                backgroundColor: palette[i % palette.length],
+                borderColor: palette[i % palette.length],
+                borderWidth: chart.type === 'line' ? 2 : 1,
+                fill: chart.type === 'line' ? false : true,
+                stack: chart.type === 'bar' ? 'stack0' : undefined
+              }))
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: true } },
+              scales: chart.type === 'bar' ? { x: { stacked: true }, y: { stacked: true } } : {}
             }
-          }
-        };
+          };
+        } else {
+          // single dataset
+          config = {
+            type: chart.type,
+            data: {
+              labels: built.labels,
+              datasets: [{
+                label: built.datasetLabel,
+                data: built.values,
+                backgroundColor: (chart.type === 'pie' || chart.type === 'doughnut') ? palette : palette[0],
+                borderColor: palette[0],
+                borderWidth: chart.type === 'line' ? 2 : 1,
+                fill: chart.type === 'line' ? false : true
+              }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: chart.type === 'pie' || chart.type === 'doughnut' } }
+            }
+          };
+        }
+
         if (chart.instance) chart.instance.destroy();
         chart.instance = new Chart(ctx, config);
-        badge.textContent = `Charting ${sourceRows.length.toLocaleString()} row${sourceRows.length===1?'':'s'}${state.checkOnly ? ' (checked only)' : (state.filters.length ? ` (filtered from ${state.rows.length.toLocaleString()})` : '')}`;
+
+        let badgeTxt = `Charting ${sourceRows.length.toLocaleString()} row${sourceRows.length===1?'':'s'}`;
+        if (state.checkOnly) badgeTxt += ' (checked only)';
+        else if (state.filters.length) badgeTxt += ` (filtered from ${state.rows.length.toLocaleString()})`;
+        if (built.warning) badgeTxt += ` · ⚠ ${built.warning}`;
+        badge.textContent = badgeTxt;
       } catch (e) {
         body.innerHTML = `<div class="rl-chart-empty">Chart error: ${escapeHtml(e.message)}</div>`;
       }
@@ -1087,57 +1154,142 @@
       return card;
     }
 
-    function aggregate(rows, chart) {
+    function buildChartData(rows, chart) {
+      // Scatter: one group as X, numeric Y
       if (chart.type === 'scatter') {
-        const xc = state.columns.find(c => c.name === chart.x);
+        const xName = chart.groups[0];
+        const xc = state.columns.find(c => c.name === xName);
         const yc = state.columns.find(c => c.name === chart.y);
         if (!xc || !yc) return { labels: [], values: [], datasetLabel: '' };
-        const values = rows.map(r => ({
+        const points = rows.map(r => ({
           x: coerce(r[xc.name], xc.type),
           y: coerce(r[yc.name], yc.type)
         })).filter(p => p.x != null && p.y != null && typeof p.x === 'number' && typeof p.y === 'number');
-        return { labels: [], values, datasetLabel: `${chart.y} vs ${chart.x}` };
+        return { scatterPoints: points, datasetLabel: `${chart.y} vs ${xName}` };
       }
 
-      const groups = new Map();
-      const xCol = state.columns.find(c => c.name === chart.x);
       const yCol = chart.y ? state.columns.find(c => c.name === chart.y) : null;
+      const agg = chart.agg;
+
+      const reduce = arr => {
+        if (!arr.length) return 0;
+        if (agg === 'count' || !yCol) return arr.length;
+        if (agg === 'sum') return arr.reduce((a,b) => a+b, 0);
+        if (agg === 'avg') return arr.reduce((a,b) => a+b, 0) / arr.length;
+        if (agg === 'min') return Math.min(...arr);
+        if (agg === 'max') return Math.max(...arr);
+        return arr.length;
+      };
+
+      const valueFor = r => {
+        if (agg === 'count' || !yCol) return 1;
+        return coerce(r[yCol.name], yCol.type);
+      };
+
+      const keyOf = (r, colName) => {
+        const v = r[colName];
+        return (v == null || v === '') ? '(empty)' : String(v);
+      };
+
+      // Single group
+      if (chart.groups.length === 1) {
+        const g = chart.groups[0];
+        const groups = new Map();
+        rows.forEach(r => {
+          const k = keyOf(r, g);
+          if (!groups.has(k)) groups.set(k, []);
+          const v = valueFor(r);
+          if (v != null) groups.get(k).push(v);
+        });
+        const pairs = Array.from(groups.entries())
+          .map(([k, arr]) => [k, reduce(arr)])
+          .sort((a,b) => b[1] - a[1])
+          .slice(0, 50);
+        return {
+          labels: pairs.map(p => p[0]),
+          values: pairs.map(p => p[1]),
+          datasetLabel: agg === 'count' ? `count by ${g}` : `${agg}(${chart.y || ''}) by ${g}`
+        };
+      }
+
+      // Multi-group: combine mode
+      if (chart.groupMode === 'combine') {
+        const groups = new Map();
+        rows.forEach(r => {
+          const k = chart.groups.map(g => keyOf(r, g)).join(' · ');
+          if (!groups.has(k)) groups.set(k, []);
+          const v = valueFor(r);
+          if (v != null) groups.get(k).push(v);
+        });
+        const pairs = Array.from(groups.entries())
+          .map(([k, arr]) => [k, reduce(arr)])
+          .sort((a,b) => b[1] - a[1]);
+        const warning = pairs.length > COMBO_WARN_THRESHOLD
+          ? `${pairs.length} combinations — showing top 50`
+          : null;
+        const top = pairs.slice(0, 50);
+        return {
+          labels: top.map(p => p[0]),
+          values: top.map(p => p[1]),
+          datasetLabel: `${agg}(${chart.y || ''}) by ${chart.groups.join(' · ')}`,
+          warning
+        };
+      }
+
+      // Multi-group: stack mode
+      const primary = chart.groups.slice(0, -1);
+      const stackBy = chart.groups[chart.groups.length - 1];
+
+      const xKeys = new Set();
+      const stackKeys = new Set();
+      const cells = new Map();
 
       rows.forEach(r => {
-        const key = r[chart.x];
-        const k = key == null || key === '' ? '(empty)' : String(key);
-        if (!groups.has(k)) groups.set(k, []);
-        if (yCol) {
-          const v = coerce(r[chart.y], yCol.type);
-          if (v != null) groups.get(k).push(v);
-        } else {
-          groups.get(k).push(1);
-        }
+        const xK = primary.map(g => keyOf(r, g)).join(' · ');
+        const sK = keyOf(r, stackBy);
+        xKeys.add(xK);
+        stackKeys.add(sK);
+        const cellKey = xK + '||' + sK;
+        if (!cells.has(cellKey)) cells.set(cellKey, []);
+        const v = valueFor(r);
+        if (v != null) cells.get(cellKey).push(v);
       });
 
-      const labels = Array.from(groups.keys());
-      let values;
-      const agg = chart.agg;
-      if (agg === 'count') {
-        values = labels.map(l => groups.get(l).length);
-      } else if (yCol) {
-        values = labels.map(l => {
-          const arr = groups.get(l);
-          if (!arr.length) return 0;
-          if (agg === 'sum') return arr.reduce((a,b)=>a+b,0);
-          if (agg === 'avg') return arr.reduce((a,b)=>a+b,0) / arr.length;
-          if (agg === 'min') return Math.min(...arr);
-          if (agg === 'max') return Math.max(...arr);
-          return arr.length;
+      const xTotals = new Map();
+      xKeys.forEach(xk => {
+        let total = 0;
+        stackKeys.forEach(sk => {
+          const arr = cells.get(xk + '||' + sk) || [];
+          total += reduce(arr) || 0;
         });
-      } else {
-        values = labels.map(l => groups.get(l).length);
-      }
+        xTotals.set(xk, total);
+      });
+      const sortedX = Array.from(xKeys).sort((a,b) => xTotals.get(b) - xTotals.get(a)).slice(0, 30);
 
-      // Sort by value desc, cap to 50 for readability
-      const pairs = labels.map((l, i) => [l, values[i]]).sort((a,b) => b[1] - a[1]).slice(0, 50);
-      const datasetLabel = agg === 'count' ? `count by ${chart.x}` : `${agg}(${chart.y || ''}) by ${chart.x}`;
-      return { labels: pairs.map(p => p[0]), values: pairs.map(p => p[1]), datasetLabel };
+      const stackTotals = new Map();
+      stackKeys.forEach(sk => {
+        let total = 0;
+        sortedX.forEach(xk => {
+          const arr = cells.get(xk + '||' + sk) || [];
+          total += reduce(arr) || 0;
+        });
+        stackTotals.set(sk, total);
+      });
+      const sortedStacks = Array.from(stackKeys).sort((a,b) => stackTotals.get(b) - stackTotals.get(a)).slice(0, 12);
+
+      const datasets = sortedStacks.map(sk => ({
+        label: sk,
+        values: sortedX.map(xk => {
+          const arr = cells.get(xk + '||' + sk) || [];
+          return arr.length ? reduce(arr) : 0;
+        })
+      }));
+
+      let warning = null;
+      if (xKeys.size > 30) warning = `${xKeys.size} groups — showing top 30`;
+      else if (stackKeys.size > 12) warning = `${stackKeys.size} stack values — showing top 12`;
+
+      return { labels: sortedX, datasets, warning };
     }
 
     // ============================================================
@@ -1188,7 +1340,13 @@
         columns: state.columns.map(c => ({ name: c.name, type: c.type, selected: c.selected })),
         filters: state.filters.map(f => ({ column: f.column, type: f.type, op: f.op, value: f.value })),
         filterMode: state.filterMode,
-        charts: state.charts.map(c => ({ type: c.type, x: c.x, y: c.y, agg: c.agg })),
+        charts: state.charts.map(c => ({
+          type: c.type,
+          groups: c.groups || (c.x ? [c.x] : []),
+          groupMode: c.groupMode || 'stack',
+          y: c.y,
+          agg: c.agg
+        })),
         sort: state.sort
       };
     }
@@ -1203,23 +1361,26 @@
       try {
         const cfg = JSON.parse(text);
         if (!cfg || !cfg.columns) throw new Error('Not a ReportLens config.');
-        // apply column selections + types where matching
         let applied = 0, missing = 0;
         cfg.columns.forEach(pc => {
           const c = state.columns.find(x => x.name === pc.name);
           if (c) { c.selected = pc.selected; if (pc.type) c.type = pc.type; applied++; }
           else missing++;
         });
-        // filters
         state.filters = [];
         (cfg.filters || []).forEach(f => {
           const c = state.columns.find(x => x.name === f.column);
           if (c && c.type === f.type) state.filters.push({ ...f, id: state.nextFilterId++ });
         });
         state.filterMode = cfg.filterMode || 'and';
-        // charts
         destroyCharts();
-        state.charts = (cfg.charts || []).map(c => ({ ...c, id: state.nextChartId++, instance: null }));
+        state.charts = (cfg.charts || []).map(c => ({
+          ...c,
+          groups: c.groups || (c.x ? [c.x] : []),
+          groupMode: c.groupMode || 'stack',
+          id: state.nextChartId++,
+          instance: null
+        }));
         if (!state.charts.length) addChart();
         state.sort = cfg.sort || { column: null, dir: 'asc' };
 

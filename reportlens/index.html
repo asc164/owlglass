@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ReportLens · Owlglass</title>
 <link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/shared.js" defer></script>  
 <script>
 function loadScript(src, fallback, cb){
   const s=document.createElement('script');
@@ -145,6 +146,8 @@ loadScript('/assets/chart.umd.min.js','https://cdn.jsdelivr.net/npm/chart.js@4.4
 </style>
 </head>
 <body>
+<div id="sidebar-slot"></div>
+<button class="mobile-toggle" aria-label="Menu">☰</button>
 <div class="rl-app">
   <div class="rl-header">
     <div>
@@ -1001,7 +1004,7 @@ function openColumnPopover(tv,card){
   pop.style.left=(rect.right-220)+'px';
   setTimeout(()=>{
     const close=e=>{if(!pop.contains(e.target)){pop.remove();document.removeEventListener('click',close);}};
-    document.addEventListener('click',close);
+    <style>('click',close);
   },0);
 }
 function exportTvCsv(tv){
@@ -1096,7 +1099,8 @@ function onLibsReady(){
     setTimeout(()=>{if(ls)ls.style.display='none';},1500);
   }
 }
-document.addEventListener('DOMContentLoaded',()=>{
+<style>('DOMContentLoaded',()=>{
+  if(window.Owlglass)window.Owlglass.mount({active:'reportlens'});
   wireUp();
   if(window.__rlLibsReady)onLibsReady();
   else window.__rlOnReady=onLibsReady;

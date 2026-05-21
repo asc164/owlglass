@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ReportLens · Owlglass</title>
-<meta name="description" content="Free, browser-based CSV/JSON explorer: filter rows, pick columns, build charts, export to Excel or PDF. No data leaves your browser.">
+<meta name="description" content="Free, browser-based reporting tool: upload data, get instant insights, build reports, export to PDF. No data leaves your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,66 +25,131 @@
   --rl-error:#dc2626;
   --rl-info:#2563eb;
 }
-.rl-wrap{max-width:1200px;margin:0 auto;padding:24px 8px 64px;color:var(--rl-text);font-family:'Inter',system-ui,sans-serif}
-.rl-crumb{font-size:.82rem;color:var(--rl-text-dim);margin-bottom:14px}
+.rl-wrap{max-width:1280px;margin:0 auto;padding:20px 12px 64px;color:var(--rl-text);font-family:'Inter',system-ui,sans-serif}
+.rl-crumb{font-size:.82rem;color:var(--rl-text-dim);margin-bottom:12px}
 .rl-crumb a{color:var(--rl-text-dim);text-decoration:none}
 .rl-crumb a:hover{color:var(--rl-accent)}
-.rl-header h1{font-size:1.8rem;font-weight:700;margin:0 0 6px}
-.rl-header .rl-tag{color:var(--rl-text-dim);font-size:.95rem;margin:0 0 22px}
-.rl-card{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:10px;padding:18px;margin-bottom:18px}
-.rl-card h2{font-size:1.02rem;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:10px}
-.rl-card h2 .rl-step{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--rl-accent-dim);color:var(--rl-accent);font-size:.78rem;font-weight:700}
-.rl-card .rl-help{font-size:.85rem;color:var(--rl-text-dim);margin:0 0 12px}
-.rl-drop{border:2px dashed var(--rl-border-strong);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:all .15s}
-.rl-drop:hover,.rl-drop.dragover{border-color:var(--rl-accent);background:var(--rl-accent-dim)}
-.rl-drop p{margin:6px 0;color:var(--rl-text-dim)}
-.rl-drop .rl-drop-main{font-size:1rem;color:var(--rl-text);font-weight:500}
-.rl-drop .rl-drop-sub{font-size:.82rem}
-.rl-drop input[type=file]{display:none}
-.rl-status{margin-top:10px;font-size:.85rem;min-height:18px}
-.rl-status.err{color:var(--rl-error)}
-.rl-status.ok{color:var(--rl-success)}
-.rl-status.warn{color:var(--rl-warn)}
-.rl-btn{background:var(--rl-accent);color:#fff;border:0;padding:8px 14px;border-radius:6px;font-size:.88rem;font-weight:500;cursor:pointer;font-family:inherit}
+
+/* Top bar */
+.rl-topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.rl-topbar h1{font-size:1.5rem;font-weight:700;margin:0;margin-right:10px}
+.rl-topbar .rl-spacer{flex:1}
+.rl-btn{background:var(--rl-accent);color:#fff;border:0;padding:7px 13px;border-radius:6px;font-size:.85rem;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
 .rl-btn:hover{background:#5a3eef}
 .rl-btn:disabled{background:var(--rl-text-faint);cursor:not-allowed}
 .rl-btn.secondary{background:var(--rl-surface);color:var(--rl-text);border:1px solid var(--rl-border-strong)}
 .rl-btn.secondary:hover{background:#f5f5f7;border-color:var(--rl-text-faint)}
 .rl-btn.ghost{background:transparent;color:var(--rl-text-dim);border:0;padding:4px 8px}
 .rl-btn.ghost:hover{color:var(--rl-accent);background:var(--rl-accent-dim)}
-.rl-btn.danger{background:transparent;color:var(--rl-error);border:1px solid var(--rl-error)}
+.rl-btn.danger{background:transparent;color:var(--rl-error);border:1px solid var(--rl-error);padding:6px 10px}
 .rl-btn.danger:hover{background:#fee2e2}
-.rl-cols{display:flex;flex-wrap:wrap;gap:6px;max-height:200px;overflow-y:auto;padding:6px;border:1px solid var(--rl-border);border-radius:6px;background:#fbfbfd}
-.rl-col{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:14px;font-size:.82rem;cursor:pointer;user-select:none}
-.rl-col:hover{border-color:var(--rl-accent)}
-.rl-col.selected{background:var(--rl-accent-dim);border-color:var(--rl-accent);color:var(--rl-accent)}
-.rl-col input{margin:0}
-.rl-col .rl-type{font-size:.7rem;color:var(--rl-text-faint);padding:1px 5px;background:#f0f0f3;border-radius:3px}
-.rl-col.selected .rl-type{background:#fff;color:var(--rl-accent)}
-.rl-col-actions{display:flex;gap:8px;margin-top:8px;font-size:.82rem}
-.rl-col-actions a{color:var(--rl-accent);cursor:pointer;text-decoration:none}
-.rl-col-actions a:hover{text-decoration:underline}
-.rl-filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
-.rl-filter-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 10px;background:var(--rl-accent-dim);color:var(--rl-accent);border-radius:14px;font-size:.82rem;font-weight:500}
-.rl-filter-chip .rl-x{cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;opacity:.7}
-.rl-filter-chip .rl-x:hover{opacity:1}
-.rl-filter-editor{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px;background:#fbfbfd;border:1px solid var(--rl-border);border-radius:6px;margin-top:8px}
-.rl-filter-editor select,.rl-filter-editor input{padding:5px 8px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;background:var(--rl-surface)}
-.rl-filter-editor input{min-width:140px}
-.rl-filter-mode{display:inline-flex;gap:0;border:1px solid var(--rl-border-strong);border-radius:4px;overflow:hidden;margin-left:6px}
-.rl-filter-mode button{background:var(--rl-surface);color:var(--rl-text-dim);border:0;padding:4px 10px;font-size:.78rem;cursor:pointer;font-family:inherit}
+.rl-btn.small{padding:4px 9px;font-size:.78rem}
+
+/* Empty state / upload */
+.rl-empty{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:12px;padding:48px 24px;text-align:center}
+.rl-empty h2{font-size:1.4rem;font-weight:600;margin:0 0 8px}
+.rl-empty p{color:var(--rl-text-dim);margin:0 0 24px;max-width:480px;margin-left:auto;margin-right:auto}
+.rl-drop{border:2px dashed var(--rl-border-strong);border-radius:10px;padding:36px;cursor:pointer;transition:all .15s;max-width:520px;margin:0 auto}
+.rl-drop:hover,.rl-drop.dragover{border-color:var(--rl-accent);background:var(--rl-accent-dim)}
+.rl-drop p{margin:6px 0;color:var(--rl-text-dim)}
+.rl-drop .rl-drop-main{font-size:1rem;color:var(--rl-text);font-weight:500}
+.rl-drop .rl-drop-sub{font-size:.82rem}
+.rl-drop input[type=file]{display:none}
+
+/* Source bar */
+.rl-source{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:.85rem;color:var(--rl-text-dim)}
+.rl-source strong{color:var(--rl-text);font-weight:600}
+.rl-source .rl-source-actions{margin-left:auto;display:flex;gap:6px}
+.rl-title-input{background:transparent;border:0;border-bottom:1px dashed transparent;font-size:1.05rem;font-weight:600;color:var(--rl-text);font-family:inherit;padding:2px 4px;min-width:240px;outline:none;border-radius:0}
+.rl-title-input:hover{border-bottom-color:var(--rl-border-strong)}
+.rl-title-input:focus{border-bottom-color:var(--rl-accent)}
+
+/* Filters bar */
+.rl-filterbar{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rl-filterbar-label{font-size:.78rem;color:var(--rl-text-dim);font-weight:500;margin-right:2px}
+.rl-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px 4px 10px;background:var(--rl-accent-dim);color:var(--rl-accent);border-radius:14px;font-size:.8rem;font-weight:500}
+.rl-chip .rl-x{cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;opacity:.7}
+.rl-chip .rl-x:hover{opacity:1}
+.rl-filterbar .rl-summary{margin-left:auto;font-size:.8rem;color:var(--rl-text-dim)}
+.rl-filterbar .rl-summary strong{color:var(--rl-text)}
+.rl-filter-mode{display:inline-flex;gap:0;border:1px solid var(--rl-border-strong);border-radius:4px;overflow:hidden}
+.rl-filter-mode button{background:var(--rl-surface);color:var(--rl-text-dim);border:0;padding:3px 9px;font-size:.74rem;cursor:pointer;font-family:inherit}
 .rl-filter-mode button.active{background:var(--rl-accent);color:#fff}
-.rl-filter-summary{font-size:.85rem;color:var(--rl-text-dim);margin-top:8px}
-.rl-filter-summary strong{color:var(--rl-text)}
-.rl-multiselect{position:relative}
-.rl-multi-popup{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--rl-surface);border:1px solid var(--rl-border-strong);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.08);max-height:280px;overflow:hidden;z-index:50;display:flex;flex-direction:column;min-width:220px}
-.rl-multi-popup input{margin:8px;padding:5px 8px;border:1px solid var(--rl-border);border-radius:4px}
-.rl-multi-list{overflow-y:auto;flex:1;padding:4px 0}
-.rl-multi-item{padding:5px 12px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:8px}
-.rl-multi-item:hover{background:#f5f5f7}
-.rl-multi-item .rl-count{margin-left:auto;color:var(--rl-text-faint);font-size:.78rem}
-.rl-table-wrap{overflow:auto;border:1px solid var(--rl-border);border-radius:6px;max-height:520px}
-.rl-table{width:100%;border-collapse:collapse;font-size:.85rem}
+
+/* Filter editor popover */
+.rl-popover{position:absolute;background:var(--rl-surface);border:1px solid var(--rl-border-strong);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px;z-index:200;min-width:300px;display:flex;flex-direction:column;gap:8px}
+.rl-popover select,.rl-popover input{padding:6px 8px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;background:var(--rl-surface)}
+.rl-popover-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
+
+/* KPI grid */
+.rl-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.rl-kpi{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;position:relative}
+.rl-kpi-label{font-size:.72rem;color:var(--rl-text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;font-weight:500}
+.rl-kpi-value{font-size:1.6rem;font-weight:700;color:var(--rl-text);line-height:1.1;letter-spacing:-0.01em}
+.rl-kpi-sub{font-size:.72rem;color:var(--rl-text-dim);margin-top:4px}
+.rl-kpi .rl-kpi-remove{position:absolute;top:6px;right:6px;opacity:0;transition:opacity .12s;background:transparent;border:0;color:var(--rl-text-faint);font-size:.9rem;cursor:pointer;padding:2px 6px;border-radius:3px}
+.rl-kpi:hover .rl-kpi-remove{opacity:1}
+.rl-kpi .rl-kpi-remove:hover{background:#fee2e2;color:var(--rl-error)}
+.rl-kpi-add{background:#fbfbfd;border:1px dashed var(--rl-border-strong);border-radius:8px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--rl-text-dim);font-size:.85rem;font-weight:500;min-height:80px}
+.rl-kpi-add:hover{border-color:var(--rl-accent);color:var(--rl-accent);background:var(--rl-accent-dim)}
+
+/* Charts grid */
+.rl-chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:12px;margin-bottom:14px}
+.rl-chart-card{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;display:flex;flex-direction:column}
+.rl-chart-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rl-chart-title{font-size:.92rem;font-weight:600;color:var(--rl-text);flex:1;background:transparent;border:0;font-family:inherit;padding:2px 4px;border-bottom:1px dashed transparent;outline:none}
+.rl-chart-title:hover{border-bottom-color:var(--rl-border-strong)}
+.rl-chart-title:focus{border-bottom-color:var(--rl-accent)}
+.rl-chart-actions{display:flex;gap:2px}
+.rl-chart-options{padding:10px;background:#fbfbfd;border:1px solid var(--rl-border);border-radius:6px;margin-bottom:10px;display:none;flex-wrap:wrap;gap:6px;align-items:center}
+.rl-chart-options.open{display:flex}
+.rl-chart-options select{padding:4px 7px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.8rem;font-family:inherit;background:var(--rl-surface)}
+.rl-chart-options label{font-size:.72rem;color:var(--rl-text-dim);margin-right:-2px}
+.rl-chart-body{background:#fbfbfd;border-radius:6px;padding:10px;height:280px;position:relative}
+.rl-chart-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--rl-text-faint);font-size:.85rem;text-align:center;padding:20px}
+.rl-chart-meta{font-size:.72rem;color:var(--rl-text-dim);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+.rl-chart-meta .rl-drill-hint{color:var(--rl-accent);opacity:.7}
+
+.rl-chart-add{background:#fbfbfd;border:1px dashed var(--rl-border-strong);border-radius:8px;padding:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--rl-text-dim);font-size:.9rem;font-weight:500;min-height:280px}
+.rl-chart-add:hover{border-color:var(--rl-accent);color:var(--rl-accent);background:var(--rl-accent-dim)}
+
+/* Suggestions */
+.rl-suggest{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;margin-bottom:14px}
+.rl-suggest-head{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--rl-text)}
+.rl-suggest-head .rl-caret{font-size:.7rem;color:var(--rl-text-dim);transition:transform .15s}
+.rl-suggest.open .rl-caret{transform:rotate(90deg)}
+.rl-suggest-body{display:none;margin-top:10px;flex-wrap:wrap;gap:6px}
+.rl-suggest.open .rl-suggest-body{display:flex}
+.rl-suggest-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fbfbfd;border:1px solid var(--rl-border-strong);border-radius:14px;font-size:.8rem;cursor:pointer;color:var(--rl-text)}
+.rl-suggest-chip:hover{border-color:var(--rl-accent);color:var(--rl-accent);background:var(--rl-accent-dim)}
+.rl-suggest-chip .rl-plus{color:var(--rl-accent);font-weight:700}
+
+/* Notes */
+.rl-notes{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;margin-bottom:14px}
+.rl-notes-label{font-size:.78rem;color:var(--rl-text-dim);font-weight:500;margin-bottom:6px;display:block}
+.rl-notes textarea{width:100%;min-height:60px;padding:8px;border:1px solid var(--rl-border);border-radius:6px;font-family:inherit;font-size:.88rem;color:var(--rl-text);resize:vertical;background:#fbfbfd;outline:none}
+.rl-notes textarea:focus{border-color:var(--rl-accent);background:var(--rl-surface)}
+
+/* Table */
+.rl-table-section{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.rl-table-head-bar{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:var(--rl-surface);border-bottom:1px solid transparent}
+.rl-table-section.open .rl-table-head-bar{border-bottom-color:var(--rl-border)}
+.rl-table-head-bar h3{font-size:.92rem;font-weight:600;margin:0}
+.rl-table-head-bar .rl-caret{font-size:.7rem;color:var(--rl-text-dim);transition:transform .15s}
+.rl-table-section.open .rl-table-head-bar .rl-caret{transform:rotate(90deg)}
+.rl-table-head-bar .rl-count{font-size:.82rem;color:var(--rl-text-dim);margin-left:auto}
+.rl-table-body-wrap{display:none}
+.rl-table-section.open .rl-table-body-wrap{display:block}
+.rl-table-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--rl-border);background:#fbfbfd}
+.rl-table-toolbar input[type=search]{padding:5px 10px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;min-width:200px}
+.rl-cols-dropdown{position:relative}
+.rl-cols-popup{position:absolute;top:calc(100% + 4px);left:0;background:var(--rl-surface);border:1px solid var(--rl-border-strong);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.1);max-height:320px;overflow-y:auto;padding:6px;z-index:50;display:none;min-width:220px}
+.rl-cols-dropdown.open .rl-cols-popup{display:block}
+.rl-col-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:.82rem}
+.rl-col-row:hover{background:#f5f5f7}
+.rl-col-row .rl-type{font-size:.66rem;color:var(--rl-text-faint);padding:1px 5px;background:#f0f0f3;border-radius:3px;margin-left:auto;cursor:pointer}
+.rl-table-wrap{overflow:auto;max-height:520px}
+.rl-table{width:100%;border-collapse:collapse;font-size:.84rem}
 .rl-table thead{background:#f5f5f7;position:sticky;top:0;z-index:5}
 .rl-table th{text-align:left;padding:8px 10px;font-weight:600;color:var(--rl-text);border-bottom:1px solid var(--rl-border);cursor:pointer;white-space:nowrap;user-select:none}
 .rl-table th:hover{background:#ececef}
@@ -92,27 +157,18 @@
 .rl-table th .rl-sort-ind{font-size:.7rem;margin-left:4px;opacity:.7}
 .rl-table td{padding:6px 10px;border-bottom:1px solid #f0f0f3;color:var(--rl-text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rl-table tr:hover td{background:#fafafd}
-.rl-table .rl-check{width:32px}
-.rl-table .rl-check input{cursor:pointer}
-.rl-table-meta{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:8px;font-size:.85rem;color:var(--rl-text-dim)}
-.rl-table-meta input[type=search]{padding:5px 10px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;min-width:200px}
-.rl-charts{display:flex;flex-direction:column;gap:14px}
-.rl-chart-card{border:1px solid var(--rl-border);border-radius:8px;padding:14px;background:#fbfbfd}
-.rl-chart-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.rl-chart-controls select,.rl-chart-controls input{padding:5px 8px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;background:var(--rl-surface)}
-.rl-chart-controls label{font-size:.78rem;color:var(--rl-text-dim);margin-right:-4px}
-.rl-chart-body{background:var(--rl-surface);border-radius:6px;padding:12px;height:340px;position:relative}
-.rl-chart-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--rl-text-faint);font-size:.88rem;text-align:center;padding:20px}
-.rl-chart-badge{font-size:.78rem;color:var(--rl-text-dim);margin-top:6px}
-.rl-exports{display:flex;flex-wrap:wrap;gap:8px}
-.rl-empty-state{text-align:center;padding:40px 20px;color:var(--rl-text-faint)}
-.rl-empty-state .rl-emoji{font-size:2rem;margin-bottom:8px;opacity:.5}
+
+/* Toast */
 .rl-toast{position:fixed;bottom:20px;right:20px;background:var(--rl-text);color:#fff;padding:10px 16px;border-radius:6px;font-size:.85rem;box-shadow:0 4px 12px rgba(0,0,0,.18);z-index:1000;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;max-width:340px}
 .rl-toast.show{opacity:1;transform:translateY(0)}
 .rl-toast.err{background:var(--rl-error)}
 .rl-toast.ok{background:var(--rl-success)}
-.rl-pill{display:inline-block;padding:1px 7px;font-size:.7rem;font-weight:500;border-radius:10px;background:#f0f0f3;color:var(--rl-text-dim);margin-left:6px}
-.rl-pill.warn{background:#fef3c7;color:#92400e}
+
+/* Status */
+.rl-status{margin-top:10px;font-size:.85rem;min-height:18px}
+.rl-status.err{color:var(--rl-error)}
+.rl-status.ok{color:var(--rl-success)}
+
 @media print{
   body *{visibility:hidden}
   .rl-print-area,.rl-print-area *{visibility:visible}
@@ -120,9 +176,9 @@
   .rl-chart-body{page-break-inside:avoid}
 }
 @media (max-width:760px){
-  .rl-wrap{padding:14px 4px 40px}
-  .rl-table-meta{flex-direction:column;align-items:stretch}
-  .rl-chart-body{height:260px}
+  .rl-wrap{padding:14px 6px 40px}
+  .rl-chart-grid{grid-template-columns:1fr}
+  .rl-chart-body{height:240px}
 }
 </style>
 </head>
@@ -136,88 +192,82 @@
 
           <div class="rl-crumb"><a href="/">Owlglass</a> / ReportLens</div>
 
-          <div class="rl-header">
+          <div class="rl-topbar">
             <h1>ReportLens</h1>
-            <p class="rl-tag">Upload CSV or JSON. Pick columns, filter rows, build charts. Everything runs in your browser — your data never leaves this page.</p>
+            <div class="rl-spacer"></div>
+            <button class="rl-btn secondary" id="rl-upload-btn">Upload file</button>
+            <button class="rl-btn secondary" id="rl-saved-btn" disabled title="Coming soon">Saved reports ▾</button>
+            <button class="rl-btn" id="rl-pdf-btn" disabled>Export PDF</button>
+            <input type="file" id="rl-file" accept=".csv,.tsv,.json,.txt" style="display:none">
           </div>
 
-          <div class="rl-card" id="rl-upload-card">
-            <h2><span class="rl-step">1</span> Upload data</h2>
-            <p class="rl-help">CSV, TSV, or JSON. Max 10 MB or 50,000 rows. Files are parsed locally — nothing is uploaded.</p>
+          <div id="rl-empty-state" class="rl-empty">
+            <h2>Drop a file to start</h2>
+            <p>Upload CSV or JSON. ReportLens will analyze it instantly — KPIs, charts, and a data table, ready to share. Everything runs in your browser; nothing is uploaded.</p>
             <label class="rl-drop" id="rl-drop">
               <p class="rl-drop-main">Drop a file here or click to choose</p>
-              <p class="rl-drop-sub">Supported: .csv, .tsv, .json</p>
-              <input type="file" id="rl-file" accept=".csv,.tsv,.json,.txt">
+              <p class="rl-drop-sub">Supported: .csv, .tsv, .json · max 10 MB / 50,000 rows</p>
+              <input type="file" id="rl-drop-file" accept=".csv,.tsv,.json,.txt">
             </label>
             <div class="rl-status" id="rl-upload-status"></div>
           </div>
 
-          <div class="rl-card" id="rl-columns-card" style="display:none">
-            <h2><span class="rl-step">2</span> Select columns</h2>
-            <p class="rl-help">Click columns to include them in the table and exports. Type badges are inferred from the first 100 rows — click a badge to override.</p>
-            <div class="rl-cols" id="rl-cols"></div>
-            <div class="rl-col-actions">
-              <a id="rl-cols-all">Select all</a>
-              <a id="rl-cols-none">Select none</a>
-              <span style="color:var(--rl-text-faint)">·</span>
-              <span id="rl-cols-count" style="color:var(--rl-text-dim)"></span>
-            </div>
-          </div>
+          <div id="rl-dashboard" style="display:none">
 
-          <div class="rl-card" id="rl-filters-card" style="display:none">
-            <h2><span class="rl-step">3</span> Filter rows <span id="rl-filters-toggle" class="rl-pill" style="cursor:pointer">expand</span></h2>
-            <div id="rl-filters-body">
-              <p class="rl-help">Add filter rules to narrow the dataset. Multiple rules combine with AND (or switch to OR). You can also tick specific rows in the table below.</p>
-              <div class="rl-filters" id="rl-filter-chips"></div>
-              <div id="rl-filter-editor-host"></div>
-              <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <button class="rl-btn secondary" id="rl-add-filter">+ Add filter</button>
-                <div class="rl-filter-mode" id="rl-filter-mode" style="display:none">
-                  <button data-mode="and" class="active">AND</button>
-                  <button data-mode="or">OR</button>
+            <div class="rl-source" id="rl-source">
+              <span id="rl-source-info"></span>
+              <div class="rl-source-actions">
+                <button class="rl-btn ghost small" id="rl-replace-data" disabled title="Coming soon">Replace data</button>
+                <button class="rl-btn ghost small" id="rl-clear-all">Clear</button>
+              </div>
+            </div>
+
+            <input type="text" class="rl-title-input" id="rl-report-title" placeholder="Untitled report" value="">
+
+            <div class="rl-filterbar" id="rl-filterbar"></div>
+
+            <div class="rl-kpi-grid" id="rl-kpi-grid"></div>
+
+            <div class="rl-chart-grid" id="rl-chart-grid"></div>
+
+            <div class="rl-suggest" id="rl-suggest">
+              <div class="rl-suggest-head" id="rl-suggest-head">
+                <span class="rl-caret">▶</span>
+                <span>Suggested views</span>
+                <span style="margin-left:auto;font-size:.78rem;color:var(--rl-text-dim);font-weight:400" id="rl-suggest-count"></span>
+              </div>
+              <div class="rl-suggest-body" id="rl-suggest-body"></div>
+            </div>
+
+            <div class="rl-notes">
+              <label class="rl-notes-label">Notes (included in PDF)</label>
+              <textarea id="rl-notes" placeholder="Add commentary, observations, or context for this report…"></textarea>
+            </div>
+
+            <div class="rl-table-section" id="rl-table-section">
+              <div class="rl-table-head-bar" id="rl-table-toggle">
+                <span class="rl-caret">▶</span>
+                <h3>Data table</h3>
+                <span class="rl-count" id="rl-table-count"></span>
+              </div>
+              <div class="rl-table-body-wrap">
+                <div class="rl-table-toolbar">
+                  <input type="search" id="rl-search" placeholder="Search visible cells…">
+                  <div class="rl-cols-dropdown" id="rl-cols-dd">
+                    <button class="rl-btn ghost small" id="rl-cols-btn">Columns ▾</button>
+                    <div class="rl-cols-popup" id="rl-cols-popup"></div>
+                  </div>
+                  <span id="rl-table-meta" style="font-size:.78rem;color:var(--rl-text-dim);margin-left:auto"></span>
+                </div>
+                <div class="rl-table-wrap">
+                  <table class="rl-table">
+                    <thead><tr id="rl-table-head"></tr></thead>
+                    <tbody id="rl-table-body"></tbody>
+                  </table>
                 </div>
               </div>
-              <div class="rl-filter-summary" id="rl-filter-summary"></div>
             </div>
-          </div>
 
-          <div class="rl-card" id="rl-table-card" style="display:none">
-            <h2><span class="rl-step">4</span> Table view</h2>
-            <div class="rl-table-meta">
-              <input type="search" id="rl-search" placeholder="Search visible cells…">
-              <span id="rl-table-count"></span>
-              <div style="margin-left:auto;display:flex;gap:6px">
-                <button class="rl-btn ghost" id="rl-check-all">Check all visible</button>
-                <button class="rl-btn ghost" id="rl-check-none">Uncheck all</button>
-              </div>
-            </div>
-            <div class="rl-table-wrap">
-              <table class="rl-table">
-                <thead><tr id="rl-table-head"></tr></thead>
-                <tbody id="rl-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="rl-card" id="rl-charts-card" style="display:none">
-            <h2><span class="rl-step">5</span> Charts</h2>
-            <p class="rl-help">Build one or more charts from the filtered data. Group by up to 4 columns — use Stack mode for cross-tab views, or Combine for one bar per unique combination.</p>
-            <div class="rl-charts" id="rl-charts"></div>
-            <button class="rl-btn secondary" id="rl-add-chart" style="margin-top:12px">+ Add chart</button>
-          </div>
-
-          <div class="rl-card" id="rl-export-card" style="display:none">
-            <h2><span class="rl-step">6</span> Export</h2>
-            <p class="rl-help">Downloads include only filtered rows and selected columns. Config files contain selections and filters — no data.</p>
-            <div class="rl-exports">
-              <button class="rl-btn" id="rl-export-csv">Download CSV</button>
-              <button class="rl-btn" id="rl-export-xlsx">Download Excel</button>
-              <button class="rl-btn secondary" id="rl-export-pdf">Print / PDF</button>
-              <button class="rl-btn secondary" id="rl-export-config">Download config</button>
-              <button class="rl-btn secondary" id="rl-import-config">Load config…</button>
-              <input type="file" id="rl-config-file" accept=".json" style="display:none">
-              <button class="rl-btn danger" id="rl-clear" style="margin-left:auto">Clear all</button>
-            </div>
           </div>
 
         </div>
@@ -237,31 +287,41 @@
     'use strict';
 
     // ============================================================
-    // Constants & state
+    // Constants
     // ============================================================
     const MAX_BYTES = 10 * 1024 * 1024;
     const MAX_ROWS = 50000;
     const TABLE_RENDER_CAP = 1000;
     const TYPE_SAMPLE_SIZE = 100;
     const MULTI_TOP_N = 1000;
+    const MAX_KPIS = 6;
     const MAX_GROUPS = 4;
-    const COMBO_WARN_THRESHOLD = 80;
+
+    // Column-name signals for ranking
+    const NUMERIC_PRIORITY_WORDS = ['revenue','sales','amount','total','price','profit','cost','spend','margin','count','qty','quantity','units','orders','value'];
+    const ID_LIKE_WORDS = ['id','uuid','guid','key','hash'];
+
+    // Common date words for boost
+    const DATE_PRIORITY_WORDS = ['date','created','timestamp','time','day','month','period'];
 
     const state = {
       rawFileName: null,
+      reportTitle: '',
+      notes: '',
       rows: [],
-      columns: [],
+      columns: [],         // [{name, type, selected, source: 'file'|'calculated'}]
       filters: [],
       filterMode: 'and',
-      filtersCollapsed: false,
-      checkedRows: new Set(),
-      checkOnly: false,
       sort: { column: null, dir: 'asc' },
       search: '',
-      charts: [],
+      kpis: [],            // [{id, type:'count'|'sum'|'avg'|'min'|'max'|'distinct'|'span', column, label}]
+      charts: [],          // [{id, type, groups[], y, agg, title, optionsOpen}]
+      suggestions: [],     // [{id, label, kind, payload}]
+      tableOpen: false,
+      suggestOpen: false,
       nextChartId: 1,
+      nextKpiId: 1,
       nextFilterId: 1,
-      editingFilter: null,
     };
 
     // ============================================================
@@ -274,7 +334,7 @@
         if (k === 'class') node.className = attrs[k];
         else if (k === 'html') node.innerHTML = attrs[k];
         else if (k.startsWith('on') && typeof attrs[k] === 'function') node.addEventListener(k.slice(2), attrs[k]);
-        else if (attrs[k] != null) node.setAttribute(k, attrs[k]);
+        else if (attrs[k] != null && attrs[k] !== false) node.setAttribute(k, attrs[k]);
       }
       kids.flat().forEach(k => {
         if (k == null || k === false) return;
@@ -284,31 +344,50 @@
     };
     const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-    // ============================================================
-    // Toast & status
-    // ============================================================
     let toastTimer;
     function toast(msg, kind) {
       const t = $('rl-toast');
       t.textContent = msg;
       t.className = 'rl-toast show' + (kind ? ' ' + kind : '');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { t.className = 'rl-toast' + (kind ? ' ' + kind : ''); }, 3200);
+      toastTimer = setTimeout(() => { t.className = 'rl-toast' + (kind ? ' ' + kind : ''); }, 3000);
     }
-    function status(id, msg, kind) {
-      const n = $(id);
+    function status(msg, kind) {
+      const n = $('rl-upload-status');
       n.textContent = msg || '';
       n.className = 'rl-status' + (kind ? ' ' + kind : '');
     }
 
     // ============================================================
-    // Type inference
+    // Number / date formatting
+    // ============================================================
+    function fmtNumber(n) {
+      if (n == null || !Number.isFinite(n)) return '—';
+      const abs = Math.abs(n);
+      if (abs >= 1e9) return (n / 1e9).toFixed(abs >= 1e10 ? 1 : 2) + 'B';
+      if (abs >= 1e6) return (n / 1e6).toFixed(abs >= 1e7 ? 1 : 2) + 'M';
+      if (abs >= 1e3) return (n / 1e3).toFixed(abs >= 1e4 ? 1 : 2) + 'K';
+      if (Number.isInteger(n)) return n.toLocaleString();
+      return n.toFixed(2);
+    }
+    function fmtInt(n) {
+      if (n == null || !Number.isFinite(n)) return '—';
+      return Math.round(n).toLocaleString();
+    }
+    function fmtDate(ms) {
+      if (ms == null || !Number.isFinite(ms)) return '—';
+      const d = new Date(ms);
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // ============================================================
+    // Type inference + coercion
     // ============================================================
     function inferType(values) {
       const sample = values.filter(v => v != null && v !== '').slice(0, TYPE_SAMPLE_SIZE);
       if (sample.length === 0) return 'string';
       let nums = 0, bools = 0, dates = 0;
-      const boolish = new Set(['true','false','yes','no','0','1','y','n']);
+      const boolish = new Set(['true','false','yes','no','y','n']);
       for (const v of sample) {
         const s = String(v).trim().toLowerCase();
         if (boolish.has(s)) bools++;
@@ -324,8 +403,8 @@
       }
       const total = sample.length;
       if (bools / total > 0.9) return 'boolean';
+      if (dates / total > 0.7 && nums / total < 0.6) return 'date';
       if (nums / total > 0.9) return 'number';
-      if (dates / total > 0.7) return 'date';
       return 'string';
     }
 
@@ -348,6 +427,36 @@
       return String(val);
     }
 
+    function isIdLike(name) {
+      const lc = name.toLowerCase();
+      return ID_LIKE_WORDS.some(w => lc === w || lc.endsWith('_' + w) || lc.endsWith(w) || lc.startsWith(w + '_'));
+    }
+    function numericPriorityScore(name) {
+      const lc = name.toLowerCase();
+      for (let i = 0; i < NUMERIC_PRIORITY_WORDS.length; i++) {
+        if (lc.includes(NUMERIC_PRIORITY_WORDS[i])) return NUMERIC_PRIORITY_WORDS.length - i;
+      }
+      return 0;
+    }
+    function datePriorityScore(name) {
+      const lc = name.toLowerCase();
+      for (let i = 0; i < DATE_PRIORITY_WORDS.length; i++) {
+        if (lc.includes(DATE_PRIORITY_WORDS[i])) return DATE_PRIORITY_WORDS.length - i;
+      }
+      return 0;
+    }
+
+    // Get unique values for a column, with cardinality
+    function cardinality(colName) {
+      const set = new Set();
+      for (let i = 0; i < state.rows.length; i++) {
+        const v = state.rows[i][colName];
+        if (v != null && v !== '') set.add(String(v));
+        if (set.size > 5000) break;
+      }
+      return set.size;
+    }
+
     // ============================================================
     // JSON flattening
     // ============================================================
@@ -367,51 +476,40 @@
       }
       return out;
     }
-
     function findRowArray(json) {
-      if (Array.isArray(json) && json.length && typeof json[0] === 'object' && !Array.isArray(json[0])) {
-        return json;
-      }
+      if (Array.isArray(json) && json.length && typeof json[0] === 'object' && !Array.isArray(json[0])) return json;
       let best = null, bestLen = 0;
       function walk(node) {
         if (Array.isArray(node) && node.length && typeof node[0] === 'object' && !Array.isArray(node[0])) {
           if (node.length > bestLen) { best = node; bestLen = node.length; }
         }
-        if (node && typeof node === 'object') {
-          for (const k in node) walk(node[k]);
-        }
+        if (node && typeof node === 'object') for (const k in node) walk(node[k]);
       }
       walk(json);
       return best;
     }
 
     // ============================================================
-    // File parsing
+    // File handling
     // ============================================================
     function handleFile(file) {
       if (!file) return;
       if (file.size > MAX_BYTES) {
-        status('rl-upload-status', `File is ${(file.size/1048576).toFixed(1)} MB — exceeds the 10 MB limit.`, 'err');
+        status(`File is ${(file.size/1048576).toFixed(1)} MB — exceeds the 10 MB limit.`, 'err');
         return;
       }
-      status('rl-upload-status', `Reading ${file.name} (${(file.size/1024).toFixed(0)} KB)…`);
+      status(`Reading ${file.name}…`);
       const name = file.name.toLowerCase();
       const reader = new FileReader();
-      reader.onerror = () => status('rl-upload-status', 'Could not read file.', 'err');
+      reader.onerror = () => status('Could not read file.', 'err');
       reader.onload = () => {
         try {
-          if (name.endsWith('.json')) {
-            parseJSON(reader.result, file.name);
-          } else {
-            parseCSV(reader.result, file.name, name.endsWith('.tsv') ? '\t' : undefined);
-          }
-        } catch (e) {
-          status('rl-upload-status', 'Parse error: ' + e.message, 'err');
-        }
+          if (name.endsWith('.json')) parseJSON(reader.result, file.name);
+          else parseCSV(reader.result, file.name, name.endsWith('.tsv') ? '\t' : undefined);
+        } catch (e) { status('Parse error: ' + e.message, 'err'); }
       };
       reader.readAsText(file);
     }
-
     function parseCSV(text, fileName, delimiter) {
       const opts = { header: true, skipEmptyLines: true, dynamicTyping: false };
       if (delimiter) opts.delimiter = delimiter;
@@ -419,337 +517,195 @@
       if (result.errors && result.errors.length) {
         const fatal = result.errors.find(e => e.type !== 'FieldMismatch');
         if (fatal && (!result.data || result.data.length === 0)) {
-          status('rl-upload-status', 'CSV parse error: ' + fatal.message, 'err');
+          status('CSV parse error: ' + fatal.message, 'err');
           return;
         }
       }
       let rows = result.data || [];
-      if (rows.length > MAX_ROWS) {
-        rows = rows.slice(0, MAX_ROWS);
-        toast(`File has more than ${MAX_ROWS.toLocaleString()} rows — truncated.`, 'err');
-      }
+      if (rows.length > MAX_ROWS) { rows = rows.slice(0, MAX_ROWS); toast(`Truncated to ${MAX_ROWS.toLocaleString()} rows.`, 'err'); }
       ingestRows(rows, fileName);
     }
-
     function parseJSON(text, fileName) {
       const json = JSON.parse(text);
       const arr = findRowArray(json);
-      if (!arr) {
-        status('rl-upload-status', 'No array of objects found in JSON.', 'err');
-        return;
-      }
+      if (!arr) { status('No array of objects found in JSON.', 'err'); return; }
       let rows = arr.map(r => flattenObject(r));
-      if (rows.length > MAX_ROWS) {
-        rows = rows.slice(0, MAX_ROWS);
-        toast(`File has more than ${MAX_ROWS.toLocaleString()} rows — truncated.`, 'err');
-      }
+      if (rows.length > MAX_ROWS) { rows = rows.slice(0, MAX_ROWS); toast(`Truncated to ${MAX_ROWS.toLocaleString()} rows.`, 'err'); }
       ingestRows(rows, fileName);
     }
 
     function ingestRows(rows, fileName) {
-      if (!rows.length) {
-        status('rl-upload-status', 'No rows found.', 'err');
-        return;
-      }
+      if (!rows.length) { status('No rows found.', 'err'); return; }
+
       const keySet = new Set();
       rows.forEach(r => { for (const k in r) keySet.add(k); });
       const cols = Array.from(keySet);
 
       const columns = cols.map(name => {
         const values = rows.map(r => r[name]);
-        return { name, type: inferType(values), selected: true };
+        return { name, type: inferType(values), selected: true, source: 'file' };
       });
 
-      const priorConfig = state.columns.length ? captureConfig() : null;
-
       state.rawFileName = fileName;
+      state.reportTitle = fileName.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
       state.rows = rows;
       state.columns = columns;
       state.filters = [];
-      state.checkedRows.clear();
       state.search = '';
       state.sort = { column: null, dir: 'asc' };
-      destroyCharts();
+      state.notes = '';
+      destroyAllCharts();
+      state.charts = [];
+      state.kpis = [];
+
+      autoAnalyze();
+
+      $('rl-empty-state').style.display = 'none';
+      $('rl-dashboard').style.display = '';
+      $('rl-pdf-btn').disabled = false;
+      $('rl-report-title').value = state.reportTitle;
+      $('rl-notes').value = state.notes;
+      $('rl-source-info').innerHTML = `<strong>${escapeHtml(fileName)}</strong> · ${rows.length.toLocaleString()} rows · ${columns.length} columns`;
+
+      renderAll();
+    }
+
+    // ============================================================
+    // Auto-analyze
+    // ============================================================
+    function autoAnalyze() {
+      const cols = state.columns;
+      const numCols = cols.filter(c => c.type === 'number' && !isIdLike(c.name));
+      const dateCols = cols.filter(c => c.type === 'date');
+      const catCols = cols.filter(c => c.type === 'string' || c.type === 'boolean');
+
+      // Rank numeric by priority words first, then by total non-null count
+      numCols.sort((a, b) => {
+        const pa = numericPriorityScore(a.name);
+        const pb = numericPriorityScore(b.name);
+        if (pa !== pb) return pb - pa;
+        return 0;
+      });
+      dateCols.sort((a, b) => datePriorityScore(b.name) - datePriorityScore(a.name));
+
+      // Filter categoricals to "useful" ones: cardinality 2..50
+      const catScored = catCols.map(c => ({ col: c, card: cardinality(c.name) }))
+        .filter(x => x.card >= 2 && x.card <= 50 && !isIdLike(x.col.name))
+        .sort((a, b) => a.card - b.card); // fewer uniques first
+
+      // ----- KPIs -----
+      state.kpis = [];
+      // Row count
+      state.kpis.push({ id: state.nextKpiId++, type: 'count', column: null, label: 'Rows' });
+
+      // Top 2 numeric sums
+      numCols.slice(0, 2).forEach(c => {
+        state.kpis.push({ id: state.nextKpiId++, type: 'sum', column: c.name, label: c.name });
+      });
+
+      // Date span (first one)
+      if (dateCols.length) {
+        state.kpis.push({ id: state.nextKpiId++, type: 'span', column: dateCols[0].name, label: dateCols[0].name + ' span' });
+      }
+
+      // Distinct count for lowest-cardinality categorical
+      if (catScored.length && state.kpis.length < MAX_KPIS) {
+        state.kpis.push({ id: state.nextKpiId++, type: 'distinct', column: catScored[0].col.name, label: catScored[0].col.name });
+      }
+
+      // ----- Charts -----
       state.charts = [];
 
-      let reapplied = 0, dropped = 0;
-      if (priorConfig) {
-        priorConfig.columns.forEach(pc => {
-          const c = columns.find(x => x.name === pc.name);
-          if (c) { c.selected = pc.selected; if (pc.type) c.type = pc.type; }
+      // Chart 1: date + numeric (line)
+      if (dateCols.length && numCols.length) {
+        state.charts.push({
+          id: state.nextChartId++,
+          type: 'line',
+          groups: [dateCols[0].name],
+          y: numCols[0].name,
+          agg: 'sum',
+          title: `${numCols[0].name} over ${dateCols[0].name}`,
+          dateBucket: 'auto',
+          optionsOpen: false
         });
-        (priorConfig.filters || []).forEach(f => {
-          const c = columns.find(x => x.name === f.column);
-          if (c && c.type === f.type) { state.filters.push({ ...f, id: state.nextFilterId++ }); reapplied++; }
-          else dropped++;
-        });
-        state.filterMode = priorConfig.filterMode || 'and';
       }
 
-      status('rl-upload-status', `Loaded ${rows.length.toLocaleString()} rows · ${columns.length} columns from ${fileName}.`, 'ok');
-      if (reapplied) toast(`Reapplied ${reapplied} filter${reapplied===1?'':'s'} from previous file.`, 'ok');
-      if (dropped) toast(`${dropped} filter${dropped===1?'':'s'} removed — columns not found or type changed.`, 'err');
-
-      showAllCards();
-      renderColumns();
-      renderFilters();
-      renderTable();
-      if (!state.charts.length) addChart();
-      else renderCharts();
-    }
-
-    function showAllCards() {
-      ['rl-columns-card','rl-filters-card','rl-table-card','rl-charts-card','rl-export-card'].forEach(id => $(id).style.display = '');
-    }
-
-    // ============================================================
-    // Column picker rendering
-    // ============================================================
-    function renderColumns() {
-      const host = $('rl-cols');
-      host.innerHTML = '';
-      state.columns.forEach((c) => {
-        const node = el('label', { class: 'rl-col' + (c.selected ? ' selected' : '') },
-          el('input', { type: 'checkbox', ...(c.selected ? { checked: '' } : {}) }),
-          c.name,
-          el('span', { class: 'rl-type', title: 'Click to change type' }, c.type)
-        );
-        node.querySelector('input').addEventListener('change', e => {
-          c.selected = e.target.checked;
-          node.classList.toggle('selected', c.selected);
-          updateColsCount();
-          renderTable();
-          renderCharts();
+      // Chart 2: best categorical + numeric (bar)
+      if (catScored.length && numCols.length) {
+        state.charts.push({
+          id: state.nextChartId++,
+          type: 'bar',
+          groups: [catScored[0].col.name],
+          y: numCols[0].name,
+          agg: 'sum',
+          title: `${numCols[0].name} by ${catScored[0].col.name}`,
+          optionsOpen: false
         });
-        node.querySelector('.rl-type').addEventListener('click', e => {
-          e.preventDefault();
-          e.stopPropagation();
-          const types = ['string','number','date','boolean'];
-          const next = types[(types.indexOf(c.type) + 1) % types.length];
-          c.type = next;
-          renderColumns();
-          renderFilters();
-          renderTable();
-          renderCharts();
-        });
-        host.appendChild(node);
-      });
-      updateColsCount();
-    }
-
-    function updateColsCount() {
-      const sel = state.columns.filter(c => c.selected).length;
-      $('rl-cols-count').textContent = `${sel} of ${state.columns.length} selected`;
-    }
-
-    // ============================================================
-    // Filter rendering & editing
-    // ============================================================
-    const OPS = {
-      string: [['eq','equals'],['neq','not equals'],['contains','contains'],['starts','starts with'],['empty','is empty'],['notempty','is not empty'],['in','is one of']],
-      number: [['eq','='],['neq','≠'],['gt','>'],['lt','<'],['gte','≥'],['lte','≤'],['between','between'],['empty','is empty']],
-      date:   [['before','before'],['after','after'],['between','between'],['empty','is empty']],
-      boolean:[['true','is true'],['false','is false'],['empty','is empty']]
-    };
-
-    function renderFilters() {
-      const chipHost = $('rl-filter-chips');
-      chipHost.innerHTML = '';
-      state.filters.forEach(f => {
-        const col = state.columns.find(c => c.name === f.column);
-        if (!col) return;
-        const opLabel = (OPS[col.type] || []).find(o => o[0] === f.op);
-        const opText = opLabel ? opLabel[1] : f.op;
-        let valText = '';
-        if (Array.isArray(f.value)) valText = f.value.length > 3 ? `${f.value.slice(0,3).join(', ')} +${f.value.length-3}` : f.value.join(', ');
-        else if (f.value != null && f.value !== '') valText = String(f.value);
-        const chip = el('span', { class: 'rl-filter-chip' },
-          `${f.column} ${opText}${valText ? ' ' + valText : ''}`,
-          el('span', { class: 'rl-x', title: 'Remove' }, '×')
-        );
-        chip.querySelector('.rl-x').addEventListener('click', () => {
-          state.filters = state.filters.filter(x => x.id !== f.id);
-          renderFilters();
-          renderTable();
-          renderCharts();
-        });
-        chip.addEventListener('click', e => {
-          if (e.target.classList.contains('rl-x')) return;
-          openFilterEditor(f.id);
-        });
-        chipHost.appendChild(chip);
-      });
-
-      $('rl-filter-mode').style.display = state.filters.length > 1 ? 'inline-flex' : 'none';
-      $('rl-filter-mode').querySelectorAll('button').forEach(b => {
-        b.classList.toggle('active', b.dataset.mode === state.filterMode);
-      });
-
-      const filtered = applyFilters(state.rows);
-      const total = state.rows.length;
-      const summary = $('rl-filter-summary');
-      if (state.filters.length === 0) {
-        summary.innerHTML = `<strong>${total.toLocaleString()}</strong> rows · no filters active`;
-      } else {
-        summary.innerHTML = `<strong>${filtered.length.toLocaleString()}</strong> of ${total.toLocaleString()} rows match · ${state.filters.length} filter${state.filters.length===1?'':'s'} (${state.filterMode.toUpperCase()})`;
-      }
-    }
-
-    function openFilterEditor(filterId) {
-      const host = $('rl-filter-editor-host');
-      host.innerHTML = '';
-      const isEdit = filterId != null;
-      const existing = isEdit ? state.filters.find(f => f.id === filterId) : null;
-
-      const editor = el('div', { class: 'rl-filter-editor' });
-      const colSel = el('select');
-      state.columns.forEach(c => {
-        const o = el('option', { value: c.name }, `${c.name} (${c.type})`);
-        if (existing && existing.column === c.name) o.selected = true;
-        colSel.appendChild(o);
-      });
-      const opSel = el('select');
-      const valHost = el('span');
-      const okBtn = el('button', { class: 'rl-btn' }, isEdit ? 'Update' : 'Add');
-      const cancelBtn = el('button', { class: 'rl-btn ghost' }, 'Cancel');
-
-      function refreshOps() {
-        const col = state.columns.find(c => c.name === colSel.value);
-        opSel.innerHTML = '';
-        (OPS[col.type] || []).forEach(([code,label]) => {
-          const o = el('option', { value: code }, label);
-          if (existing && existing.op === code) o.selected = true;
-          opSel.appendChild(o);
-        });
-        refreshValue();
-      }
-      function refreshValue() {
-        valHost.innerHTML = '';
-        const col = state.columns.find(c => c.name === colSel.value);
-        const op = opSel.value;
-        if (['empty','notempty','true','false'].includes(op)) return;
-        if (op === 'in') {
-          const ms = buildMultiSelect(col, existing && existing.op === 'in' ? (existing.value || []) : []);
-          valHost.appendChild(ms.node);
-          valHost._getValue = ms.getValue;
-          return;
-        }
-        if (op === 'between') {
-          const a = el('input', { placeholder: 'min', value: existing && existing.op === 'between' && existing.value ? existing.value[0] : '' });
-          const b = el('input', { placeholder: 'max', value: existing && existing.op === 'between' && existing.value ? existing.value[1] : '' });
-          valHost.appendChild(a); valHost.appendChild(b);
-          valHost._getValue = () => [a.value, b.value];
-          return;
-        }
-        const inp = el('input', { value: existing && existing.value != null ? existing.value : '', placeholder: 'value' });
-        if (col.type === 'date') inp.type = 'date';
-        valHost.appendChild(inp);
-        valHost._getValue = () => inp.value;
       }
 
-      colSel.addEventListener('change', refreshOps);
-      opSel.addEventListener('change', refreshValue);
-      refreshOps();
+      // Chart 3: second categorical row counts, OR pie of first categorical
+      if (catScored.length >= 2) {
+        state.charts.push({
+          id: state.nextChartId++,
+          type: 'bar',
+          groups: [catScored[1].col.name],
+          y: null,
+          agg: 'count',
+          title: `Row count by ${catScored[1].col.name}`,
+          optionsOpen: false
+        });
+      } else if (catScored.length === 1 && state.charts.length < 3) {
+        state.charts.push({
+          id: state.nextChartId++,
+          type: 'pie',
+          groups: [catScored[0].col.name],
+          y: null,
+          agg: 'count',
+          title: `Distribution: ${catScored[0].col.name}`,
+          optionsOpen: false
+        });
+      }
 
-      okBtn.addEventListener('click', () => {
-        const col = state.columns.find(c => c.name === colSel.value);
-        const op = opSel.value;
-        const v = valHost._getValue ? valHost._getValue() : null;
-        const filter = {
-          id: existing ? existing.id : state.nextFilterId++,
-          column: colSel.value,
-          type: col.type,
-          op,
-          value: v
-        };
-        if (existing) {
-          state.filters = state.filters.map(f => f.id === existing.id ? filter : f);
-        } else {
-          state.filters.push(filter);
-        }
-        host.innerHTML = '';
-        renderFilters();
-        renderTable();
-        renderCharts();
-      });
-      cancelBtn.addEventListener('click', () => { host.innerHTML = ''; });
+      // ----- Suggestions: enumerate (cat × num) and (date × num) pairs not already in charts -----
+      const inUse = new Set(state.charts.map(c => JSON.stringify({ g: c.groups, y: c.y, agg: c.agg })));
+      const sugg = [];
 
-      editor.appendChild(el('span', { style: 'font-size:.78rem;color:var(--rl-text-dim)' }, 'where'));
-      editor.appendChild(colSel);
-      editor.appendChild(opSel);
-      editor.appendChild(valHost);
-      editor.appendChild(okBtn);
-      editor.appendChild(cancelBtn);
-      host.appendChild(editor);
-    }
-
-    function buildMultiSelect(col, initialSelected) {
-      const selected = new Set(initialSelected);
-      const freq = new Map();
-      state.rows.forEach(r => {
-        const v = r[col.name];
-        if (v == null || v === '') return;
-        const s = String(v);
-        freq.set(s, (freq.get(s) || 0) + 1);
-      });
-      const sorted = Array.from(freq.entries()).sort((a,b) => b[1] - a[1]);
-      const truncated = sorted.length > MULTI_TOP_N;
-      const top = sorted.slice(0, MULTI_TOP_N);
-
-      const node = el('div', { class: 'rl-multiselect' });
-      const trigger = el('input', { placeholder: selected.size ? `${selected.size} selected` : 'Pick values…', readonly: 'readonly', style: 'cursor:pointer;min-width:180px' });
-      node.appendChild(trigger);
-      const popup = el('div', { class: 'rl-multi-popup', style: 'display:none' });
-      const search = el('input', { placeholder: truncated ? `Search ${sorted.length} unique values…` : 'Search…' });
-      popup.appendChild(search);
-      const list = el('div', { class: 'rl-multi-list' });
-      popup.appendChild(list);
-      node.appendChild(popup);
-
-      function renderList(query) {
-        list.innerHTML = '';
-        let source = top;
-        if (query) {
-          const q = query.toLowerCase();
-          source = sorted.filter(([v]) => v.toLowerCase().includes(q)).slice(0, MULTI_TOP_N);
-        }
-        if (source.length === 0) {
-          list.appendChild(el('div', { class: 'rl-multi-item', style: 'color:var(--rl-text-faint)' }, 'No matches'));
-          return;
-        }
-        source.forEach(([v, c]) => {
-          const item = el('div', { class: 'rl-multi-item' },
-            el('input', { type: 'checkbox', ...(selected.has(v) ? { checked: '' } : {}) }),
-            v,
-            el('span', { class: 'rl-count' }, String(c))
-          );
-          item.querySelector('input').addEventListener('change', e => {
-            if (e.target.checked) selected.add(v); else selected.delete(v);
-            trigger.placeholder = selected.size ? `${selected.size} selected` : 'Pick values…';
+      catScored.forEach(({ col: catCol }) => {
+        numCols.forEach(numCol => {
+          const key = JSON.stringify({ g: [catCol.name], y: numCol.name, agg: 'sum' });
+          if (inUse.has(key)) return;
+          sugg.push({
+            id: 's' + sugg.length,
+            label: `${numCol.name} by ${catCol.name}`,
+            kind: 'chart',
+            payload: { type: 'bar', groups: [catCol.name], y: numCol.name, agg: 'sum', title: `${numCol.name} by ${catCol.name}` }
           });
-          item.addEventListener('click', e => {
-            if (e.target.tagName !== 'INPUT') {
-              const inp = item.querySelector('input');
-              inp.checked = !inp.checked;
-              inp.dispatchEvent(new Event('change'));
-            }
-          });
-          list.appendChild(item);
         });
-      }
-      renderList('');
-
-      trigger.addEventListener('click', () => {
-        const show = popup.style.display === 'none';
-        popup.style.display = show ? 'flex' : 'none';
-        if (show) search.focus();
       });
-      search.addEventListener('input', () => renderList(search.value));
-      document.addEventListener('click', e => {
-        if (!node.contains(e.target)) popup.style.display = 'none';
+      dateCols.forEach(dCol => {
+        numCols.forEach(numCol => {
+          const key = JSON.stringify({ g: [dCol.name], y: numCol.name, agg: 'sum' });
+          if (inUse.has(key)) return;
+          sugg.push({
+            id: 's' + sugg.length,
+            label: `${numCol.name} over ${dCol.name}`,
+            kind: 'chart',
+            payload: { type: 'line', groups: [dCol.name], y: numCol.name, agg: 'sum', title: `${numCol.name} over ${dCol.name}`, dateBucket: 'auto' }
+          });
+        });
+      });
+      catScored.forEach(({ col: catCol }) => {
+        const key = JSON.stringify({ g: [catCol.name], y: null, agg: 'count' });
+        if (inUse.has(key)) return;
+        sugg.push({
+          id: 's' + sugg.length,
+          label: `Count by ${catCol.name}`,
+          kind: 'chart',
+          payload: { type: 'bar', groups: [catCol.name], y: null, agg: 'count', title: `Row count by ${catCol.name}` }
+        });
       });
 
-      return { node, getValue: () => Array.from(selected) };
+      state.suggestions = sugg.slice(0, 20);
     }
 
     // ============================================================
@@ -762,14 +718,12 @@
       if (f.op === 'empty') return isEmpty;
       if (f.op === 'notempty') return !isEmpty;
       if (isEmpty) return false;
-      if (f.type === 'string') {
+      if (f.type === 'string' || f.type === 'boolean') {
         const s = String(v);
-        const target = f.value != null ? String(f.value) : '';
-        if (f.op === 'eq') return s === target;
-        if (f.op === 'neq') return s !== target;
-        if (f.op === 'contains') return s.toLowerCase().includes(target.toLowerCase());
-        if (f.op === 'starts') return s.toLowerCase().startsWith(target.toLowerCase());
-        if (f.op === 'in') return Array.isArray(f.value) && f.value.includes(s);
+        const t = f.value != null ? String(f.value) : '';
+        if (f.op === 'eq') return s === t;
+        if (f.op === 'neq') return s !== t;
+        if (f.op === 'contains') return s.toLowerCase().includes(t.toLowerCase());
       }
       if (f.type === 'number') {
         const n = v;
@@ -780,27 +734,15 @@
         if (f.op === 'lt') return n < t;
         if (f.op === 'gte') return n >= t;
         if (f.op === 'lte') return n <= t;
-        if (f.op === 'between' && Array.isArray(f.value)) {
-          const a = Number(f.value[0]), b = Number(f.value[1]);
-          return n >= Math.min(a,b) && n <= Math.max(a,b);
-        }
       }
       if (f.type === 'date') {
         const d = v;
         if (f.op === 'before') return d < Date.parse(f.value);
         if (f.op === 'after') return d > Date.parse(f.value);
-        if (f.op === 'between' && Array.isArray(f.value)) {
-          const a = Date.parse(f.value[0]), b = Date.parse(f.value[1]);
-          return d >= Math.min(a,b) && d <= Math.max(a,b);
-        }
-      }
-      if (f.type === 'boolean') {
-        if (f.op === 'true') return v === true;
-        if (f.op === 'false') return v === false;
+        if (f.op === 'eq') return new Date(d).toDateString() === new Date(Date.parse(f.value)).toDateString();
       }
       return false;
     }
-
     function applyFilters(rows) {
       if (state.filters.length === 0) return rows;
       const mode = state.filterMode;
@@ -809,13 +751,13 @@
         return state.filters.some(f => filterRow(r, f));
       });
     }
-
+    function getFilteredRows() { return applyFilters(state.rows); }
     function getVisibleRows() {
-      let rows = applyFilters(state.rows);
+      let rows = getFilteredRows();
       if (state.search) {
         const q = state.search.toLowerCase();
-        const selCols = state.columns.filter(c => c.selected).map(c => c.name);
-        rows = rows.filter(r => selCols.some(c => String(r[c] ?? '').toLowerCase().includes(q)));
+        const cols = state.columns.filter(c => c.selected).map(c => c.name);
+        rows = rows.filter(r => cols.some(c => String(r[c] ?? '').toLowerCase().includes(q)));
       }
       if (state.sort.column) {
         const col = state.columns.find(c => c.name === state.sort.column);
@@ -837,268 +779,373 @@
     }
 
     // ============================================================
-    // Table rendering
+    // KPI computation
     // ============================================================
-    function renderTable() {
-      const head = $('rl-table-head');
-      const body = $('rl-table-body');
-      head.innerHTML = '';
-      body.innerHTML = '';
+    function computeKpi(kpi, rows) {
+      if (kpi.type === 'count') return { value: rows.length, display: fmtInt(rows.length) };
+      const col = state.columns.find(c => c.name === kpi.column);
+      if (!col) return { value: null, display: '—' };
+      const vals = rows.map(r => coerce(r[kpi.column], col.type)).filter(v => v != null);
+      if (kpi.type === 'sum') return { value: vals.reduce((a,b)=>a+b,0), display: fmtNumber(vals.reduce((a,b)=>a+b,0)) };
+      if (kpi.type === 'avg') return { value: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null, display: fmtNumber(vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null) };
+      if (kpi.type === 'min') return { value: vals.length ? Math.min(...vals) : null, display: fmtNumber(vals.length ? Math.min(...vals) : null) };
+      if (kpi.type === 'max') return { value: vals.length ? Math.max(...vals) : null, display: fmtNumber(vals.length ? Math.max(...vals) : null) };
+      if (kpi.type === 'distinct') {
+        const set = new Set(vals.map(v => String(v)));
+        return { value: set.size, display: fmtInt(set.size), sub: 'unique values' };
+      }
+      if (kpi.type === 'span') {
+        if (!vals.length) return { value: null, display: '—' };
+        const min = Math.min(...vals), max = Math.max(...vals);
+        const days = Math.round((max - min) / 86400000);
+        return { value: days, display: `${fmtDate(min)} – ${fmtDate(max)}`, sub: `${days.toLocaleString()} day${days===1?'':'s'}` };
+      }
+      return { value: null, display: '—' };
+    }
 
-      const selCols = state.columns.filter(c => c.selected);
+    // ============================================================
+    // Render: filter bar
+    // ============================================================
+    function renderFilterBar() {
+      const bar = $('rl-filterbar');
+      bar.innerHTML = '';
+      bar.appendChild(el('span', { class: 'rl-filterbar-label' }, 'Filters:'));
 
-      head.appendChild(el('th', { class: 'rl-check' },
-        el('input', { type: 'checkbox', title: 'Check/uncheck all visible' })
-      ));
-      head.querySelector('input').addEventListener('change', e => {
-        const visible = getVisibleRows();
-        const rowIndexes = visible.map(r => state.rows.indexOf(r));
-        if (e.target.checked) rowIndexes.forEach(i => state.checkedRows.add(i));
-        else rowIndexes.forEach(i => state.checkedRows.delete(i));
-        renderTable();
-        renderCharts();
+      state.filters.forEach(f => {
+        const col = state.columns.find(c => c.name === f.column);
+        if (!col) return;
+        let txt = `${f.column} ${f.op} ${f.value != null ? f.value : ''}`.trim();
+        const chip = el('span', { class: 'rl-chip' }, txt, el('span', { class: 'rl-x', title: 'Remove' }, '×'));
+        chip.querySelector('.rl-x').addEventListener('click', () => {
+          state.filters = state.filters.filter(x => x.id !== f.id);
+          renderAll();
+        });
+        bar.appendChild(chip);
       });
 
-      selCols.forEach(c => {
-        const th = el('th', {},
-          c.name,
-          c.name === state.sort.column ? el('span', { class: 'rl-sort-ind' }, state.sort.dir === 'asc' ? '▲' : '▼') : null
-        );
-        if (c.name === state.sort.column) th.classList.add('sorted');
-        th.addEventListener('click', () => {
-          if (state.sort.column === c.name) {
-            state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
-          } else {
-            state.sort.column = c.name;
-            state.sort.dir = 'asc';
-          }
-          renderTable();
-        });
-        head.appendChild(th);
-      });
+      const addBtn = el('button', { class: 'rl-btn ghost small' }, '+ Add filter');
+      addBtn.addEventListener('click', e => openFilterPopover(e.target));
+      bar.appendChild(addBtn);
 
-      const rows = getVisibleRows();
-      const cap = Math.min(rows.length, TABLE_RENDER_CAP);
-
-      for (let i = 0; i < cap; i++) {
-        const row = rows[i];
-        const realIdx = state.rows.indexOf(row);
-        const tr = el('tr');
-        const cb = el('td', { class: 'rl-check' }, el('input', { type: 'checkbox', ...(state.checkedRows.has(realIdx) ? { checked: '' } : {}) }));
-        cb.querySelector('input').addEventListener('change', e => {
-          if (e.target.checked) state.checkedRows.add(realIdx);
-          else state.checkedRows.delete(realIdx);
-          renderCharts();
+      if (state.filters.length > 1) {
+        const mode = el('div', { class: 'rl-filter-mode' });
+        ['and','or'].forEach(m => {
+          const b = el('button', { 'data-mode': m, class: m === state.filterMode ? 'active' : '' }, m.toUpperCase());
+          b.addEventListener('click', () => { state.filterMode = m; renderAll(); });
+          mode.appendChild(b);
         });
-        tr.appendChild(cb);
-        selCols.forEach(c => {
-          const val = row[c.name];
-          tr.appendChild(el('td', { title: val == null ? '' : String(val) }, val == null ? '' : String(val)));
-        });
-        body.appendChild(tr);
+        bar.appendChild(mode);
       }
 
-      const meta = $('rl-table-count');
-      let txt = `${rows.length.toLocaleString()} row${rows.length===1?'':'s'} visible`;
-      if (rows.length > TABLE_RENDER_CAP) txt += ` (showing first ${TABLE_RENDER_CAP.toLocaleString()})`;
-      if (state.checkedRows.size) txt += ` · ${state.checkedRows.size} checked`;
-      meta.textContent = txt;
+      const filtered = getFilteredRows();
+      const total = state.rows.length;
+      const summary = el('span', { class: 'rl-summary' });
+      if (state.filters.length === 0) summary.innerHTML = `<strong>${total.toLocaleString()}</strong> rows`;
+      else summary.innerHTML = `<strong>${filtered.length.toLocaleString()}</strong> of ${total.toLocaleString()} rows`;
+      bar.appendChild(summary);
     }
 
-    // ============================================================
-    // Charts
-    // ============================================================
-    const CHART_TYPES = [
-      ['bar','Bar'],['line','Line'],['pie','Pie'],['doughnut','Doughnut'],['scatter','Scatter']
-    ];
-    const AGGS = [
-      ['count','Count'],['sum','Sum'],['avg','Average'],['min','Min'],['max','Max']
-    ];
+    function openFilterPopover(anchor, prefill) {
+      closeAllPopovers();
+      const rect = anchor.getBoundingClientRect();
+      const pop = el('div', { class: 'rl-popover', id: 'rl-active-popover' });
+      pop.style.left = (window.scrollX + rect.left) + 'px';
+      pop.style.top = (window.scrollY + rect.bottom + 4) + 'px';
 
-    function addChart() {
-      const numericCols = state.columns.filter(c => c.selected && c.type === 'number');
-      const anyCol = state.columns.filter(c => c.selected)[0];
-      const chart = {
-        id: state.nextChartId++,
-        type: 'bar',
-        groups: anyCol ? [anyCol.name] : [],
-        groupMode: 'stack',
-        y: numericCols[0] ? numericCols[0].name : null,
-        agg: 'count',
-        instance: null
+      const colSel = el('select');
+      state.columns.forEach(c => {
+        const o = el('option', { value: c.name }, `${c.name} (${c.type})`);
+        if (prefill && prefill.column === c.name) o.selected = true;
+        colSel.appendChild(o);
+      });
+      const opSel = el('select');
+      const valInp = el('input', { placeholder: 'value' });
+
+      const OPS = {
+        string: [['eq','equals'],['neq','not equals'],['contains','contains'],['empty','is empty'],['notempty','is not empty']],
+        number: [['eq','='],['neq','≠'],['gt','>'],['lt','<'],['gte','≥'],['lte','≤'],['empty','is empty']],
+        date:   [['eq','on'],['before','before'],['after','after'],['empty','is empty']],
+        boolean:[['eq','equals'],['empty','is empty']]
       };
-      state.charts.push(chart);
-      renderCharts();
+      function refreshOps() {
+        const col = state.columns.find(c => c.name === colSel.value);
+        opSel.innerHTML = '';
+        (OPS[col.type] || OPS.string).forEach(([code,label]) => {
+          opSel.appendChild(el('option', { value: code }, label));
+        });
+        if (prefill && prefill.op) opSel.value = prefill.op;
+        if (col.type === 'date') valInp.type = 'date'; else valInp.type = 'text';
+      }
+      refreshOps();
+      if (prefill && prefill.value != null) valInp.value = prefill.value;
+      colSel.addEventListener('change', refreshOps);
+
+      const okBtn = el('button', { class: 'rl-btn small' }, 'Add');
+      const cancelBtn = el('button', { class: 'rl-btn ghost small' }, 'Cancel');
+
+      okBtn.addEventListener('click', () => {
+        const col = state.columns.find(c => c.name === colSel.value);
+        const op = opSel.value;
+        const needsVal = !['empty','notempty'].includes(op);
+        const value = needsVal ? valInp.value : null;
+        state.filters.push({
+          id: state.nextFilterId++,
+          column: colSel.value,
+          type: col.type,
+          op,
+          value
+        });
+        closeAllPopovers();
+        renderAll();
+      });
+      cancelBtn.addEventListener('click', closeAllPopovers);
+
+      pop.appendChild(el('label', { style:'font-size:.74rem;color:var(--rl-text-dim);text-transform:uppercase;letter-spacing:.04em' }, 'Add filter'));
+      pop.appendChild(colSel);
+      pop.appendChild(opSel);
+      pop.appendChild(valInp);
+      const actions = el('div', { class: 'rl-popover-actions' });
+      actions.appendChild(cancelBtn);
+      actions.appendChild(okBtn);
+      pop.appendChild(actions);
+
+      document.body.appendChild(pop);
+      setTimeout(() => {
+        document.addEventListener('click', popoverDismiss, { once: true });
+      }, 0);
+    }
+    function popoverDismiss(e) {
+      const p = $('rl-active-popover');
+      if (p && !p.contains(e.target)) closeAllPopovers();
+      else if (p) document.addEventListener('click', popoverDismiss, { once: true });
+    }
+    function closeAllPopovers() {
+      const p = $('rl-active-popover');
+      if (p) p.remove();
     }
 
-    function destroyChart(c) {
-      if (c.instance) { try { c.instance.destroy(); } catch(e){} c.instance = null; }
-    }
-    function destroyCharts() { state.charts.forEach(destroyChart); }
+    // ============================================================
+    // Render: KPIs
+    // ============================================================
+    function renderKpis() {
+      const host = $('rl-kpi-grid');
+      host.innerHTML = '';
+      const rows = getFilteredRows();
+      state.kpis.forEach(kpi => {
+        const computed = computeKpi(kpi, rows);
+        const card = el('div', { class: 'rl-kpi' });
+        const remove = el('button', { class: 'rl-kpi-remove', title: 'Remove KPI' }, '×');
+        remove.addEventListener('click', () => {
+          state.kpis = state.kpis.filter(k => k.id !== kpi.id);
+          renderKpis();
+        });
+        card.appendChild(remove);
+        card.appendChild(el('div', { class: 'rl-kpi-label' }, kpi.label || kpi.type));
+        card.appendChild(el('div', { class: 'rl-kpi-value' }, computed.display));
+        if (computed.sub) card.appendChild(el('div', { class: 'rl-kpi-sub' }, computed.sub));
+        else if (kpi.type !== 'count' && kpi.type !== 'span') {
+          card.appendChild(el('div', { class: 'rl-kpi-sub' }, kpi.type));
+        }
+        host.appendChild(card);
+      });
 
-    function renderChartsControls() { renderCharts(); }
+      if (state.kpis.length < MAX_KPIS) {
+        const add = el('button', { class: 'rl-kpi-add' }, '+ Add KPI');
+        add.addEventListener('click', e => openKpiPopover(e.target));
+        host.appendChild(add);
+      }
+    }
+
+    function openKpiPopover(anchor) {
+      closeAllPopovers();
+      const rect = anchor.getBoundingClientRect();
+      const pop = el('div', { class: 'rl-popover', id: 'rl-active-popover' });
+      pop.style.left = (window.scrollX + rect.left) + 'px';
+      pop.style.top = (window.scrollY + rect.bottom + 4) + 'px';
+
+      const typeSel = el('select');
+      ['count','sum','avg','min','max','distinct','span'].forEach(t => typeSel.appendChild(el('option', { value: t }, t)));
+      const colSel = el('select');
+      function refreshCols() {
+        colSel.innerHTML = '';
+        const t = typeSel.value;
+        if (t === 'count') {
+          colSel.appendChild(el('option', { value: '' }, '(all rows)'));
+          colSel.disabled = true;
+        } else if (t === 'span') {
+          colSel.disabled = false;
+          state.columns.filter(c => c.type === 'date').forEach(c => colSel.appendChild(el('option', { value: c.name }, c.name)));
+        } else if (t === 'distinct') {
+          colSel.disabled = false;
+          state.columns.forEach(c => colSel.appendChild(el('option', { value: c.name }, c.name)));
+        } else {
+          colSel.disabled = false;
+          state.columns.filter(c => c.type === 'number').forEach(c => colSel.appendChild(el('option', { value: c.name }, c.name)));
+        }
+      }
+      typeSel.addEventListener('change', refreshCols);
+      refreshCols();
+
+      const okBtn = el('button', { class: 'rl-btn small' }, 'Add');
+      const cancelBtn = el('button', { class: 'rl-btn ghost small' }, 'Cancel');
+      okBtn.addEventListener('click', () => {
+        const t = typeSel.value;
+        const col = t === 'count' ? null : colSel.value;
+        if (t !== 'count' && !col) { toast('Pick a column.', 'err'); return; }
+        const label = t === 'count' ? 'Rows' : col;
+        state.kpis.push({ id: state.nextKpiId++, type: t, column: col, label });
+        closeAllPopovers();
+        renderKpis();
+      });
+      cancelBtn.addEventListener('click', closeAllPopovers);
+
+      pop.appendChild(el('label', { style:'font-size:.74rem;color:var(--rl-text-dim);text-transform:uppercase;letter-spacing:.04em' }, 'Add KPI'));
+      pop.appendChild(typeSel);
+      pop.appendChild(colSel);
+      const actions = el('div', { class: 'rl-popover-actions' });
+      actions.appendChild(cancelBtn);
+      actions.appendChild(okBtn);
+      pop.appendChild(actions);
+
+      document.body.appendChild(pop);
+      setTimeout(() => document.addEventListener('click', popoverDismiss, { once: true }), 0);
+    }
+
+    // ============================================================
+    // Render: Charts
+    // ============================================================
+    const CHART_TYPES = [['bar','Bar'],['line','Line'],['pie','Pie']];
+    const AGGS = [['count','Count'],['sum','Sum'],['avg','Average'],['min','Min'],['max','Max']];
+
+    function destroyChart(c) { if (c._instance) { try { c._instance.destroy(); } catch(e){} c._instance = null; } }
+    function destroyAllCharts() { state.charts.forEach(destroyChart); }
 
     function renderCharts() {
-      const host = $('rl-charts');
+      const host = $('rl-chart-grid');
       host.innerHTML = '';
       state.charts.forEach(c => host.appendChild(buildChartCard(c)));
+      const add = el('button', { class: 'rl-chart-add' }, '+ Add chart');
+      add.addEventListener('click', () => {
+        const numCol = state.columns.find(c => c.type === 'number' && !isIdLike(c.name));
+        const catCol = state.columns.find(c => (c.type === 'string' || c.type === 'boolean') && !isIdLike(c.name));
+        state.charts.push({
+          id: state.nextChartId++,
+          type: 'bar',
+          groups: catCol ? [catCol.name] : (state.columns[0] ? [state.columns[0].name] : []),
+          y: numCol ? numCol.name : null,
+          agg: numCol ? 'sum' : 'count',
+          title: 'New chart',
+          optionsOpen: true
+        });
+        renderCharts();
+      });
+      host.appendChild(add);
     }
 
     function buildChartCard(chart) {
       const card = el('div', { class: 'rl-chart-card' });
 
-      const selCols = state.columns.filter(c => c.selected);
-      const numericCols = selCols.filter(c => c.type === 'number');
-
-      // Migrate legacy single-x charts
-      if (!chart.groups && chart.x) chart.groups = [chart.x];
-      if (!chart.groups) chart.groups = [];
-      if (!chart.groupMode) chart.groupMode = 'stack';
-
-      const controls = el('div', { class: 'rl-chart-controls' });
-
-      const typeSel = el('select');
-      CHART_TYPES.forEach(([v,l]) => {
-        const o = el('option', { value: v }, l);
-        if (v === chart.type) o.selected = true;
-        typeSel.appendChild(o);
+      // Header
+      const header = el('div', { class: 'rl-chart-header' });
+      const title = el('input', { type: 'text', class: 'rl-chart-title', value: chart.title || 'Chart' });
+      title.addEventListener('change', e => { chart.title = e.target.value; });
+      header.appendChild(title);
+      const actions = el('div', { class: 'rl-chart-actions' });
+      const optBtn = el('button', { class: 'rl-btn ghost small', title: 'Options' }, '⚙');
+      optBtn.addEventListener('click', () => {
+        chart.optionsOpen = !chart.optionsOpen;
+        renderCharts();
       });
-      controls.appendChild(el('label', {}, 'Type'));
-      controls.appendChild(typeSel);
-
-      // Group-by chip picker
-      controls.appendChild(el('label', {}, chart.type === 'scatter' ? 'X' : 'Group by'));
-      const groupHost = el('div', { class: 'rl-filters', style: 'gap:6px;margin:0' });
-
-      const renderGroupChips = () => {
-        groupHost.innerHTML = '';
-        chart.groups.forEach((g, idx) => {
-          const chip = el('span', { class: 'rl-filter-chip' },
-            g,
-            el('span', { class: 'rl-x', title: 'Remove' }, '×')
-          );
-          chip.querySelector('.rl-x').addEventListener('click', () => {
-            chart.groups.splice(idx, 1);
-            renderCharts();
-          });
-          groupHost.appendChild(chip);
-        });
-
-        const maxForType = (chart.type === 'pie' || chart.type === 'doughnut' || chart.type === 'scatter') ? 1 : MAX_GROUPS;
-        if (chart.groups.length < maxForType) {
-          const addSel = el('select');
-          addSel.appendChild(el('option', { value: '' }, chart.groups.length ? '+ Add group' : 'Pick a column'));
-          selCols.forEach(c => {
-            if (chart.groups.includes(c.name)) return;
-            addSel.appendChild(el('option', { value: c.name }, c.name));
-          });
-          addSel.addEventListener('change', e => {
-            if (!e.target.value) return;
-            chart.groups.push(e.target.value);
-            renderCharts();
-          });
-          groupHost.appendChild(addSel);
-        } else if (chart.groups.length >= MAX_GROUPS) {
-          groupHost.appendChild(el('span', { style: 'font-size:.78rem;color:var(--rl-text-faint)' }, `(max ${MAX_GROUPS})`));
-        }
-      };
-      renderGroupChips();
-      controls.appendChild(groupHost);
-
-      // Stack vs Combine toggle
-      const canStack = (chart.type === 'bar' || chart.type === 'line') && chart.groups.length >= 2;
-      if (canStack) {
-        const modeWrap = el('div', { class: 'rl-filter-mode' });
-        const stackBtn = el('button', { 'data-mode': 'stack' }, 'Stack');
-        const comboBtn = el('button', { 'data-mode': 'combine' }, 'Combine');
-        if (chart.groupMode === 'stack') stackBtn.classList.add('active');
-        else comboBtn.classList.add('active');
-        stackBtn.addEventListener('click', () => { chart.groupMode = 'stack'; renderCharts(); });
-        comboBtn.addEventListener('click', () => { chart.groupMode = 'combine'; renderCharts(); });
-        modeWrap.appendChild(stackBtn);
-        modeWrap.appendChild(comboBtn);
-        controls.appendChild(modeWrap);
-      } else if (chart.groups.length >= 2) {
-        chart.groupMode = 'combine';
-      }
-
-      const aggSel = el('select');
-      AGGS.forEach(([v,l]) => {
-        const o = el('option', { value: v }, l);
-        if (v === chart.agg) o.selected = true;
-        aggSel.appendChild(o);
-      });
-      controls.appendChild(el('label', {}, 'Aggregate'));
-      controls.appendChild(aggSel);
-
-      const ySel = el('select');
-      ySel.appendChild(el('option', { value: '' }, '— none —'));
-      numericCols.forEach(c => {
-        const o = el('option', { value: c.name }, c.name);
-        if (c.name === chart.y) o.selected = true;
-        ySel.appendChild(o);
-      });
-      controls.appendChild(el('label', {}, chart.type === 'scatter' ? 'Y' : 'Value'));
-      controls.appendChild(ySel);
-
-      const removeBtn = el('button', { class: 'rl-btn ghost', style: 'margin-left:auto', title: 'Remove chart' }, '×');
-      removeBtn.addEventListener('click', () => {
+      const delBtn = el('button', { class: 'rl-btn ghost small', title: 'Remove' }, '×');
+      delBtn.addEventListener('click', () => {
         destroyChart(chart);
         state.charts = state.charts.filter(c => c.id !== chart.id);
         renderCharts();
       });
-      controls.appendChild(removeBtn);
+      actions.appendChild(optBtn);
+      actions.appendChild(delBtn);
+      header.appendChild(actions);
+      card.appendChild(header);
 
-      [typeSel, ySel, aggSel].forEach(s => s.addEventListener('change', () => {
-        chart.type = typeSel.value;
-        chart.y = ySel.value || null;
-        chart.agg = aggSel.value;
-        if ((chart.type === 'pie' || chart.type === 'doughnut' || chart.type === 'scatter') && chart.groups.length > 1) {
-          chart.groups = chart.groups.slice(0, 1);
+      // Options
+      const opts = el('div', { class: 'rl-chart-options' + (chart.optionsOpen ? ' open' : '') });
+      const typeSel = el('select');
+      CHART_TYPES.forEach(([v,l]) => { const o = el('option', { value: v }, l); if (v === chart.type) o.selected = true; typeSel.appendChild(o); });
+      opts.appendChild(el('label', {}, 'Type')); opts.appendChild(typeSel);
+
+      opts.appendChild(el('label', {}, 'Group by'));
+      const groupChips = el('span', { style:'display:flex;gap:4px;flex-wrap:wrap;align-items:center' });
+      const renderGroupChips = () => {
+        groupChips.innerHTML = '';
+        chart.groups.forEach((g, idx) => {
+          const chip = el('span', { class: 'rl-chip' }, g, el('span', { class: 'rl-x' }, '×'));
+          chip.querySelector('.rl-x').addEventListener('click', () => { chart.groups.splice(idx,1); renderCharts(); });
+          groupChips.appendChild(chip);
+        });
+        const maxG = (chart.type === 'pie') ? 1 : MAX_GROUPS;
+        if (chart.groups.length < maxG) {
+          const addSel = el('select');
+          addSel.appendChild(el('option', { value: '' }, chart.groups.length ? '+ add' : 'pick column'));
+          state.columns.filter(c => !chart.groups.includes(c.name)).forEach(c => addSel.appendChild(el('option', { value: c.name }, c.name)));
+          addSel.addEventListener('change', e => { if (e.target.value) { chart.groups.push(e.target.value); renderCharts(); } });
+          groupChips.appendChild(addSel);
         }
+      };
+      renderGroupChips();
+      opts.appendChild(groupChips);
+
+      const aggSel = el('select');
+      AGGS.forEach(([v,l]) => { const o = el('option', { value: v }, l); if (v === chart.agg) o.selected = true; aggSel.appendChild(o); });
+      opts.appendChild(el('label', {}, 'Aggregate')); opts.appendChild(aggSel);
+
+      const ySel = el('select');
+      ySel.appendChild(el('option', { value: '' }, '—'));
+      state.columns.filter(c => c.type === 'number').forEach(c => { const o = el('option', { value: c.name }, c.name); if (c.name === chart.y) o.selected = true; ySel.appendChild(o); });
+      opts.appendChild(el('label', {}, 'Value')); opts.appendChild(ySel);
+
+      [typeSel, aggSel, ySel].forEach(s => s.addEventListener('change', () => {
+        chart.type = typeSel.value;
+        chart.agg = aggSel.value;
+        chart.y = ySel.value || null;
+        if (chart.type === 'pie' && chart.groups.length > 1) chart.groups = chart.groups.slice(0,1);
         renderCharts();
       }));
+      card.appendChild(opts);
 
-      card.appendChild(controls);
-
+      // Body
       const body = el('div', { class: 'rl-chart-body' });
       const canvas = el('canvas');
       body.appendChild(canvas);
       card.appendChild(body);
 
-      const badge = el('div', { class: 'rl-chart-badge' });
-      card.appendChild(badge);
+      const meta = el('div', { class: 'rl-chart-meta' });
+      const metaTxt = el('span');
+      meta.appendChild(metaTxt);
+      const drillHint = el('span', { class: 'rl-drill-hint' }, 'click a bar/slice to filter');
+      meta.appendChild(drillHint);
+      card.appendChild(meta);
 
-      const sourceRows = state.checkOnly
-        ? Array.from(state.checkedRows).map(i => state.rows[i]).filter(Boolean)
-        : applyFilters(state.rows);
-
+      // Render data
+      const sourceRows = getFilteredRows();
       if (!sourceRows.length || chart.groups.length === 0) {
-        body.innerHTML = '<div class="rl-chart-empty">Pick at least one group column to chart.</div>';
-        badge.textContent = '';
+        body.innerHTML = '<div class="rl-chart-empty">Pick at least one group column.</div>';
+        metaTxt.textContent = '';
         return card;
       }
 
       try {
         const built = buildChartData(sourceRows, chart);
-        if (!built || (built.labels && !built.labels.length && !built.scatterPoints)) {
-          body.innerHTML = '<div class="rl-chart-empty">Nothing to plot for the current selection.</div>';
+        if (!built || (built.labels && !built.labels.length)) {
+          body.innerHTML = '<div class="rl-chart-empty">Nothing to plot.</div>';
           return card;
         }
         const ctx = canvas.getContext('2d');
         const palette = ['#6b4eff','#2563eb','#16a34a','#d97706','#dc2626','#0891b2','#7c3aed','#db2777','#65a30d','#ea580c','#0ea5e9','#84cc16'];
 
         let config;
-        if (chart.type === 'scatter') {
+        if (built.datasets) {
           config = {
-            type: 'scatter',
-            data: { datasets: [{ label: built.datasetLabel, data: built.scatterPoints, backgroundColor: palette[0] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-          };
-        } else if (built.datasets) {
-          // multi-dataset (stacked)
-          config = {
-            type: chart.type,
+            type: chart.type === 'pie' ? 'pie' : chart.type,
             data: {
               labels: built.labels,
               datasets: built.datasets.map((ds, i) => ({
@@ -1113,12 +1160,12 @@
             },
             options: {
               responsive: true, maintainAspectRatio: false,
-              plugins: { legend: { display: true } },
-              scales: chart.type === 'bar' ? { x: { stacked: true }, y: { stacked: true } } : {}
+              plugins: { legend: { display: built.datasets.length > 1 || chart.type === 'pie' } },
+              scales: chart.type === 'bar' ? { x: { stacked: true }, y: { stacked: true } } : (chart.type === 'pie' ? {} : {}),
+              onClick: (evt, items) => handleChartClick(chart, evt, items, built)
             }
           };
         } else {
-          // single dataset
           config = {
             type: chart.type,
             data: {
@@ -1126,7 +1173,7 @@
               datasets: [{
                 label: built.datasetLabel,
                 data: built.values,
-                backgroundColor: (chart.type === 'pie' || chart.type === 'doughnut') ? palette : palette[0],
+                backgroundColor: chart.type === 'pie' ? palette : palette[0],
                 borderColor: palette[0],
                 borderWidth: chart.type === 'line' ? 2 : 1,
                 fill: chart.type === 'line' ? false : true
@@ -1134,19 +1181,19 @@
             },
             options: {
               responsive: true, maintainAspectRatio: false,
-              plugins: { legend: { display: chart.type === 'pie' || chart.type === 'doughnut' } }
+              plugins: { legend: { display: chart.type === 'pie' } },
+              onClick: (evt, items) => handleChartClick(chart, evt, items, built)
             }
           };
         }
 
-        if (chart.instance) chart.instance.destroy();
-        chart.instance = new Chart(ctx, config);
+        if (chart._instance) chart._instance.destroy();
+        chart._instance = new Chart(ctx, config);
 
-        let badgeTxt = `Charting ${sourceRows.length.toLocaleString()} row${sourceRows.length===1?'':'s'}`;
-        if (state.checkOnly) badgeTxt += ' (checked only)';
-        else if (state.filters.length) badgeTxt += ` (filtered from ${state.rows.length.toLocaleString()})`;
-        if (built.warning) badgeTxt += ` · ⚠ ${built.warning}`;
-        badge.textContent = badgeTxt;
+        let txt = `${sourceRows.length.toLocaleString()} row${sourceRows.length===1?'':'s'}`;
+        if (state.filters.length) txt += ` · filtered from ${state.rows.length.toLocaleString()}`;
+        if (built.warning) txt += ` · ⚠ ${built.warning}`;
+        metaTxt.textContent = txt;
       } catch (e) {
         body.innerHTML = `<div class="rl-chart-empty">Chart error: ${escapeHtml(e.message)}</div>`;
       }
@@ -1154,41 +1201,61 @@
       return card;
     }
 
-    function buildChartData(rows, chart) {
-      // Scatter: one group as X, numeric Y
-      if (chart.type === 'scatter') {
-        const xName = chart.groups[0];
-        const xc = state.columns.find(c => c.name === xName);
-        const yc = state.columns.find(c => c.name === chart.y);
-        if (!xc || !yc) return { labels: [], values: [], datasetLabel: '' };
-        const points = rows.map(r => ({
-          x: coerce(r[xc.name], xc.type),
-          y: coerce(r[yc.name], yc.type)
-        })).filter(p => p.x != null && p.y != null && typeof p.x === 'number' && typeof p.y === 'number');
-        return { scatterPoints: points, datasetLabel: `${chart.y} vs ${xName}` };
+    function handleChartClick(chart, evt, items, built) {
+      if (!items || !items.length) return;
+      const item = items[0];
+      const idx = item.index;
+      const label = built.labels[idx];
+      if (label == null) return;
+      // Add filter on the primary group column
+      const groupCol = chart.groups[chart.groups.length === 1 ? 0 : 0];
+      const col = state.columns.find(c => c.name === groupCol);
+      if (!col) return;
+      // For stacked multi-group, label is the X-axis composite — only use first group
+      const value = String(label).split(' · ')[0];
+      // Check if same filter already exists
+      const dup = state.filters.find(f => f.column === groupCol && f.op === 'eq' && String(f.value) === value);
+      if (dup) {
+        state.filters = state.filters.filter(f => f.id !== dup.id);
+        toast(`Removed filter: ${groupCol} = ${value}`, 'ok');
+      } else {
+        state.filters.push({
+          id: state.nextFilterId++,
+          column: groupCol,
+          type: col.type,
+          op: 'eq',
+          value
+        });
+        toast(`Filtered: ${groupCol} = ${value}`, 'ok');
       }
+      renderAll();
+    }
 
+    function buildChartData(rows, chart) {
       const yCol = chart.y ? state.columns.find(c => c.name === chart.y) : null;
       const agg = chart.agg;
-
       const reduce = arr => {
         if (!arr.length) return 0;
         if (agg === 'count' || !yCol) return arr.length;
-        if (agg === 'sum') return arr.reduce((a,b) => a+b, 0);
-        if (agg === 'avg') return arr.reduce((a,b) => a+b, 0) / arr.length;
+        if (agg === 'sum') return arr.reduce((a,b)=>a+b,0);
+        if (agg === 'avg') return arr.reduce((a,b)=>a+b,0)/arr.length;
         if (agg === 'min') return Math.min(...arr);
         if (agg === 'max') return Math.max(...arr);
         return arr.length;
       };
-
-      const valueFor = r => {
-        if (agg === 'count' || !yCol) return 1;
-        return coerce(r[yCol.name], yCol.type);
-      };
-
+      const valueFor = r => agg === 'count' || !yCol ? 1 : coerce(r[yCol.name], yCol.type);
       const keyOf = (r, colName) => {
+        const col = state.columns.find(c => c.name === colName);
         const v = r[colName];
-        return (v == null || v === '') ? '(empty)' : String(v);
+        if (v == null || v === '') return '(empty)';
+        if (col && col.type === 'date') {
+          const d = coerce(v, 'date');
+          if (d == null) return '(empty)';
+          // bucket by month for now
+          const dt = new Date(d);
+          return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+        }
+        return String(v);
       };
 
       // Single group
@@ -1201,219 +1268,155 @@
           const v = valueFor(r);
           if (v != null) groups.get(k).push(v);
         });
-        const pairs = Array.from(groups.entries())
-          .map(([k, arr]) => [k, reduce(arr)])
-          .sort((a,b) => b[1] - a[1])
-          .slice(0, 50);
-        return {
-          labels: pairs.map(p => p[0]),
-          values: pairs.map(p => p[1]),
-          datasetLabel: agg === 'count' ? `count by ${g}` : `${agg}(${chart.y || ''}) by ${g}`
-        };
-      }
-
-      // Multi-group: combine mode
-      if (chart.groupMode === 'combine') {
-        const groups = new Map();
-        rows.forEach(r => {
-          const k = chart.groups.map(g => keyOf(r, g)).join(' · ');
-          if (!groups.has(k)) groups.set(k, []);
-          const v = valueFor(r);
-          if (v != null) groups.get(k).push(v);
-        });
-        const pairs = Array.from(groups.entries())
-          .map(([k, arr]) => [k, reduce(arr)])
-          .sort((a,b) => b[1] - a[1]);
-        const warning = pairs.length > COMBO_WARN_THRESHOLD
-          ? `${pairs.length} combinations — showing top 50`
-          : null;
+        const col = state.columns.find(c => c.name === g);
+        const isDate = col && col.type === 'date';
+        const pairs = Array.from(groups.entries()).map(([k, arr]) => [k, reduce(arr)]);
+        if (isDate) pairs.sort((a,b) => a[0].localeCompare(b[0]));
+        else pairs.sort((a,b) => b[1] - a[1]);
         const top = pairs.slice(0, 50);
         return {
           labels: top.map(p => p[0]),
           values: top.map(p => p[1]),
-          datasetLabel: `${agg}(${chart.y || ''}) by ${chart.groups.join(' · ')}`,
-          warning
+          datasetLabel: agg === 'count' ? `count by ${g}` : `${agg}(${chart.y || ''}) by ${g}`,
+          warning: pairs.length > 50 ? `${pairs.length} groups — showing top 50` : null
         };
       }
 
-      // Multi-group: stack mode
+      // Multi-group: stack (last group = series)
       const primary = chart.groups.slice(0, -1);
       const stackBy = chart.groups[chart.groups.length - 1];
-
-      const xKeys = new Set();
-      const stackKeys = new Set();
+      const xKeys = new Set(), stackKeys = new Set();
       const cells = new Map();
-
       rows.forEach(r => {
         const xK = primary.map(g => keyOf(r, g)).join(' · ');
         const sK = keyOf(r, stackBy);
-        xKeys.add(xK);
-        stackKeys.add(sK);
-        const cellKey = xK + '||' + sK;
-        if (!cells.has(cellKey)) cells.set(cellKey, []);
+        xKeys.add(xK); stackKeys.add(sK);
+        const ck = xK + '||' + sK;
+        if (!cells.has(ck)) cells.set(ck, []);
         const v = valueFor(r);
-        if (v != null) cells.get(cellKey).push(v);
+        if (v != null) cells.get(ck).push(v);
       });
-
       const xTotals = new Map();
-      xKeys.forEach(xk => {
-        let total = 0;
-        stackKeys.forEach(sk => {
-          const arr = cells.get(xk + '||' + sk) || [];
-          total += reduce(arr) || 0;
-        });
-        xTotals.set(xk, total);
-      });
+      xKeys.forEach(xk => { let t = 0; stackKeys.forEach(sk => { t += reduce(cells.get(xk + '||' + sk) || []) || 0; }); xTotals.set(xk, t); });
       const sortedX = Array.from(xKeys).sort((a,b) => xTotals.get(b) - xTotals.get(a)).slice(0, 30);
-
-      const stackTotals = new Map();
-      stackKeys.forEach(sk => {
-        let total = 0;
-        sortedX.forEach(xk => {
-          const arr = cells.get(xk + '||' + sk) || [];
-          total += reduce(arr) || 0;
-        });
-        stackTotals.set(sk, total);
-      });
-      const sortedStacks = Array.from(stackKeys).sort((a,b) => stackTotals.get(b) - stackTotals.get(a)).slice(0, 12);
-
-      const datasets = sortedStacks.map(sk => ({
+      const stTotals = new Map();
+      stackKeys.forEach(sk => { let t = 0; sortedX.forEach(xk => { t += reduce(cells.get(xk + '||' + sk) || []) || 0; }); stTotals.set(sk, t); });
+      const sortedSt = Array.from(stackKeys).sort((a,b) => stTotals.get(b) - stTotals.get(a)).slice(0, 12);
+      const datasets = sortedSt.map(sk => ({
         label: sk,
-        values: sortedX.map(xk => {
-          const arr = cells.get(xk + '||' + sk) || [];
-          return arr.length ? reduce(arr) : 0;
-        })
+        values: sortedX.map(xk => { const a = cells.get(xk + '||' + sk) || []; return a.length ? reduce(a) : 0; })
       }));
-
       let warning = null;
       if (xKeys.size > 30) warning = `${xKeys.size} groups — showing top 30`;
-      else if (stackKeys.size > 12) warning = `${stackKeys.size} stack values — showing top 12`;
-
+      else if (stackKeys.size > 12) warning = `${stackKeys.size} series — showing top 12`;
       return { labels: sortedX, datasets, warning };
     }
 
     // ============================================================
-    // Exports
+    // Render: Suggestions
     // ============================================================
-    function exportRows() {
-      const rows = applyFilters(state.rows);
-      const selCols = state.columns.filter(c => c.selected).map(c => c.name);
-      return rows.map(r => {
-        const o = {};
-        selCols.forEach(c => o[c] = r[c]);
-        return o;
+    function renderSuggestions() {
+      const sug = $('rl-suggest');
+      const body = $('rl-suggest-body');
+      const count = $('rl-suggest-count');
+      sug.classList.toggle('open', state.suggestOpen);
+      count.textContent = state.suggestions.length ? `${state.suggestions.length} available` : '';
+      body.innerHTML = '';
+      state.suggestions.forEach(s => {
+        const chip = el('span', { class: 'rl-suggest-chip' }, el('span', { class: 'rl-plus' }, '+'), s.label);
+        chip.addEventListener('click', () => {
+          state.charts.push({ ...s.payload, id: state.nextChartId++, optionsOpen: false });
+          state.suggestions = state.suggestions.filter(x => x.id !== s.id);
+          renderCharts();
+          renderSuggestions();
+          toast('Added: ' + s.label, 'ok');
+        });
+        body.appendChild(chip);
       });
     }
 
-    function downloadBlob(blob, name) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
+    // ============================================================
+    // Render: Table
+    // ============================================================
+    function renderTable() {
+      const section = $('rl-table-section');
+      section.classList.toggle('open', state.tableOpen);
 
-    function exportCSV() {
-      const rows = exportRows();
-      if (!rows.length) { toast('No rows to export.', 'err'); return; }
-      const csv = Papa.unparse(rows);
-      downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), baseName() + '.csv');
-      toast(`Exported ${rows.length.toLocaleString()} rows to CSV.`, 'ok');
-    }
+      const visible = getVisibleRows();
+      const filtered = getFilteredRows();
+      $('rl-table-count').textContent = `${filtered.length.toLocaleString()} rows`;
+      $('rl-table-meta').textContent = state.search
+        ? `${visible.length.toLocaleString()} match${visible.length===1?'':'es'} for "${state.search}"`
+        : (visible.length > TABLE_RENDER_CAP ? `Showing first ${TABLE_RENDER_CAP.toLocaleString()} of ${visible.length.toLocaleString()}` : `${visible.length.toLocaleString()} row${visible.length===1?'':'s'}`);
 
-    function exportXLSX() {
-      const rows = exportRows();
-      if (!rows.length) { toast('No rows to export.', 'err'); return; }
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Data');
-      XLSX.writeFile(wb, baseName() + '.xlsx');
-      toast(`Exported ${rows.length.toLocaleString()} rows to Excel.`, 'ok');
-    }
+      if (!state.tableOpen) return;
 
-    function exportPDF() { window.print(); }
+      const head = $('rl-table-head');
+      const body = $('rl-table-body');
+      head.innerHTML = '';
+      body.innerHTML = '';
+      const selCols = state.columns.filter(c => c.selected);
 
-    function captureConfig() {
-      return {
-        version: 1,
-        source: state.rawFileName,
-        columns: state.columns.map(c => ({ name: c.name, type: c.type, selected: c.selected })),
-        filters: state.filters.map(f => ({ column: f.column, type: f.type, op: f.op, value: f.value })),
-        filterMode: state.filterMode,
-        charts: state.charts.map(c => ({
-          type: c.type,
-          groups: c.groups || (c.x ? [c.x] : []),
-          groupMode: c.groupMode || 'stack',
-          y: c.y,
-          agg: c.agg
-        })),
-        sort: state.sort
-      };
-    }
-
-    function exportConfig() {
-      const cfg = captureConfig();
-      downloadBlob(new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' }), baseName() + '.reportlens.json');
-      toast('Config downloaded (no data included).', 'ok');
-    }
-
-    function importConfig(text) {
-      try {
-        const cfg = JSON.parse(text);
-        if (!cfg || !cfg.columns) throw new Error('Not a ReportLens config.');
-        let applied = 0, missing = 0;
-        cfg.columns.forEach(pc => {
-          const c = state.columns.find(x => x.name === pc.name);
-          if (c) { c.selected = pc.selected; if (pc.type) c.type = pc.type; applied++; }
-          else missing++;
+      selCols.forEach(c => {
+        const th = el('th', {}, c.name, c.name === state.sort.column ? el('span', { class: 'rl-sort-ind' }, state.sort.dir === 'asc' ? '▲' : '▼') : null);
+        if (c.name === state.sort.column) th.classList.add('sorted');
+        th.addEventListener('click', () => {
+          if (state.sort.column === c.name) state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+          else { state.sort.column = c.name; state.sort.dir = 'asc'; }
+          renderTable();
         });
-        state.filters = [];
-        (cfg.filters || []).forEach(f => {
-          const c = state.columns.find(x => x.name === f.column);
-          if (c && c.type === f.type) state.filters.push({ ...f, id: state.nextFilterId++ });
-        });
-        state.filterMode = cfg.filterMode || 'and';
-        destroyCharts();
-        state.charts = (cfg.charts || []).map(c => ({
-          ...c,
-          groups: c.groups || (c.x ? [c.x] : []),
-          groupMode: c.groupMode || 'stack',
-          id: state.nextChartId++,
-          instance: null
-        }));
-        if (!state.charts.length) addChart();
-        state.sort = cfg.sort || { column: null, dir: 'asc' };
+        head.appendChild(th);
+      });
 
-        renderColumns();
-        renderFilters();
-        renderTable();
-        renderCharts();
-        toast(`Config applied · ${applied} columns matched${missing ? ', ' + missing + ' missing' : ''}.`, 'ok');
-      } catch (e) {
-        toast('Config error: ' + e.message, 'err');
+      const cap = Math.min(visible.length, TABLE_RENDER_CAP);
+      for (let i = 0; i < cap; i++) {
+        const row = visible[i];
+        const tr = el('tr');
+        selCols.forEach(c => {
+          const val = row[c.name];
+          tr.appendChild(el('td', { title: val == null ? '' : String(val) }, val == null ? '' : String(val)));
+        });
+        body.appendChild(tr);
       }
     }
 
-    function baseName() {
-      const n = state.rawFileName || 'reportlens';
-      return n.replace(/\.[^.]+$/, '');
+    function renderColumnsDropdown() {
+      const pop = $('rl-cols-popup');
+      pop.innerHTML = '';
+      state.columns.forEach(c => {
+        const row = el('div', { class: 'rl-col-row' });
+        const cb = el('input', { type: 'checkbox', ...(c.selected ? { checked: '' } : {}) });
+        cb.addEventListener('change', e => { c.selected = e.target.checked; renderTable(); });
+        row.appendChild(cb);
+        row.appendChild(document.createTextNode(c.name));
+        const typeBadge = el('span', { class: 'rl-type', title: 'Click to change type' }, c.type);
+        typeBadge.addEventListener('click', e => {
+          e.stopPropagation();
+          const types = ['string','number','date','boolean'];
+          c.type = types[(types.indexOf(c.type) + 1) % types.length];
+          renderColumnsDropdown();
+          renderAll();
+        });
+        row.appendChild(typeBadge);
+        row.addEventListener('click', e => {
+          if (e.target === cb || e.target === typeBadge) return;
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event('change'));
+        });
+        pop.appendChild(row);
+      });
     }
 
-    function clearAll() {
-      if (!confirm('Clear loaded data and all settings?')) return;
-      destroyCharts();
-      state.rawFileName = null;
-      state.rows = [];
-      state.columns = [];
-      state.filters = [];
-      state.checkedRows.clear();
-      state.charts = [];
-      state.sort = { column: null, dir: 'asc' };
-      state.search = '';
-      ['rl-columns-card','rl-filters-card','rl-table-card','rl-charts-card','rl-export-card'].forEach(id => $(id).style.display = 'none');
-      status('rl-upload-status', '');
-      $('rl-file').value = '';
-      toast('Cleared.', 'ok');
+    // ============================================================
+    // Render all
+    // ============================================================
+    function renderAll() {
+      renderFilterBar();
+      renderKpis();
+      renderCharts();
+      renderSuggestions();
+      renderColumnsDropdown();
+      renderTable();
     }
 
     // ============================================================
@@ -1421,51 +1424,47 @@
     // ============================================================
     function wire() {
       const drop = $('rl-drop');
-      const fileInp = $('rl-file');
-      drop.addEventListener('click', () => fileInp.click());
-      fileInp.addEventListener('change', e => handleFile(e.target.files[0]));
+      const dropFile = $('rl-drop-file');
+      drop.addEventListener('click', () => dropFile.click());
+      dropFile.addEventListener('change', e => handleFile(e.target.files[0]));
       ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('dragover'); }));
       ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('dragover'); }));
-      drop.addEventListener('drop', e => { handleFile(e.dataTransfer.files[0]); });
+      drop.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 
-      $('rl-cols-all').addEventListener('click', () => { state.columns.forEach(c => c.selected = true); renderColumns(); renderTable(); renderCharts(); });
-      $('rl-cols-none').addEventListener('click', () => { state.columns.forEach(c => c.selected = false); renderColumns(); renderTable(); renderCharts(); });
+      $('rl-upload-btn').addEventListener('click', () => $('rl-file').click());
+      $('rl-file').addEventListener('change', e => handleFile(e.target.files[0]));
 
-      $('rl-add-filter').addEventListener('click', () => openFilterEditor(null));
-      $('rl-filter-mode').addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') return;
-        state.filterMode = e.target.dataset.mode;
-        renderFilters(); renderTable(); renderCharts();
+      $('rl-clear-all').addEventListener('click', () => {
+        if (!confirm('Clear loaded data and start over?')) return;
+        destroyAllCharts();
+        state.rows = []; state.columns = []; state.filters = []; state.charts = []; state.kpis = []; state.suggestions = [];
+        state.rawFileName = null; state.reportTitle = ''; state.notes = ''; state.search = '';
+        state.sort = { column: null, dir: 'asc' };
+        $('rl-dashboard').style.display = 'none';
+        $('rl-empty-state').style.display = '';
+        $('rl-pdf-btn').disabled = true;
+        status('');
+        toast('Cleared.', 'ok');
       });
-      $('rl-filters-toggle').addEventListener('click', e => {
-        state.filtersCollapsed = !state.filtersCollapsed;
-        $('rl-filters-body').style.display = state.filtersCollapsed ? 'none' : '';
-        e.target.textContent = state.filtersCollapsed ? 'expand' : 'collapse';
-      });
 
+      $('rl-report-title').addEventListener('input', e => { state.reportTitle = e.target.value; });
+      $('rl-notes').addEventListener('input', e => { state.notes = e.target.value; });
+
+      $('rl-suggest-head').addEventListener('click', () => { state.suggestOpen = !state.suggestOpen; renderSuggestions(); });
+
+      $('rl-table-toggle').addEventListener('click', () => { state.tableOpen = !state.tableOpen; renderTable(); });
       $('rl-search').addEventListener('input', e => { state.search = e.target.value; renderTable(); });
-      $('rl-check-all').addEventListener('click', () => {
-        getVisibleRows().forEach(r => state.checkedRows.add(state.rows.indexOf(r)));
-        renderTable(); renderCharts();
-      });
-      $('rl-check-none').addEventListener('click', () => { state.checkedRows.clear(); renderTable(); renderCharts(); });
 
-      $('rl-add-chart').addEventListener('click', addChart);
-
-      $('rl-export-csv').addEventListener('click', exportCSV);
-      $('rl-export-xlsx').addEventListener('click', exportXLSX);
-      $('rl-export-pdf').addEventListener('click', exportPDF);
-      $('rl-export-config').addEventListener('click', exportConfig);
-      $('rl-import-config').addEventListener('click', () => $('rl-config-file').click());
-      $('rl-config-file').addEventListener('change', e => {
-        const f = e.target.files[0];
-        if (!f) return;
-        const r = new FileReader();
-        r.onload = () => importConfig(r.result);
-        r.readAsText(f);
-        e.target.value = '';
+      $('rl-cols-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        $('rl-cols-dd').classList.toggle('open');
       });
-      $('rl-clear').addEventListener('click', clearAll);
+      document.addEventListener('click', e => {
+        const dd = $('rl-cols-dd');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+      });
+
+      $('rl-pdf-btn').addEventListener('click', () => window.print());
     }
 
     wire();

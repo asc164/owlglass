@@ -30,7 +30,6 @@
 .rl-crumb a{color:var(--rl-text-dim);text-decoration:none}
 .rl-crumb a:hover{color:var(--rl-accent)}
 
-/* Top bar */
 .rl-topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .rl-topbar h1{font-size:1.5rem;font-weight:700;margin:0;margin-right:10px}
 .rl-topbar .rl-spacer{flex:1}
@@ -45,7 +44,6 @@
 .rl-btn.danger:hover{background:#fee2e2}
 .rl-btn.small{padding:4px 9px;font-size:.78rem}
 
-/* Empty state / upload */
 .rl-empty{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:12px;padding:48px 24px;text-align:center}
 .rl-empty h2{font-size:1.4rem;font-weight:600;margin:0 0 8px}
 .rl-empty p{color:var(--rl-text-dim);margin:0 0 24px;max-width:480px;margin-left:auto;margin-right:auto}
@@ -56,7 +54,6 @@
 .rl-drop .rl-drop-sub{font-size:.82rem}
 .rl-drop input[type=file]{display:none}
 
-/* Source bar */
 .rl-source{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:.85rem;color:var(--rl-text-dim)}
 .rl-source strong{color:var(--rl-text);font-weight:600}
 .rl-source .rl-source-actions{margin-left:auto;display:flex;gap:6px}
@@ -64,7 +61,6 @@
 .rl-title-input:hover{border-bottom-color:var(--rl-border-strong)}
 .rl-title-input:focus{border-bottom-color:var(--rl-accent)}
 
-/* Filters bar */
 .rl-filterbar{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .rl-filterbar-label{font-size:.78rem;color:var(--rl-text-dim);font-weight:500;margin-right:2px}
 .rl-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px 4px 10px;background:var(--rl-accent-dim);color:var(--rl-accent);border-radius:14px;font-size:.8rem;font-weight:500}
@@ -76,24 +72,28 @@
 .rl-filter-mode button{background:var(--rl-surface);color:var(--rl-text-dim);border:0;padding:3px 9px;font-size:.74rem;cursor:pointer;font-family:inherit}
 .rl-filter-mode button.active{background:var(--rl-accent);color:#fff}
 
-/* Filter editor popover */
 .rl-popover{position:absolute;background:var(--rl-surface);border:1px solid var(--rl-border-strong);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px;z-index:200;min-width:300px;display:flex;flex-direction:column;gap:8px}
 .rl-popover select,.rl-popover input{padding:6px 8px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;background:var(--rl-surface)}
 .rl-popover-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
 
-/* KPI grid */
 .rl-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px}
-.rl-kpi{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;position:relative}
+.rl-kpi{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;position:relative;min-height:88px}
 .rl-kpi-label{font-size:.72rem;color:var(--rl-text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;font-weight:500}
 .rl-kpi-value{font-size:1.6rem;font-weight:700;color:var(--rl-text);line-height:1.1;letter-spacing:-0.01em}
 .rl-kpi-sub{font-size:.72rem;color:var(--rl-text-dim);margin-top:4px}
 .rl-kpi .rl-kpi-remove{position:absolute;top:6px;right:6px;opacity:0;transition:opacity .12s;background:transparent;border:0;color:var(--rl-text-faint);font-size:.9rem;cursor:pointer;padding:2px 6px;border-radius:3px}
 .rl-kpi:hover .rl-kpi-remove{opacity:1}
 .rl-kpi .rl-kpi-remove:hover{background:#fee2e2;color:var(--rl-error)}
-.rl-kpi-add{background:#fbfbfd;border:1px dashed var(--rl-border-strong);border-radius:8px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--rl-text-dim);font-size:.85rem;font-weight:500;min-height:80px}
+.rl-kpi-add{background:#fbfbfd;border:1px dashed var(--rl-border-strong);border-radius:8px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--rl-text-dim);font-size:.85rem;font-weight:500;min-height:88px}
 .rl-kpi-add:hover{border-color:var(--rl-accent);color:var(--rl-accent);background:var(--rl-accent-dim)}
 
-/* Charts grid */
+/* Top-N KPI list */
+.rl-kpi-list{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+.rl-kpi-list-row{display:flex;align-items:baseline;gap:8px;font-size:.82rem;line-height:1.3}
+.rl-kpi-list-rank{color:var(--rl-text-faint);font-size:.7rem;width:14px;flex-shrink:0}
+.rl-kpi-list-name{color:var(--rl-text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.rl-kpi-list-count{color:var(--rl-text-dim);font-variant-numeric:tabular-nums;font-size:.78rem;flex-shrink:0}
+
 .rl-chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:12px;margin-bottom:14px}
 .rl-chart-card{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;display:flex;flex-direction:column}
 .rl-chart-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -113,7 +113,6 @@
 .rl-chart-add{background:#fbfbfd;border:1px dashed var(--rl-border-strong);border-radius:8px;padding:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--rl-text-dim);font-size:.9rem;font-weight:500;min-height:280px}
 .rl-chart-add:hover{border-color:var(--rl-accent);color:var(--rl-accent);background:var(--rl-accent-dim)}
 
-/* Suggestions */
 .rl-suggest{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;margin-bottom:14px}
 .rl-suggest-head{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--rl-text)}
 .rl-suggest-head .rl-caret{font-size:.7rem;color:var(--rl-text-dim);transition:transform .15s}
@@ -124,13 +123,11 @@
 .rl-suggest-chip:hover{border-color:var(--rl-accent);color:var(--rl-accent);background:var(--rl-accent-dim)}
 .rl-suggest-chip .rl-plus{color:var(--rl-accent);font-weight:700}
 
-/* Notes */
 .rl-notes{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;padding:14px;margin-bottom:14px}
 .rl-notes-label{font-size:.78rem;color:var(--rl-text-dim);font-weight:500;margin-bottom:6px;display:block}
 .rl-notes textarea{width:100%;min-height:60px;padding:8px;border:1px solid var(--rl-border);border-radius:6px;font-family:inherit;font-size:.88rem;color:var(--rl-text);resize:vertical;background:#fbfbfd;outline:none}
 .rl-notes textarea:focus{border-color:var(--rl-accent);background:var(--rl-surface)}
 
-/* Table */
 .rl-table-section{background:var(--rl-surface);border:1px solid var(--rl-border);border-radius:8px;margin-bottom:14px;overflow:hidden}
 .rl-table-head-bar{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:var(--rl-surface);border-bottom:1px solid transparent}
 .rl-table-section.open .rl-table-head-bar{border-bottom-color:var(--rl-border)}
@@ -141,7 +138,13 @@
 .rl-table-body-wrap{display:none}
 .rl-table-section.open .rl-table-body-wrap{display:block}
 .rl-table-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--rl-border);background:#fbfbfd}
-.rl-table-toolbar input[type=search]{padding:5px 10px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;min-width:200px}
+.rl-search-wrap{position:relative;display:inline-flex;align-items:center}
+.rl-table-toolbar input[type=search]{padding:5px 10px;padding-right:28px;border:1px solid var(--rl-border-strong);border-radius:4px;font-size:.85rem;font-family:inherit;min-width:240px}
+.rl-search-help{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--rl-text-faint);color:#fff;border:0;border-radius:50%;width:16px;height:16px;font-size:.65rem;line-height:16px;text-align:center;padding:0;cursor:pointer;font-weight:700}
+.rl-search-help:hover{background:var(--rl-accent)}
+.rl-search-tip{position:absolute;top:calc(100% + 4px);left:0;background:var(--rl-text);color:#fff;font-size:.74rem;padding:8px 10px;border-radius:6px;line-height:1.5;white-space:nowrap;z-index:50;display:none;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.rl-search-tip.show{display:block}
+.rl-search-tip code{background:rgba(255,255,255,.18);padding:1px 4px;border-radius:3px;font-size:.7rem}
 .rl-cols-dropdown{position:relative}
 .rl-cols-popup{position:absolute;top:calc(100% + 4px);left:0;background:var(--rl-surface);border:1px solid var(--rl-border-strong);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.1);max-height:320px;overflow-y:auto;padding:6px;z-index:50;display:none;min-width:220px}
 .rl-cols-dropdown.open .rl-cols-popup{display:block}
@@ -158,13 +161,11 @@
 .rl-table td{padding:6px 10px;border-bottom:1px solid #f0f0f3;color:var(--rl-text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rl-table tr:hover td{background:#fafafd}
 
-/* Toast */
 .rl-toast{position:fixed;bottom:20px;right:20px;background:var(--rl-text);color:#fff;padding:10px 16px;border-radius:6px;font-size:.85rem;box-shadow:0 4px 12px rgba(0,0,0,.18);z-index:1000;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;max-width:340px}
 .rl-toast.show{opacity:1;transform:translateY(0)}
 .rl-toast.err{background:var(--rl-error)}
 .rl-toast.ok{background:var(--rl-success)}
 
-/* Status */
 .rl-status{margin-top:10px;font-size:.85rem;min-height:18px}
 .rl-status.err{color:var(--rl-error)}
 .rl-status.ok{color:var(--rl-success)}
@@ -252,11 +253,19 @@
               </div>
               <div class="rl-table-body-wrap">
                 <div class="rl-table-toolbar">
-                  <input type="search" id="rl-search" placeholder="Search visible cells…">
+                  <div class="rl-search-wrap">
+                    <input type="search" id="rl-search" placeholder='Search… ("phrase" OR word)'>
+                    <button class="rl-search-help" id="rl-search-help" type="button" title="Search tips">?</button>
+                    <div class="rl-search-tip" id="rl-search-tip">
+                      Space = AND · <code>OR</code> = OR · <code>"phrase"</code> for exact<br>
+                      e.g. <code>north active</code> · <code>north OR south</code> · <code>"new york" OR london</code>
+                    </div>
+                  </div>
                   <div class="rl-cols-dropdown" id="rl-cols-dd">
                     <button class="rl-btn ghost small" id="rl-cols-btn">Columns ▾</button>
                     <div class="rl-cols-popup" id="rl-cols-popup"></div>
                   </div>
+                  <button class="rl-btn ghost small" id="rl-export-csv">Download CSV</button>
                   <span id="rl-table-meta" style="font-size:.78rem;color:var(--rl-text-dim);margin-left:auto"></span>
                 </div>
                 <div class="rl-table-wrap">
@@ -286,22 +295,16 @@
   (function(){
     'use strict';
 
-    // ============================================================
-    // Constants
-    // ============================================================
     const MAX_BYTES = 10 * 1024 * 1024;
     const MAX_ROWS = 50000;
     const TABLE_RENDER_CAP = 1000;
     const TYPE_SAMPLE_SIZE = 100;
-    const MULTI_TOP_N = 1000;
     const MAX_KPIS = 6;
     const MAX_GROUPS = 4;
+    const TOPN_DEFAULT = 5;
 
-    // Column-name signals for ranking
     const NUMERIC_PRIORITY_WORDS = ['revenue','sales','amount','total','price','profit','cost','spend','margin','count','qty','quantity','units','orders','value'];
     const ID_LIKE_WORDS = ['id','uuid','guid','key','hash'];
-
-    // Common date words for boost
     const DATE_PRIORITY_WORDS = ['date','created','timestamp','time','day','month','period'];
 
     const state = {
@@ -309,14 +312,14 @@
       reportTitle: '',
       notes: '',
       rows: [],
-      columns: [],         // [{name, type, selected, source: 'file'|'calculated'}]
+      columns: [],
       filters: [],
       filterMode: 'and',
       sort: { column: null, dir: 'asc' },
       search: '',
-      kpis: [],            // [{id, type:'count'|'sum'|'avg'|'min'|'max'|'distinct'|'span', column, label}]
-      charts: [],          // [{id, type, groups[], y, agg, title, optionsOpen}]
-      suggestions: [],     // [{id, label, kind, payload}]
+      kpis: [],
+      charts: [],
+      suggestions: [],
       tableOpen: false,
       suggestOpen: false,
       nextChartId: 1,
@@ -324,9 +327,6 @@
       nextFilterId: 1,
     };
 
-    // ============================================================
-    // DOM helpers
-    // ============================================================
     const $ = id => document.getElementById(id);
     const el = (tag, attrs, ...kids) => {
       const node = document.createElement(tag);
@@ -358,9 +358,6 @@
       n.className = 'rl-status' + (kind ? ' ' + kind : '');
     }
 
-    // ============================================================
-    // Number / date formatting
-    // ============================================================
     function fmtNumber(n) {
       if (n == null || !Number.isFinite(n)) return '—';
       const abs = Math.abs(n);
@@ -380,9 +377,6 @@
       return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
-    // ============================================================
-    // Type inference + coercion
-    // ============================================================
     function inferType(values) {
       const sample = values.filter(v => v != null && v !== '').slice(0, TYPE_SAMPLE_SIZE);
       if (sample.length === 0) return 'string';
@@ -445,8 +439,6 @@
       }
       return 0;
     }
-
-    // Get unique values for a column, with cardinality
     function cardinality(colName) {
       const set = new Set();
       for (let i = 0; i < state.rows.length; i++) {
@@ -457,22 +449,15 @@
       return set.size;
     }
 
-    // ============================================================
-    // JSON flattening
-    // ============================================================
     function flattenObject(obj, prefix, out) {
       out = out || {};
       prefix = prefix || '';
       for (const k in obj) {
         const v = obj[k];
         const key = prefix ? prefix + '.' + k : k;
-        if (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date)) {
-          flattenObject(v, key, out);
-        } else if (Array.isArray(v)) {
-          out[key] = JSON.stringify(v);
-        } else {
-          out[key] = v;
-        }
+        if (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date)) flattenObject(v, key, out);
+        else if (Array.isArray(v)) out[key] = JSON.stringify(v);
+        else out[key] = v;
       }
       return out;
     }
@@ -489,15 +474,9 @@
       return best;
     }
 
-    // ============================================================
-    // File handling
-    // ============================================================
     function handleFile(file) {
       if (!file) return;
-      if (file.size > MAX_BYTES) {
-        status(`File is ${(file.size/1048576).toFixed(1)} MB — exceeds the 10 MB limit.`, 'err');
-        return;
-      }
+      if (file.size > MAX_BYTES) { status(`File is ${(file.size/1048576).toFixed(1)} MB — exceeds the 10 MB limit.`, 'err'); return; }
       status(`Reading ${file.name}…`);
       const name = file.name.toLowerCase();
       const reader = new FileReader();
@@ -516,10 +495,7 @@
       const result = Papa.parse(text, opts);
       if (result.errors && result.errors.length) {
         const fatal = result.errors.find(e => e.type !== 'FieldMismatch');
-        if (fatal && (!result.data || result.data.length === 0)) {
-          status('CSV parse error: ' + fatal.message, 'err');
-          return;
-        }
+        if (fatal && (!result.data || result.data.length === 0)) { status('CSV parse error: ' + fatal.message, 'err'); return; }
       }
       let rows = result.data || [];
       if (rows.length > MAX_ROWS) { rows = rows.slice(0, MAX_ROWS); toast(`Truncated to ${MAX_ROWS.toLocaleString()} rows.`, 'err'); }
@@ -536,11 +512,9 @@
 
     function ingestRows(rows, fileName) {
       if (!rows.length) { status('No rows found.', 'err'); return; }
-
       const keySet = new Set();
       rows.forEach(r => { for (const k in r) keySet.add(k); });
       const cols = Array.from(keySet);
-
       const columns = cols.map(name => {
         const values = rows.map(r => r[name]);
         return { name, type: inferType(values), selected: true, source: 'file' };
@@ -565,152 +539,90 @@
       $('rl-pdf-btn').disabled = false;
       $('rl-report-title').value = state.reportTitle;
       $('rl-notes').value = state.notes;
+      $('rl-search').value = '';
       $('rl-source-info').innerHTML = `<strong>${escapeHtml(fileName)}</strong> · ${rows.length.toLocaleString()} rows · ${columns.length} columns`;
 
       renderAll();
     }
 
-    // ============================================================
-    // Auto-analyze
-    // ============================================================
     function autoAnalyze() {
       const cols = state.columns;
       const numCols = cols.filter(c => c.type === 'number' && !isIdLike(c.name));
       const dateCols = cols.filter(c => c.type === 'date');
       const catCols = cols.filter(c => c.type === 'string' || c.type === 'boolean');
 
-      // Rank numeric by priority words first, then by total non-null count
-      numCols.sort((a, b) => {
-        const pa = numericPriorityScore(a.name);
-        const pb = numericPriorityScore(b.name);
-        if (pa !== pb) return pb - pa;
-        return 0;
-      });
+      numCols.sort((a, b) => numericPriorityScore(b.name) - numericPriorityScore(a.name));
       dateCols.sort((a, b) => datePriorityScore(b.name) - datePriorityScore(a.name));
 
-      // Filter categoricals to "useful" ones: cardinality 2..50
       const catScored = catCols.map(c => ({ col: c, card: cardinality(c.name) }))
         .filter(x => x.card >= 2 && x.card <= 50 && !isIdLike(x.col.name))
-        .sort((a, b) => a.card - b.card); // fewer uniques first
+        .sort((a, b) => a.card - b.card);
 
-      // ----- KPIs -----
       state.kpis = [];
-      // Row count
       state.kpis.push({ id: state.nextKpiId++, type: 'count', column: null, label: 'Rows' });
-
-      // Top 2 numeric sums
       numCols.slice(0, 2).forEach(c => {
         state.kpis.push({ id: state.nextKpiId++, type: 'sum', column: c.name, label: c.name });
       });
-
-      // Date span (first one)
       if (dateCols.length) {
         state.kpis.push({ id: state.nextKpiId++, type: 'span', column: dateCols[0].name, label: dateCols[0].name + ' span' });
       }
-
-      // Distinct count for lowest-cardinality categorical
       if (catScored.length && state.kpis.length < MAX_KPIS) {
         state.kpis.push({ id: state.nextKpiId++, type: 'distinct', column: catScored[0].col.name, label: catScored[0].col.name });
       }
 
-      // ----- Charts -----
       state.charts = [];
-
-      // Chart 1: date + numeric (line)
       if (dateCols.length && numCols.length) {
         state.charts.push({
-          id: state.nextChartId++,
-          type: 'line',
-          groups: [dateCols[0].name],
-          y: numCols[0].name,
-          agg: 'sum',
-          title: `${numCols[0].name} over ${dateCols[0].name}`,
-          dateBucket: 'auto',
-          optionsOpen: false
+          id: state.nextChartId++, type: 'line', groups: [dateCols[0].name],
+          y: numCols[0].name, agg: 'sum',
+          title: `${numCols[0].name} over ${dateCols[0].name}`, optionsOpen: false
         });
       }
-
-      // Chart 2: best categorical + numeric (bar)
       if (catScored.length && numCols.length) {
         state.charts.push({
-          id: state.nextChartId++,
-          type: 'bar',
-          groups: [catScored[0].col.name],
-          y: numCols[0].name,
-          agg: 'sum',
-          title: `${numCols[0].name} by ${catScored[0].col.name}`,
-          optionsOpen: false
+          id: state.nextChartId++, type: 'bar', groups: [catScored[0].col.name],
+          y: numCols[0].name, agg: 'sum',
+          title: `${numCols[0].name} by ${catScored[0].col.name}`, optionsOpen: false
         });
       }
-
-      // Chart 3: second categorical row counts, OR pie of first categorical
       if (catScored.length >= 2) {
         state.charts.push({
-          id: state.nextChartId++,
-          type: 'bar',
-          groups: [catScored[1].col.name],
-          y: null,
-          agg: 'count',
-          title: `Row count by ${catScored[1].col.name}`,
-          optionsOpen: false
+          id: state.nextChartId++, type: 'bar', groups: [catScored[1].col.name],
+          y: null, agg: 'count',
+          title: `Row count by ${catScored[1].col.name}`, optionsOpen: false
         });
       } else if (catScored.length === 1 && state.charts.length < 3) {
         state.charts.push({
-          id: state.nextChartId++,
-          type: 'pie',
-          groups: [catScored[0].col.name],
-          y: null,
-          agg: 'count',
-          title: `Distribution: ${catScored[0].col.name}`,
-          optionsOpen: false
+          id: state.nextChartId++, type: 'pie', groups: [catScored[0].col.name],
+          y: null, agg: 'count',
+          title: `Distribution: ${catScored[0].col.name}`, optionsOpen: false
         });
       }
 
-      // ----- Suggestions: enumerate (cat × num) and (date × num) pairs not already in charts -----
       const inUse = new Set(state.charts.map(c => JSON.stringify({ g: c.groups, y: c.y, agg: c.agg })));
       const sugg = [];
-
       catScored.forEach(({ col: catCol }) => {
         numCols.forEach(numCol => {
           const key = JSON.stringify({ g: [catCol.name], y: numCol.name, agg: 'sum' });
           if (inUse.has(key)) return;
-          sugg.push({
-            id: 's' + sugg.length,
-            label: `${numCol.name} by ${catCol.name}`,
-            kind: 'chart',
-            payload: { type: 'bar', groups: [catCol.name], y: numCol.name, agg: 'sum', title: `${numCol.name} by ${catCol.name}` }
-          });
+          sugg.push({ id: 's' + sugg.length, label: `${numCol.name} by ${catCol.name}`, payload: { type: 'bar', groups: [catCol.name], y: numCol.name, agg: 'sum', title: `${numCol.name} by ${catCol.name}` } });
         });
       });
       dateCols.forEach(dCol => {
         numCols.forEach(numCol => {
           const key = JSON.stringify({ g: [dCol.name], y: numCol.name, agg: 'sum' });
           if (inUse.has(key)) return;
-          sugg.push({
-            id: 's' + sugg.length,
-            label: `${numCol.name} over ${dCol.name}`,
-            kind: 'chart',
-            payload: { type: 'line', groups: [dCol.name], y: numCol.name, agg: 'sum', title: `${numCol.name} over ${dCol.name}`, dateBucket: 'auto' }
-          });
+          sugg.push({ id: 's' + sugg.length, label: `${numCol.name} over ${dCol.name}`, payload: { type: 'line', groups: [dCol.name], y: numCol.name, agg: 'sum', title: `${numCol.name} over ${dCol.name}` } });
         });
       });
       catScored.forEach(({ col: catCol }) => {
         const key = JSON.stringify({ g: [catCol.name], y: null, agg: 'count' });
         if (inUse.has(key)) return;
-        sugg.push({
-          id: 's' + sugg.length,
-          label: `Count by ${catCol.name}`,
-          kind: 'chart',
-          payload: { type: 'bar', groups: [catCol.name], y: null, agg: 'count', title: `Row count by ${catCol.name}` }
-        });
+        sugg.push({ id: 's' + sugg.length, label: `Count by ${catCol.name}`, payload: { type: 'bar', groups: [catCol.name], y: null, agg: 'count', title: `Row count by ${catCol.name}` } });
       });
-
       state.suggestions = sugg.slice(0, 20);
     }
 
-    // ============================================================
-    // Filter evaluation
-    // ============================================================
     function filterRow(row, f) {
       const raw = row[f.column];
       const v = coerce(raw, f.type);
@@ -752,12 +664,48 @@
       });
     }
     function getFilteredRows() { return applyFilters(state.rows); }
+
+    // ----- Boolean search parser -----
+    // Grammar (simple): OR-groups separated by "OR" (case-sensitive token, surrounded by spaces).
+    // Within an OR-group, AND tokens (whitespace-separated). Quoted phrases preserved.
+    // A row matches if ANY OR-group matches; an OR-group matches if ALL tokens are found
+    // somewhere across the row's selected columns (case-insensitive substring).
+    function parseSearchQuery(q) {
+      if (!q || !q.trim()) return null;
+      const orGroups = q.split(/\s+OR\s+/);
+      return orGroups.map(group => {
+        const tokens = [];
+        let i = 0;
+        while (i < group.length) {
+          const ch = group[i];
+          if (ch === ' ' || ch === '\t') { i++; continue; }
+          if (ch === '"') {
+            const end = group.indexOf('"', i + 1);
+            if (end === -1) { tokens.push(group.slice(i + 1)); break; }
+            tokens.push(group.slice(i + 1, end));
+            i = end + 1;
+          } else {
+            const next = group.indexOf(' ', i);
+            if (next === -1) { tokens.push(group.slice(i)); break; }
+            tokens.push(group.slice(i, next));
+            i = next + 1;
+          }
+        }
+        return tokens.filter(t => t.length > 0).map(t => t.toLowerCase());
+      }).filter(g => g.length > 0);
+    }
+    function matchSearchQuery(row, parsedGroups, selCols) {
+      if (!parsedGroups || parsedGroups.length === 0) return true;
+      const haystack = selCols.map(c => String(row[c] ?? '')).join('\u0001').toLowerCase();
+      return parsedGroups.some(group => group.every(tok => haystack.includes(tok)));
+    }
+
     function getVisibleRows() {
       let rows = getFilteredRows();
-      if (state.search) {
-        const q = state.search.toLowerCase();
+      const parsed = parseSearchQuery(state.search);
+      if (parsed) {
         const cols = state.columns.filter(c => c.selected).map(c => c.name);
-        rows = rows.filter(r => cols.some(c => String(r[c] ?? '').toLowerCase().includes(q)));
+        rows = rows.filter(r => matchSearchQuery(r, parsed, cols));
       }
       if (state.sort.column) {
         const col = state.columns.find(c => c.name === state.sort.column);
@@ -778,13 +726,23 @@
       return rows;
     }
 
-    // ============================================================
-    // KPI computation
-    // ============================================================
     function computeKpi(kpi, rows) {
       if (kpi.type === 'count') return { value: rows.length, display: fmtInt(rows.length) };
       const col = state.columns.find(c => c.name === kpi.column);
       if (!col) return { value: null, display: '—' };
+
+      if (kpi.type === 'topn') {
+        const freq = new Map();
+        for (let i = 0; i < rows.length; i++) {
+          const v = rows[i][kpi.column];
+          if (v == null || v === '') continue;
+          const s = String(v);
+          freq.set(s, (freq.get(s) || 0) + 1);
+        }
+        const top = Array.from(freq.entries()).sort((a,b) => b[1] - a[1]).slice(0, kpi.n || TOPN_DEFAULT);
+        return { topList: top, totalDistinct: freq.size };
+      }
+
       const vals = rows.map(r => coerce(r[kpi.column], col.type)).filter(v => v != null);
       if (kpi.type === 'sum') return { value: vals.reduce((a,b)=>a+b,0), display: fmtNumber(vals.reduce((a,b)=>a+b,0)) };
       if (kpi.type === 'avg') return { value: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null, display: fmtNumber(vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null) };
@@ -803,9 +761,6 @@
       return { value: null, display: '—' };
     }
 
-    // ============================================================
-    // Render: filter bar
-    // ============================================================
     function renderFilterBar() {
       const bar = $('rl-filterbar');
       bar.innerHTML = '';
@@ -870,9 +825,7 @@
       function refreshOps() {
         const col = state.columns.find(c => c.name === colSel.value);
         opSel.innerHTML = '';
-        (OPS[col.type] || OPS.string).forEach(([code,label]) => {
-          opSel.appendChild(el('option', { value: code }, label));
-        });
+        (OPS[col.type] || OPS.string).forEach(([code,label]) => opSel.appendChild(el('option', { value: code }, label)));
         if (prefill && prefill.op) opSel.value = prefill.op;
         if (col.type === 'date') valInp.type = 'date'; else valInp.type = 'text';
       }
@@ -882,19 +835,12 @@
 
       const okBtn = el('button', { class: 'rl-btn small' }, 'Add');
       const cancelBtn = el('button', { class: 'rl-btn ghost small' }, 'Cancel');
-
       okBtn.addEventListener('click', () => {
         const col = state.columns.find(c => c.name === colSel.value);
         const op = opSel.value;
         const needsVal = !['empty','notempty'].includes(op);
         const value = needsVal ? valInp.value : null;
-        state.filters.push({
-          id: state.nextFilterId++,
-          column: colSel.value,
-          type: col.type,
-          op,
-          value
-        });
+        state.filters.push({ id: state.nextFilterId++, column: colSel.value, type: col.type, op, value });
         closeAllPopovers();
         renderAll();
       });
@@ -910,9 +856,7 @@
       pop.appendChild(actions);
 
       document.body.appendChild(pop);
-      setTimeout(() => {
-        document.addEventListener('click', popoverDismiss, { once: true });
-      }, 0);
+      setTimeout(() => document.addEventListener('click', popoverDismiss, { once: true }), 0);
     }
     function popoverDismiss(e) {
       const p = $('rl-active-popover');
@@ -924,9 +868,6 @@
       if (p) p.remove();
     }
 
-    // ============================================================
-    // Render: KPIs
-    // ============================================================
     function renderKpis() {
       const host = $('rl-kpi-grid');
       host.innerHTML = '';
@@ -941,10 +882,41 @@
         });
         card.appendChild(remove);
         card.appendChild(el('div', { class: 'rl-kpi-label' }, kpi.label || kpi.type));
-        card.appendChild(el('div', { class: 'rl-kpi-value' }, computed.display));
-        if (computed.sub) card.appendChild(el('div', { class: 'rl-kpi-sub' }, computed.sub));
-        else if (kpi.type !== 'count' && kpi.type !== 'span') {
-          card.appendChild(el('div', { class: 'rl-kpi-sub' }, kpi.type));
+
+        if (kpi.type === 'topn') {
+          const list = el('div', { class: 'rl-kpi-list' });
+          if (!computed.topList || computed.topList.length === 0) {
+            list.appendChild(el('div', { style:'color:var(--rl-text-faint);font-size:.82rem' }, 'No values'));
+          } else {
+            computed.topList.forEach((entry, idx) => {
+              const row = el('div', { class: 'rl-kpi-list-row' });
+              row.appendChild(el('span', { class: 'rl-kpi-list-rank' }, String(idx + 1)));
+              row.appendChild(el('span', { class: 'rl-kpi-list-name', title: entry[0] }, entry[0]));
+              row.appendChild(el('span', { class: 'rl-kpi-list-count' }, fmtInt(entry[1])));
+              // click → filter on that value
+              row.style.cursor = 'pointer';
+              row.title = `Click to filter ${kpi.column} = ${entry[0]}`;
+              row.addEventListener('click', () => {
+                const col = state.columns.find(c => c.name === kpi.column);
+                if (!col) return;
+                const dup = state.filters.find(f => f.column === kpi.column && f.op === 'eq' && String(f.value) === entry[0]);
+                if (dup) state.filters = state.filters.filter(f => f.id !== dup.id);
+                else state.filters.push({ id: state.nextFilterId++, column: kpi.column, type: col.type, op: 'eq', value: entry[0] });
+                renderAll();
+              });
+              list.appendChild(row);
+            });
+          }
+          card.appendChild(list);
+          if (computed.totalDistinct > (kpi.n || TOPN_DEFAULT)) {
+            card.appendChild(el('div', { class: 'rl-kpi-sub' }, `top ${kpi.n || TOPN_DEFAULT} of ${computed.totalDistinct}`));
+          } else {
+            card.appendChild(el('div', { class: 'rl-kpi-sub' }, `${computed.totalDistinct} unique`));
+          }
+        } else {
+          card.appendChild(el('div', { class: 'rl-kpi-value' }, computed.display));
+          if (computed.sub) card.appendChild(el('div', { class: 'rl-kpi-sub' }, computed.sub));
+          else if (kpi.type !== 'count' && kpi.type !== 'span') card.appendChild(el('div', { class: 'rl-kpi-sub' }, kpi.type));
         }
         host.appendChild(card);
       });
@@ -964,18 +936,32 @@
       pop.style.top = (window.scrollY + rect.bottom + 4) + 'px';
 
       const typeSel = el('select');
-      ['count','sum','avg','min','max','distinct','span'].forEach(t => typeSel.appendChild(el('option', { value: t }, t)));
+      const TYPES = [
+        ['count','Row count'],
+        ['sum','Sum'],
+        ['avg','Average'],
+        ['min','Min'],
+        ['max','Max'],
+        ['distinct','Distinct count'],
+        ['span','Date span'],
+        ['topn','Top values (by count)']
+      ];
+      TYPES.forEach(([v,l]) => typeSel.appendChild(el('option', { value: v }, l)));
+
       const colSel = el('select');
+      const nInp = el('input', { type: 'number', min: '1', max: '20', value: '5', placeholder: 'how many', style: 'display:none' });
+
       function refreshCols() {
         colSel.innerHTML = '';
         const t = typeSel.value;
+        nInp.style.display = (t === 'topn') ? '' : 'none';
         if (t === 'count') {
           colSel.appendChild(el('option', { value: '' }, '(all rows)'));
           colSel.disabled = true;
         } else if (t === 'span') {
           colSel.disabled = false;
           state.columns.filter(c => c.type === 'date').forEach(c => colSel.appendChild(el('option', { value: c.name }, c.name)));
-        } else if (t === 'distinct') {
+        } else if (t === 'distinct' || t === 'topn') {
           colSel.disabled = false;
           state.columns.forEach(c => colSel.appendChild(el('option', { value: c.name }, c.name)));
         } else {
@@ -992,8 +978,13 @@
         const t = typeSel.value;
         const col = t === 'count' ? null : colSel.value;
         if (t !== 'count' && !col) { toast('Pick a column.', 'err'); return; }
-        const label = t === 'count' ? 'Rows' : col;
-        state.kpis.push({ id: state.nextKpiId++, type: t, column: col, label });
+        const label = t === 'count' ? 'Rows' : (t === 'topn' ? `Top by ${col}` : col);
+        const kpi = { id: state.nextKpiId++, type: t, column: col, label };
+        if (t === 'topn') {
+          const n = parseInt(nInp.value, 10);
+          kpi.n = Number.isFinite(n) && n > 0 && n <= 20 ? n : TOPN_DEFAULT;
+        }
+        state.kpis.push(kpi);
         closeAllPopovers();
         renderKpis();
       });
@@ -1002,6 +993,7 @@
       pop.appendChild(el('label', { style:'font-size:.74rem;color:var(--rl-text-dim);text-transform:uppercase;letter-spacing:.04em' }, 'Add KPI'));
       pop.appendChild(typeSel);
       pop.appendChild(colSel);
+      pop.appendChild(nInp);
       const actions = el('div', { class: 'rl-popover-actions' });
       actions.appendChild(cancelBtn);
       actions.appendChild(okBtn);
@@ -1011,9 +1003,6 @@
       setTimeout(() => document.addEventListener('click', popoverDismiss, { once: true }), 0);
     }
 
-    // ============================================================
-    // Render: Charts
-    // ============================================================
     const CHART_TYPES = [['bar','Bar'],['line','Line'],['pie','Pie']];
     const AGGS = [['count','Count'],['sum','Sum'],['avg','Average'],['min','Min'],['max','Max']];
 
@@ -1029,13 +1018,11 @@
         const numCol = state.columns.find(c => c.type === 'number' && !isIdLike(c.name));
         const catCol = state.columns.find(c => (c.type === 'string' || c.type === 'boolean') && !isIdLike(c.name));
         state.charts.push({
-          id: state.nextChartId++,
-          type: 'bar',
+          id: state.nextChartId++, type: 'bar',
           groups: catCol ? [catCol.name] : (state.columns[0] ? [state.columns[0].name] : []),
           y: numCol ? numCol.name : null,
           agg: numCol ? 'sum' : 'count',
-          title: 'New chart',
-          optionsOpen: true
+          title: 'New chart', optionsOpen: true
         });
         renderCharts();
       });
@@ -1044,18 +1031,13 @@
 
     function buildChartCard(chart) {
       const card = el('div', { class: 'rl-chart-card' });
-
-      // Header
       const header = el('div', { class: 'rl-chart-header' });
       const title = el('input', { type: 'text', class: 'rl-chart-title', value: chart.title || 'Chart' });
       title.addEventListener('change', e => { chart.title = e.target.value; });
       header.appendChild(title);
       const actions = el('div', { class: 'rl-chart-actions' });
       const optBtn = el('button', { class: 'rl-btn ghost small', title: 'Options' }, '⚙');
-      optBtn.addEventListener('click', () => {
-        chart.optionsOpen = !chart.optionsOpen;
-        renderCharts();
-      });
+      optBtn.addEventListener('click', () => { chart.optionsOpen = !chart.optionsOpen; renderCharts(); });
       const delBtn = el('button', { class: 'rl-btn ghost small', title: 'Remove' }, '×');
       delBtn.addEventListener('click', () => {
         destroyChart(chart);
@@ -1067,7 +1049,6 @@
       header.appendChild(actions);
       card.appendChild(header);
 
-      // Options
       const opts = el('div', { class: 'rl-chart-options' + (chart.optionsOpen ? ' open' : '') });
       const typeSel = el('select');
       CHART_TYPES.forEach(([v,l]) => { const o = el('option', { value: v }, l); if (v === chart.type) o.selected = true; typeSel.appendChild(o); });
@@ -1075,23 +1056,19 @@
 
       opts.appendChild(el('label', {}, 'Group by'));
       const groupChips = el('span', { style:'display:flex;gap:4px;flex-wrap:wrap;align-items:center' });
-      const renderGroupChips = () => {
-        groupChips.innerHTML = '';
-        chart.groups.forEach((g, idx) => {
-          const chip = el('span', { class: 'rl-chip' }, g, el('span', { class: 'rl-x' }, '×'));
-          chip.querySelector('.rl-x').addEventListener('click', () => { chart.groups.splice(idx,1); renderCharts(); });
-          groupChips.appendChild(chip);
-        });
-        const maxG = (chart.type === 'pie') ? 1 : MAX_GROUPS;
-        if (chart.groups.length < maxG) {
-          const addSel = el('select');
-          addSel.appendChild(el('option', { value: '' }, chart.groups.length ? '+ add' : 'pick column'));
-          state.columns.filter(c => !chart.groups.includes(c.name)).forEach(c => addSel.appendChild(el('option', { value: c.name }, c.name)));
-          addSel.addEventListener('change', e => { if (e.target.value) { chart.groups.push(e.target.value); renderCharts(); } });
-          groupChips.appendChild(addSel);
-        }
-      };
-      renderGroupChips();
+      chart.groups.forEach((g, idx) => {
+        const chip = el('span', { class: 'rl-chip' }, g, el('span', { class: 'rl-x' }, '×'));
+        chip.querySelector('.rl-x').addEventListener('click', () => { chart.groups.splice(idx,1); renderCharts(); });
+        groupChips.appendChild(chip);
+      });
+      const maxG = (chart.type === 'pie') ? 1 : MAX_GROUPS;
+      if (chart.groups.length < maxG) {
+        const addSel = el('select');
+        addSel.appendChild(el('option', { value: '' }, chart.groups.length ? '+ add' : 'pick column'));
+        state.columns.filter(c => !chart.groups.includes(c.name)).forEach(c => addSel.appendChild(el('option', { value: c.name }, c.name)));
+        addSel.addEventListener('change', e => { if (e.target.value) { chart.groups.push(e.target.value); renderCharts(); } });
+        groupChips.appendChild(addSel);
+      }
       opts.appendChild(groupChips);
 
       const aggSel = el('select');
@@ -1112,7 +1089,6 @@
       }));
       card.appendChild(opts);
 
-      // Body
       const body = el('div', { class: 'rl-chart-body' });
       const canvas = el('canvas');
       body.appendChild(canvas);
@@ -1121,11 +1097,9 @@
       const meta = el('div', { class: 'rl-chart-meta' });
       const metaTxt = el('span');
       meta.appendChild(metaTxt);
-      const drillHint = el('span', { class: 'rl-drill-hint' }, 'click a bar/slice to filter');
-      meta.appendChild(drillHint);
+      meta.appendChild(el('span', { class: 'rl-drill-hint' }, 'click a bar/slice to filter'));
       card.appendChild(meta);
 
-      // Render data
       const sourceRows = getFilteredRows();
       if (!sourceRows.length || chart.groups.length === 0) {
         body.innerHTML = '<div class="rl-chart-empty">Pick at least one group column.</div>';
@@ -1141,7 +1115,6 @@
         }
         const ctx = canvas.getContext('2d');
         const palette = ['#6b4eff','#2563eb','#16a34a','#d97706','#dc2626','#0891b2','#7c3aed','#db2777','#65a30d','#ea580c','#0ea5e9','#84cc16'];
-
         let config;
         if (built.datasets) {
           config = {
@@ -1149,8 +1122,7 @@
             data: {
               labels: built.labels,
               datasets: built.datasets.map((ds, i) => ({
-                label: ds.label,
-                data: ds.values,
+                label: ds.label, data: ds.values,
                 backgroundColor: palette[i % palette.length],
                 borderColor: palette[i % palette.length],
                 borderWidth: chart.type === 'line' ? 2 : 1,
@@ -1161,7 +1133,7 @@
             options: {
               responsive: true, maintainAspectRatio: false,
               plugins: { legend: { display: built.datasets.length > 1 || chart.type === 'pie' } },
-              scales: chart.type === 'bar' ? { x: { stacked: true }, y: { stacked: true } } : (chart.type === 'pie' ? {} : {}),
+              scales: chart.type === 'bar' ? { x: { stacked: true }, y: { stacked: true } } : {},
               onClick: (evt, items) => handleChartClick(chart, evt, items, built)
             }
           };
@@ -1171,8 +1143,7 @@
             data: {
               labels: built.labels,
               datasets: [{
-                label: built.datasetLabel,
-                data: built.values,
+                label: built.datasetLabel, data: built.values,
                 backgroundColor: chart.type === 'pie' ? palette : palette[0],
                 borderColor: palette[0],
                 borderWidth: chart.type === 'line' ? 2 : 1,
@@ -1186,7 +1157,6 @@
             }
           };
         }
-
         if (chart._instance) chart._instance.destroy();
         chart._instance = new Chart(ctx, config);
 
@@ -1197,7 +1167,6 @@
       } catch (e) {
         body.innerHTML = `<div class="rl-chart-empty">Chart error: ${escapeHtml(e.message)}</div>`;
       }
-
       return card;
     }
 
@@ -1207,25 +1176,16 @@
       const idx = item.index;
       const label = built.labels[idx];
       if (label == null) return;
-      // Add filter on the primary group column
-      const groupCol = chart.groups[chart.groups.length === 1 ? 0 : 0];
+      const groupCol = chart.groups[0];
       const col = state.columns.find(c => c.name === groupCol);
       if (!col) return;
-      // For stacked multi-group, label is the X-axis composite — only use first group
       const value = String(label).split(' · ')[0];
-      // Check if same filter already exists
       const dup = state.filters.find(f => f.column === groupCol && f.op === 'eq' && String(f.value) === value);
       if (dup) {
         state.filters = state.filters.filter(f => f.id !== dup.id);
         toast(`Removed filter: ${groupCol} = ${value}`, 'ok');
       } else {
-        state.filters.push({
-          id: state.nextFilterId++,
-          column: groupCol,
-          type: col.type,
-          op: 'eq',
-          value
-        });
+        state.filters.push({ id: state.nextFilterId++, column: groupCol, type: col.type, op: 'eq', value });
         toast(`Filtered: ${groupCol} = ${value}`, 'ok');
       }
       renderAll();
@@ -1251,14 +1211,12 @@
         if (col && col.type === 'date') {
           const d = coerce(v, 'date');
           if (d == null) return '(empty)';
-          // bucket by month for now
           const dt = new Date(d);
           return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
         }
         return String(v);
       };
 
-      // Single group
       if (chart.groups.length === 1) {
         const g = chart.groups[0];
         const groups = new Map();
@@ -1275,14 +1233,12 @@
         else pairs.sort((a,b) => b[1] - a[1]);
         const top = pairs.slice(0, 50);
         return {
-          labels: top.map(p => p[0]),
-          values: top.map(p => p[1]),
+          labels: top.map(p => p[0]), values: top.map(p => p[1]),
           datasetLabel: agg === 'count' ? `count by ${g}` : `${agg}(${chart.y || ''}) by ${g}`,
           warning: pairs.length > 50 ? `${pairs.length} groups — showing top 50` : null
         };
       }
 
-      // Multi-group: stack (last group = series)
       const primary = chart.groups.slice(0, -1);
       const stackBy = chart.groups[chart.groups.length - 1];
       const xKeys = new Set(), stackKeys = new Set();
@@ -1312,9 +1268,6 @@
       return { labels: sortedX, datasets, warning };
     }
 
-    // ============================================================
-    // Render: Suggestions
-    // ============================================================
     function renderSuggestions() {
       const sug = $('rl-suggest');
       const body = $('rl-suggest-body');
@@ -1335,9 +1288,6 @@
       });
     }
 
-    // ============================================================
-    // Render: Table
-    // ============================================================
     function renderTable() {
       const section = $('rl-table-section');
       section.classList.toggle('open', state.tableOpen);
@@ -1346,7 +1296,7 @@
       const filtered = getFilteredRows();
       $('rl-table-count').textContent = `${filtered.length.toLocaleString()} rows`;
       $('rl-table-meta').textContent = state.search
-        ? `${visible.length.toLocaleString()} match${visible.length===1?'':'es'} for "${state.search}"`
+        ? `${visible.length.toLocaleString()} match${visible.length===1?'':'es'}`
         : (visible.length > TABLE_RENDER_CAP ? `Showing first ${TABLE_RENDER_CAP.toLocaleString()} of ${visible.length.toLocaleString()}` : `${visible.length.toLocaleString()} row${visible.length===1?'':'s'}`);
 
       if (!state.tableOpen) return;
@@ -1407,9 +1357,28 @@
       });
     }
 
-    // ============================================================
-    // Render all
-    // ============================================================
+    function exportTableCSV() {
+      const visible = getVisibleRows();
+      if (!visible.length) { toast('No rows to export.', 'err'); return; }
+      const selCols = state.columns.filter(c => c.selected).map(c => c.name);
+      if (!selCols.length) { toast('No columns selected.', 'err'); return; }
+      const rows = visible.map(r => {
+        const o = {};
+        selCols.forEach(c => o[c] = r[c]);
+        return o;
+      });
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const base = (state.rawFileName || 'reportlens').replace(/\.[^.]+$/, '');
+      const suffix = (state.filters.length || state.search) ? '_filtered' : '';
+      a.href = url; a.download = `${base}${suffix}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast(`Exported ${visible.length.toLocaleString()} rows to CSV.`, 'ok');
+    }
+
     function renderAll() {
       renderFilterBar();
       renderKpis();
@@ -1419,9 +1388,6 @@
       renderTable();
     }
 
-    // ============================================================
-    // Wire events
-    // ============================================================
     function wire() {
       const drop = $('rl-drop');
       const dropFile = $('rl-drop-file');
@@ -1455,6 +1421,15 @@
       $('rl-table-toggle').addEventListener('click', () => { state.tableOpen = !state.tableOpen; renderTable(); });
       $('rl-search').addEventListener('input', e => { state.search = e.target.value; renderTable(); });
 
+      $('rl-search-help').addEventListener('click', e => {
+        e.stopPropagation();
+        $('rl-search-tip').classList.toggle('show');
+      });
+      document.addEventListener('click', e => {
+        const tip = $('rl-search-tip');
+        if (tip && !e.target.closest('.rl-search-wrap')) tip.classList.remove('show');
+      });
+
       $('rl-cols-btn').addEventListener('click', e => {
         e.stopPropagation();
         $('rl-cols-dd').classList.toggle('open');
@@ -1464,6 +1439,7 @@
         if (dd && !dd.contains(e.target)) dd.classList.remove('open');
       });
 
+      $('rl-export-csv').addEventListener('click', exportTableCSV);
       $('rl-pdf-btn').addEventListener('click', () => window.print());
     }
 

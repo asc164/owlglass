@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/style.css">
 <style>
-/* CertLens additions: export dropdown, watchlist, host search/sort, clickable metrics, exec summary, print */
+/* CertLens additions */
 .cl-menu-wrap{position:relative;display:inline-block}
 .cl-menu{position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:240px;z-index:50;padding:4px;display:none}
 .cl-menu.open{display:block}
@@ -44,6 +44,23 @@
 .cl-diff-banner .x{background:transparent;color:#5b21b6;padding:4px 8px}
 .cl-diff-banner .x:hover{background:rgba(124,58,237,.1)}
 
+/* Scan history */
+.cl-history{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:10px 12px;background:#fafafa;border:1px solid var(--border,#e4e4e7);border-radius:8px}
+.cl-history.empty{display:none}
+.cl-history .hist-label{font-size:0.72rem;color:#71717a;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
+.cl-history .hist-count{font-size:0.7rem;color:#9ca3af;margin-left:auto}
+.cl-hist-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:999px;padding:5px 10px 5px 12px;font-size:0.82rem;cursor:pointer;color:var(--text,#18181b);transition:background .08s,border-color .08s}
+.cl-hist-chip:hover{background:#f4f4f5;border-color:#a78bfa}
+.cl-hist-chip.active{background:#ede9fe;border-color:#7c3aed;color:#5b21b6}
+.cl-hist-chip.active .age,.cl-hist-chip.active .findings{color:#5b21b6}
+.cl-hist-chip .domain{font-weight:500}
+.cl-hist-chip .age{color:#71717a;font-size:0.72rem}
+.cl-hist-chip .findings{color:#71717a;font-size:0.72rem}
+.cl-hist-chip .findings.has{color:#dc2626;font-weight:600}
+.cl-hist-chip .rm{color:#a1a1aa;font-weight:700;font-size:0.95rem;line-height:1;padding-left:2px}
+.cl-hist-chip .rm:hover{color:#dc2626}
+.cl-hist-chip .sep{color:#d4d4d8}
+
 /* Executive summary panel */
 .cl-exec{background:linear-gradient(180deg,#faf5ff 0%,#fff 100%);border:1px solid #e9d5ff;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:16px}
 .cl-exec h2{margin:0 0 8px;font-size:1.05rem;display:flex;align-items:center;gap:8px}
@@ -66,87 +83,54 @@
 .cl-exec .changed{margin-top:10px;font-size:0.82rem;color:#6b7280;padding-top:10px;border-top:1px solid #f3e8ff}
 .cl-exec .footer{margin-top:12px;font-size:0.72rem;color:#9ca3af;padding-top:10px;border-top:1px solid #f3e8ff}
 
-/* Print-only header (hidden on screen) */
 .print-header{display:none}
 
-/* ============ PRINT STYLES ============ */
 @media print {
   @page { margin: 0.5in; size: letter; }
-
   body { background: #fff !important; font-size: 10pt; }
-
-  /* Hide all interactive chrome */
   .sidebar, #sidebar-slot, .mobile-toggle, .topbar .btn, .input-row, .tabs,
-  .cl-menu-wrap, .cl-host-toolbar, #hostFilters, .cl-watchlist,
+  .cl-menu-wrap, .cl-host-toolbar, #hostFilters, .cl-watchlist, .cl-history,
   .cl-watch-star, .cl-diff-banner, .status .faint,
   #watchlistBar, .rec, .recommendations {
     display: none !important;
   }
   .main { margin-left: 0 !important; }
   .main-inner { padding: 0 !important; max-width: 100% !important; }
-
-  /* Show print header */
   .print-header { display: block !important; border-bottom: 2px solid #7c3aed; padding-bottom: 10px; margin-bottom: 18px; }
   .print-header h1 { margin: 0 0 4px; font-size: 18pt; color: #1f2937; }
   .print-header .meta { color: #6b7280; font-size: 9pt; }
   .print-header .domain { font-weight: 700; color: #5b21b6; font-size: 11pt; margin-top: 4px; }
-
-  /* Hide the screen topbar */
   .topbar { display: none !important; }
-
-  /* Show all tab content in summary mode order; full-mode adds extra sections */
   .view { display: block !important; page-break-inside: avoid; margin-bottom: 18px; }
   .view h2 { font-size: 13pt; margin: 14px 0 8px; color: #1f2937; border-bottom: 1px solid #e4e4e7; padding-bottom: 4px; }
-
-  /* Hide certain sections in summary mode */
   body.print-summary #view-timeline,
   body.print-summary #view-about,
   body.print-summary .card #issuerDonut,
-  body.print-summary #view-hosts .row:nth-of-type(n+21) {
-    display: none !important;
-  }
+  body.print-summary #view-hosts .row:nth-of-type(n+21) { display: none !important; }
   body.print-summary #view-expiring .row:nth-of-type(n+11) { display: none !important; }
   body.print-summary #view-risks .row:nth-of-type(n+16) { display: none !important; }
-
-  /* Hide "Method" tab content always in print */
   #view-about { display: none !important; }
-
-  /* Executive summary panel — make it the centerpiece on print */
   .cl-exec { background: #fff !important; border: 1px solid #c4b5fd; page-break-inside: avoid; margin-bottom: 18px; }
   .cl-exec h2 .tag { background: #7c3aed !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-  /* Metric strip compact */
   .metric-strip { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; margin-bottom: 14px; }
   .metric { padding: 8px !important; }
   .metric .value { font-size: 14pt !important; }
   .metric .label { font-size: 7pt !important; }
   .metric .meta { font-size: 7pt !important; }
   .metric.clickable { box-shadow: none !important; transform: none !important; }
-
-  /* Cards compact */
   .card { box-shadow: none !important; border: 1px solid #e4e4e7 !important; page-break-inside: avoid; margin-bottom: 12px; padding: 12px !important; }
   .card-header h2 { font-size: 11pt !important; }
-
-  /* Rows compact */
   .row { padding: 6px 8px !important; page-break-inside: avoid; }
   .row-name { font-size: 9pt !important; }
   .row-meta { font-size: 7.5pt !important; }
   .pill, .badge { font-size: 7pt !important; padding: 1px 5px !important; }
-
-  /* Donut & charts: ensure colors print */
   .donut-svg, .sev-bar, .bar-fill, .pill, .badge, .metric, .cl-exec {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
   }
-
-  /* Page break hints */
   .card { break-inside: avoid; }
   h2 { break-after: avoid; }
-
-  /* Footer on every page */
   .print-footer { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #9ca3af; padding-top: 4px; border-top: 1px solid #e4e4e7; }
 }
-
 .print-footer { display: none; }
 
 /* Markdown preview modal */
@@ -166,7 +150,6 @@
     <div class="main-inner">
       <button class="mobile-toggle" aria-label="Toggle menu"></button>
 
-      <!-- Print-only header -->
       <div class="print-header">
         <h1>CertLens Report</h1>
         <div class="domain" id="printDomain"></div>
@@ -208,6 +191,9 @@
               <div class="label">Watchlist</div>
               <button data-export="watchlist">Export watchlist (JSON)</button>
               <button data-export="watchlist-import">Import watchlist (JSON)</button>
+              <div class="sep"></div>
+              <div class="label">History</div>
+              <button data-export="clear-history">Clear scan history</button>
             </div>
           </div>
         </div>
@@ -221,7 +207,9 @@
 
       <div id="diffBanner" class="cl-diff-banner" style="display:none"></div>
 
-      <!-- Executive summary -->
+      <!-- Scan history strip -->
+      <div id="historyBar" class="cl-history empty"></div>
+
       <div id="execSummary" class="cl-exec" style="display:none"></div>
 
       <div class="metric-strip" id="metricStrip" style="display:none;"></div>
@@ -316,11 +304,14 @@
           <p style="margin-bottom: 12px;">Every public SSL/TLS certificate is logged in <strong>Certificate Transparency</strong> — a public, append-only system designed to detect mis-issuance. Anyone can search this data.</p>
           <p style="margin-bottom: 16px;">CertLens uses the <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">SSLMate CertSpotter API</a> to retrieve certificates for a domain (and all of its subdomains), then runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a> to see which hosts are actually responding.</p>
 
+          <h3 style="margin: 20px 0 8px;">Scan history</h3>
+          <p class="muted">Your last 10 completed scans are stored in your browser (localStorage only — nothing sent anywhere). Click any chip in the history strip to instantly revisit a past scan without re-fetching from the CertSpotter API. Most-recent scans are shown first.</p>
+
           <h3 style="margin: 20px 0 8px;">Executive summary & PDF export</h3>
           <p class="muted">The Executive Summary panel surfaces a plain-English overview and the top 5 prioritized actions tied to specific hosts. Use <em>Export → Print summary (PDF)</em> for a 2-3 page report suitable for leadership; use <em>Print full report (PDF)</em> to include all hosts, findings, and the issuance timeline. Use <em>Copy as Markdown</em> for pasting into Jira, Slack, Confluence, or GitHub issues.</p>
 
           <h3 style="margin: 20px 0 8px;">Watchlist & change detection</h3>
-          <p class="muted">Save domains to your local watchlist to track changes over time. CertLens stores known certificate IDs in your browser (localStorage only — nothing is sent anywhere) and flags newly-discovered certificates on each rescan. Export and import your watchlist as JSON to move it between machines.</p>
+          <p class="muted">Save domains to your local watchlist to track changes over time. CertLens stores known certificate IDs in your browser and flags newly-discovered certificates on each rescan. Export and import your watchlist as JSON to move it between machines.</p>
 
           <h3 style="margin: 20px 0 8px;">What CertLens flags</h3>
           <p class="muted">Suspicious naming patterns (<code>login-</code>, <code>secure-</code>, <code>verify-</code>), abnormal issuance frequency for a single host, revoked certificates, expiring or expired certs, and mixed-issuer patterns that may indicate inconsistent ownership.</p>
@@ -345,10 +336,13 @@
 const CERTSPOTTER_API = 'https://api.certspotter.com/v1/issuances';
 const STORAGE_PREFIX = 'owlglass_certlens_v1_';
 const WATCHLIST_KEY = 'owlglass_certlens_watchlist';
+const HISTORY_KEY = 'owlglass_certlens_history_v1';
+const HISTORY_LIMIT = 10;
 
 const SEV_COLORS = { crit:'#dc2626', high:'#ea580c', med:'#d97706', low:'#2563eb', ok:'#16a34a' };
 const DONUT_COLORS = ['#7c3aed','#a78bfa','#c4b5fd','#0891b2','#06b6d4','#67e8f9','#64748b','#94a3b8'];
 
+// Current scan state (the one being viewed)
 let currentDomain = null;
 let allCerts = [];
 let allHosts = [];
@@ -487,6 +481,165 @@ function processData(rawCerts) {
   return { certs, hosts };
 }
 
+// ---------- Scan history ----------
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveHistory(list) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
+  catch (e) { console.warn('History save failed (likely localStorage quota):', e); }
+}
+function saveCurrentScanToHistory() {
+  if (!currentDomain || !allCerts.length) return;
+  const findings = allHosts.filter(h => h.risks.length > 0).length;
+  const entry = {
+    domain: currentDomain,
+    scannedAt: lastScanTime,
+    prevScannedAt: prevScanTime,
+    hostCount: allHosts.length,
+    certCount: allCerts.length,
+    findingsCount: findings,
+    newIdsCount: newIds.size,
+    // Full data
+    certs: allCerts,
+    hosts: allHosts.map(h => ({ ...h, certs: h.certs.map(c => c.id) })) // store cert ids in host.certs to save space
+  };
+
+  let list = getHistory().filter(e => e.domain !== currentDomain);
+  list.unshift(entry);
+  if (list.length > HISTORY_LIMIT) list = list.slice(0, HISTORY_LIMIT);
+
+  // Try to save; if quota exceeded, drop oldest entries until it fits
+  try {
+    saveHistory(list);
+  } catch (e) {
+    while (list.length > 1) {
+      list.pop();
+      try { saveHistory(list); break; } catch {}
+    }
+  }
+}
+function restoreScanFromHistory(domain) {
+  const entry = getHistory().find(e => e.domain === domain);
+  if (!entry) return false;
+
+  currentDomain = entry.domain;
+  lastScanTime = entry.scannedAt;
+  prevScanTime = entry.prevScannedAt;
+  allCerts = entry.certs;
+
+  // Rehydrate host.certs from cert ids
+  const certById = new Map(allCerts.map(c => [c.id, c]));
+  allHosts = entry.hosts.map(h => ({
+    ...h,
+    certs: (h.certs || []).map(id => certById.get(id)).filter(Boolean)
+  }));
+
+  knownIds = new Set(JSON.parse(localStorage.getItem(STORAGE_PREFIX + domain + '_ids') || '[]'));
+  newIds = new Set(); // Don't re-show diff on history switch
+
+  history.replaceState(null, '', '#' + encodeURIComponent(domain));
+  document.getElementById('domainInput').value = domain;
+  document.getElementById('rescanBtn').disabled = false;
+  document.getElementById('exportBtn').disabled = false;
+  document.getElementById('watchStar').style.display = '';
+  document.getElementById('diffBanner').style.display = 'none';
+
+  setStatus('ok', 'Loaded from history — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts');
+  document.getElementById('lastScanText').textContent = 'Scanned: ' + new Date(lastScanTime).toLocaleString();
+
+  // Reset filter/sort/search
+  activeHostFilter = 'all';
+  hostSearchTerm = '';
+  hostSortMode = 'latest-desc';
+  document.getElementById('hostSearch').value = '';
+  document.getElementById('hostSort').value = 'latest-desc';
+  document.querySelectorAll('#hostFilters .filter').forEach(x => x.classList.toggle('active', x.dataset.f === 'all'));
+
+  renderAll();
+  updateWatchStar();
+  renderHistoryBar();
+  return true;
+}
+function removeFromHistory(domain) {
+  const list = getHistory().filter(e => e.domain !== domain);
+  saveHistory(list);
+  // If we removed the currently-viewed scan, switch to the next one or clear
+  if (currentDomain === domain) {
+    if (list.length > 0) restoreScanFromHistory(list[0].domain);
+    else clearCurrentView();
+  }
+  renderHistoryBar();
+}
+function clearAllHistory() {
+  if (!confirm('Clear all ' + getHistory().length + ' scan(s) from history? This will not affect your watchlist or known cert IDs.')) return;
+  saveHistory([]);
+  clearCurrentView();
+  renderHistoryBar();
+}
+function clearCurrentView() {
+  currentDomain = null;
+  allCerts = []; allHosts = [];
+  knownIds = new Set(); newIds = new Set();
+  lastScanTime = null; prevScanTime = null;
+  document.getElementById('rescanBtn').disabled = true;
+  document.getElementById('exportBtn').disabled = true;
+  document.getElementById('watchStar').style.display = 'none';
+  document.getElementById('execSummary').style.display = 'none';
+  document.getElementById('metricStrip').style.display = 'none';
+  document.getElementById('diffBanner').style.display = 'none';
+  document.getElementById('hostList').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('riskList').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('expiringList').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('timelineList').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('severitySummary').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('issuerDonut').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('categoryBreakdown').innerHTML = '<p class="muted">Will appear after scan.</p>';
+  document.getElementById('recommendations').innerHTML = '<p class="muted">A prioritized list will appear after scan.</p>';
+  document.getElementById('hostCount').textContent = '0';
+  document.getElementById('riskCount').textContent = '0';
+  document.getElementById('expCount').textContent = '0';
+  document.getElementById('lastScanText').textContent = '';
+  setStatus('', 'Ready — enter a domain to begin.');
+  history.replaceState(null, '', window.location.pathname);
+}
+
+function renderHistoryBar() {
+  const list = getHistory();
+  const bar = document.getElementById('historyBar');
+  if (!list.length) { bar.classList.add('empty'); bar.innerHTML = ''; return; }
+  bar.classList.remove('empty');
+
+  const chips = list.map(e => {
+    const isActive = e.domain === currentDomain;
+    const findingsClass = e.findingsCount > 0 ? 'has' : '';
+    return '<span class="cl-hist-chip ' + (isActive ? 'active' : '') + '" data-domain="' + escapeHtml(e.domain) + '" title="Scanned ' + new Date(e.scannedAt).toLocaleString() + '">' +
+      '<span class="domain">' + escapeHtml(e.domain) + '</span>' +
+      '<span class="sep">·</span>' +
+      '<span class="age">' + formatAge(e.scannedAt) + '</span>' +
+      '<span class="sep">·</span>' +
+      '<span class="findings ' + findingsClass + '">' + e.findingsCount + ' finding' + (e.findingsCount===1?'':'s') + '</span>' +
+      '<span class="rm" title="Remove from history">×</span>' +
+    '</span>';
+  }).join('');
+
+  bar.innerHTML = '<span class="hist-label">History:</span>' + chips +
+    '<span class="hist-count">' + list.length + ' / ' + HISTORY_LIMIT + '</span>';
+
+  bar.querySelectorAll('.cl-hist-chip').forEach(chip => {
+    chip.addEventListener('click', e => {
+      const d = chip.dataset.domain;
+      if (e.target.classList.contains('rm')) {
+        e.stopPropagation();
+        removeFromHistory(d);
+        return;
+      }
+      if (d !== currentDomain) restoreScanFromHistory(d);
+    });
+  });
+}
+
 // ---------- Scan ----------
 async function scan(domain) {
   if (scanInProgress) return;
@@ -534,7 +687,9 @@ async function scan(domain) {
       h.alive = lr.alive; h.ips = lr.ips;
     }));
 
+    saveCurrentScanToHistory();
     renderAll();
+    renderHistoryBar();
     setStatus('ok', 'Complete — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts');
     document.getElementById('lastScanText').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
     document.getElementById('exportBtn').disabled = false;
@@ -553,7 +708,7 @@ async function scan(domain) {
 function setStatus(type, text) {
   const dot = document.getElementById('statusDot');
   const txt = document.getElementById('statusText');
-  if (dot) dot.className = 'dot ' + type;
+  if (dot) dot.className = 'dot ' + (type || '');
   if (txt) txt.textContent = text;
 }
 
@@ -580,81 +735,32 @@ function updateCounts() {
 
 // ---------- Executive Summary ----------
 function buildPriorityActions() {
-  // Build host-specific, ranked action list. Each action gets: severity, title, why, host(s).
   const actions = [];
-
-  // Revoked certs — group by host
   const revokedHosts = allHosts.filter(h => h.revoked);
   revokedHosts.slice(0, 3).forEach(h => {
     const n = h.certs.filter(c => c.revoked).length;
-    actions.push({
-      sev: 'crit',
-      title: 'Investigate revoked cert on ' + h.name,
-      why: n + ' revoked certificate' + (n===1?'':'s') + '. Confirm whether revocation was due to key compromise or routine replacement.',
-      score: 100
-    });
+    actions.push({ sev:'crit', title:'Investigate revoked cert on ' + h.name, why: n + ' revoked certificate' + (n===1?'':'s') + '. Confirm whether revocation was due to key compromise or routine replacement.', score:100 });
   });
-
-  // Expired hosts (most recently expired first)
   const expiredHosts = allHosts.filter(h => !h.hasActive && h.latestIssue).slice(0, 5);
-  expiredHosts.forEach(h => {
-    actions.push({
-      sev: 'crit',
-      title: 'Renew expired certificate on ' + h.name,
-      why: 'Latest cert has expired. Service likely broken or shows browser warning.',
-      score: 90
-    });
-  });
-
-  // Expiring within 7 days
-  const expiringSoonHosts = allHosts.filter(h => {
-    return h.risks.some(r => r.type === 'expiring-soon');
-  });
+  expiredHosts.forEach(h => actions.push({ sev:'crit', title:'Renew expired certificate on ' + h.name, why:'Latest cert has expired. Service likely broken or shows browser warning.', score:90 }));
+  const expiringSoonHosts = allHosts.filter(h => h.risks.some(r => r.type === 'expiring-soon'));
   expiringSoonHosts.slice(0, 5).forEach(h => {
     const r = h.risks.find(r => r.type === 'expiring-soon');
-    actions.push({
-      sev: 'high',
-      title: 'Renew ' + h.name + ' (' + r.daysLeft + ' days left)',
-      why: 'Expires soon. Confirm automatic renewal is configured or renew manually.',
-      score: 80 - r.daysLeft
-    });
+    actions.push({ sev:'high', title:'Renew ' + h.name + ' (' + r.daysLeft + ' days left)', why:'Expires soon. Confirm automatic renewal is configured or renew manually.', score: 80 - r.daysLeft });
   });
-
-  // Expiring 7-30 days
   const expiringHosts = allHosts.filter(h => h.risks.some(r => r.type === 'expiring'));
   expiringHosts.slice(0, 3).forEach(h => {
     const r = h.risks.find(r => r.type === 'expiring');
-    actions.push({
-      sev: 'med',
-      title: 'Plan renewal for ' + h.name + ' (' + r.daysLeft + ' days left)',
-      why: 'Within standard renewal window. Verify renewal is scheduled.',
-      score: 60 - r.daysLeft
-    });
+    actions.push({ sev:'med', title:'Plan renewal for ' + h.name + ' (' + r.daysLeft + ' days left)', why:'Within standard renewal window. Verify renewal is scheduled.', score: 60 - r.daysLeft });
   });
-
-  // Suspicious-name hosts (potential phishing infra or stale)
   const suspiciousHosts = allHosts.filter(h => h.risks.some(r => r.type === 'suspicious-name'));
   suspiciousHosts.slice(0, 3).forEach(h => {
-    actions.push({
-      sev: 'med',
-      title: 'Review suspicious hostname: ' + h.name,
-      why: 'Naming pattern often used in phishing. Verify ownership and intended use.',
-      score: 50
-    });
+    actions.push({ sev:'med', title:'Review suspicious hostname: ' + h.name, why:'Naming pattern often used in phishing. Verify ownership and intended use.', score:50 });
   });
-
-  // Rapid rotation
   const rapidHosts = allHosts.filter(h => h.risks.some(r => r.type === 'rapid-rotation'));
   rapidHosts.slice(0, 2).forEach(h => {
-    actions.push({
-      sev: 'med',
-      title: 'Investigate rapid cert rotation on ' + h.name,
-      why: 'Multiple certs issued in <30 days is unusual. Check for misconfigured automation or compromise.',
-      score: 45
-    });
+    actions.push({ sev:'med', title:'Investigate rapid cert rotation on ' + h.name, why:'Multiple certs issued in <30 days is unusual. Check for misconfigured automation or compromise.', score:45 });
   });
-
-  // Sort by score (already roughly in order, but be safe), then return top 5
   actions.sort((a,b) => b.score - a.score);
   return actions.slice(0, 5);
 }
@@ -671,7 +777,6 @@ function buildSummaryLine() {
   const revoked = allCerts.filter(c => c.revoked).length;
 
   let line = 'Scanned <strong>' + escapeHtml(currentDomain) + '</strong> and found <strong>' + total.toLocaleString() + ' unique hosts</strong> across <strong>' + certs.toLocaleString() + ' certificates</strong>. ';
-
   if (findings === 0) {
     line += 'No findings detected — certificate hygiene looks healthy.';
   } else {
@@ -680,7 +785,6 @@ function buildSummaryLine() {
     if (high > 0) parts.push(high + ' high');
     if (med > 0) parts.push(med + ' medium');
     line += '<strong>' + findings + ' host' + (findings===1?'':'s') + ' with findings</strong> (' + parts.join(', ') + '). ';
-
     const urgents = [];
     if (revoked > 0) urgents.push(revoked + ' revoked cert' + (revoked===1?'':'s'));
     if (expired > 0) urgents.push(expired + ' expired cert' + (expired===1?'':'s'));
@@ -694,42 +798,30 @@ function renderExecSummary() {
   const panel = document.getElementById('execSummary');
   if (!allHosts.length) { panel.style.display = 'none'; return; }
   panel.style.display = 'block';
-
   const summary = buildSummaryLine();
   const actions = buildPriorityActions();
-
   let changedHtml = '';
   if (prevScanTime && newIds.size > 0) {
-    changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> ' +
-      newIds.size + ' new certificate' + (newIds.size===1?'':'s') + ' detected.</div>';
+    changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> ' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + ' detected.</div>';
   } else if (prevScanTime) {
     changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> no new certificates.</div>';
   }
-
   const actionsHtml = actions.length === 0
     ? '<div class="action"><div class="action-body"><div class="action-title">No urgent actions required.</div><div class="action-why">No critical, high, or medium findings detected at this time.</div></div></div>'
     : actions.map((a,i) => {
-        // Replace bare hostnames with <code>
         const titleHtml = escapeHtml(a.title).replace(/([a-z0-9*][a-z0-9.\-_*]*\.[a-z]{2,})/gi, '<code>$1</code>');
         return '<div class="action">' +
           '<div class="action-rank">' + (i+1) + '.</div>' +
-          '<div class="action-body">' +
-            '<div class="action-title">' + titleHtml + '</div>' +
-            '<div class="action-why">' + escapeHtml(a.why) + '</div>' +
-          '</div>' +
+          '<div class="action-body"><div class="action-title">' + titleHtml + '</div><div class="action-why">' + escapeHtml(a.why) + '</div></div>' +
           '<div class="action-sev ' + a.sev + '">' + (a.sev==='crit'?'Critical':a.sev==='high'?'High':'Medium') + '</div>' +
         '</div>';
       }).join('');
-
   panel.innerHTML =
     '<h2>Executive Summary <span class="tag">For leadership</span></h2>' +
     '<div class="summary-line">' + summary + '</div>' +
-    '<div class="actions">' +
-      '<div class="actions-title">Top priority actions</div>' +
-      actionsHtml +
-    '</div>' +
+    '<div class="actions"><div class="actions-title">Top priority actions</div>' + actionsHtml + '</div>' +
     changedHtml +
-    '<div class="footer">Generated by CertLens · ' + new Date().toLocaleString() + '</div>';
+    '<div class="footer">Generated by CertLens · ' + new Date(lastScanTime || Date.now()).toLocaleString() + '</div>';
 }
 
 function renderMetricStrip() {
@@ -740,14 +832,9 @@ function renderMetricStrip() {
   const expired = allCerts.filter(c => c.daysToExpiry < 0).length;
   const revoked = allCerts.filter(c => c.revoked).length;
   const recent7 = allCerts.filter(c => c.daysAgo <= 7).length;
-
   const m = (label, value, meta, mod, action) =>
     '<div class="metric clickable ' + (mod||'') + '" data-action="' + (action||'') + '">' +
-      '<div class="label">' + label + '</div>' +
-      '<div class="value">' + value + '</div>' +
-      '<div class="meta">' + meta + '</div>' +
-    '</div>';
-
+      '<div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
   const strip = document.getElementById('metricStrip');
   strip.style.display = 'grid';
   strip.innerHTML =
@@ -757,10 +844,7 @@ function renderMetricStrip() {
     m('Expiring · 30 days', expiringSoon, 'Need renewal', expiringSoon > 0 ? 'high' : 'ok', 'goto-expiring') +
     m('Expired', expired, 'Past validity', expired > 0 ? 'crit' : 'ok', 'goto-hosts-expired') +
     m('Revoked', revoked, 'Need investigation', revoked > 0 ? 'crit' : 'ok', 'goto-hosts-revoked');
-
-  strip.querySelectorAll('.metric.clickable').forEach(m => {
-    m.addEventListener('click', () => handleMetricClick(m.dataset.action));
-  });
+  strip.querySelectorAll('.metric.clickable').forEach(m => m.addEventListener('click', () => handleMetricClick(m.dataset.action)));
 }
 
 function handleMetricClick(action) {
@@ -839,14 +923,11 @@ function renderIssuerDonut() {
   });
   const svg = '<svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">' + arcs +
     '<text x="70" y="68" text-anchor="middle" font-size="22" font-weight="700" fill="currentColor" font-family="Inter">' + total + '</text>' +
-    '<text x="70" y="84" text-anchor="middle" font-size="10" fill="#71717a" font-family="Inter">certs</text>' +
-    '</svg>';
+    '<text x="70" y="84" text-anchor="middle" font-size="10" fill="#71717a" font-family="Inter">certs</text></svg>';
   const legend = top.map(([name,count],i) =>
-    '<div class="lg-item">' +
-      '<span class="swatch" style="background:' + DONUT_COLORS[i % DONUT_COLORS.length] + ';"></span>' +
+    '<div class="lg-item"><span class="swatch" style="background:' + DONUT_COLORS[i % DONUT_COLORS.length] + ';"></span>' +
       '<span class="lg-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</span>' +
-      '<span class="lg-value">' + count + '</span>' +
-    '</div>'
+      '<span class="lg-value">' + count + '</span></div>'
   ).join('');
   document.getElementById('issuerDonut').innerHTML = '<div class="donut-wrap">' + svg + '<div class="donut-legend">' + legend + '</div></div>';
 }
@@ -857,11 +938,9 @@ function renderCategoryBars() {
   const sorted = Object.entries(catCounts).sort((a,b) => b[1]-a[1]);
   const max = sorted[0] ? sorted[0][1] : 1;
   document.getElementById('categoryBreakdown').innerHTML = sorted.map(([label,count]) =>
-    '<div class="bar-row">' +
-      '<div class="bar-label">' + escapeHtml(label) + '</div>' +
+    '<div class="bar-row"><div class="bar-label">' + escapeHtml(label) + '</div>' +
       '<div class="bar-track"><div class="bar-fill" style="width:' + (count/max*100) + '%;"></div></div>' +
-      '<div class="bar-count">' + count + '</div>' +
-    '</div>'
+      '<div class="bar-count">' + count + '</div></div>'
   ).join('');
 }
 
@@ -879,11 +958,8 @@ function renderRecommendations() {
   if (devHosts.length > 5) recs.push({ sev:'', title: devHosts.length + ' dev / staging hosts exposed externally', why:"Non-production environments shouldn't be public." });
   if (recs.length === 0) recs.push({ sev:'', title:'No major risks detected', why:'No immediate action required.' });
   document.getElementById('recommendations').innerHTML = recs.slice(0,6).map((r,i) =>
-    '<div class="rec ' + (r.sev ? 'sev-'+r.sev : '') + '">' +
-      '<div class="rec-num">' + (i+1) + '</div>' +
-      '<div><div class="rec-title">' + escapeHtml(r.title) + '</div><div class="rec-why">' + escapeHtml(r.why) + '</div></div>' +
-      '<div></div>' +
-    '</div>'
+    '<div class="rec ' + (r.sev ? 'sev-'+r.sev : '') + '"><div class="rec-num">' + (i+1) + '</div>' +
+      '<div><div class="rec-title">' + escapeHtml(r.title) + '</div><div class="rec-why">' + escapeHtml(r.why) + '</div></div><div></div></div>'
   ).join('');
 }
 
@@ -903,7 +979,6 @@ function renderHosts() {
     const q = hostSearchTerm.toLowerCase();
     filtered = filtered.filter(h => h.name.toLowerCase().includes(q));
   }
-
   filtered.sort((a,b) => {
     switch (hostSortMode) {
       case 'latest-desc': return new Date(b.latestIssue||0) - new Date(a.latestIssue||0);
@@ -917,11 +992,9 @@ function renderHosts() {
     }
     return 0;
   });
-
   const c = document.getElementById('hostList');
   document.getElementById('hostsTitle').textContent = 'Discovered hosts (' + filtered.length + ' / ' + allHosts.length + ')';
   if (filtered.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>No hosts match this filter.</div>'; return; }
-
   c.innerHTML = filtered.slice(0,500).map(h => {
     const isNew = h.certs.some(c => newIds.has(c.id));
     const worstSev = h.risks.length === 0 ? '' :
@@ -936,21 +1009,17 @@ function renderHosts() {
     else if (expiryDays !== null && expiryDays < 30) badge = '<span class="badge med">' + expiryDays + 'd left</span>';
     else if (h.revoked) badge = '<span class="badge crit">Revoked</span>';
     else badge = '<span class="badge ok">Active</span>';
-    return '<div class="row ' + flag + '">' +
-      '<div>' + badge + '</div>' +
-      '<div>' +
-        '<div class="row-name">' + escapeHtml(h.name) + '</div>' +
-        '<div class="row-meta">' +
-          '<span class="pill brand">' + escapeHtml(h.cat.label) + '</span>' +
-          '<span class="pill">' + h.certCount + ' cert' + (h.certCount===1?'':'s') + '</span>' +
-          (h.alive === true ? '<span class="pill ok">Responding</span>' : '') +
-          (h.ips.length > 0 ? h.ips.slice(0,2).map(ip => '<span class="pill">' + ip + '</span>').join('') : '') +
-          '<span class="faint">' + h.issuers.slice(0,2).map(escapeHtml).join(', ') + '</span>' +
-        '</div>' +
-        (h.risks.length > 0 ? '<div class="row-meta" style="margin-top:6px;">' + h.risks.map(r => '<span class="pill ' + r.level + '">' + escapeHtml(r.text) + '</span>').join('') + '</div>' : '') +
+    return '<div class="row ' + flag + '"><div>' + badge + '</div><div>' +
+      '<div class="row-name">' + escapeHtml(h.name) + '</div>' +
+      '<div class="row-meta">' +
+        '<span class="pill brand">' + escapeHtml(h.cat.label) + '</span>' +
+        '<span class="pill">' + h.certCount + ' cert' + (h.certCount===1?'':'s') + '</span>' +
+        (h.alive === true ? '<span class="pill ok">Responding</span>' : '') +
+        (h.ips.length > 0 ? h.ips.slice(0,2).map(ip => '<span class="pill">' + ip + '</span>').join('') : '') +
+        '<span class="faint">' + h.issuers.slice(0,2).map(escapeHtml).join(', ') + '</span>' +
       '</div>' +
-      '<div class="faint" style="text-align:right; font-size:0.75rem;">' + (h.latestIssue ? new Date(h.latestIssue).toISOString().slice(0,10) : '—') + '<br>latest issue</div>' +
-    '</div>';
+      (h.risks.length > 0 ? '<div class="row-meta" style="margin-top:6px;">' + h.risks.map(r => '<span class="pill ' + r.level + '">' + escapeHtml(r.text) + '</span>').join('') + '</div>' : '') +
+      '</div><div class="faint" style="text-align:right; font-size:0.75rem;">' + (h.latestIssue ? new Date(h.latestIssue).toISOString().slice(0,10) : '—') + '<br>latest issue</div></div>';
   }).join('') + (filtered.length > 500 ? '<div class="faint" style="text-align:center;padding:14px">Showing top 500 of ' + filtered.length + '</div>' : '');
 }
 
@@ -966,13 +1035,11 @@ function renderRisks() {
                   h.risks.some(r => r.level==='high') ? 'high' :
                   h.risks.some(r => r.level==='med')  ? 'med'  : 'low';
     const badgeLabel = worst==='crit'?'Critical':worst==='high'?'High':worst==='med'?'Medium':'Low';
-    return '<div class="row flag-' + worst + '">' +
-      '<div><span class="badge ' + worst + '">' + badgeLabel + '</span></div>' +
-      '<div>' +
-        '<div class="row-name">' + escapeHtml(h.name) + '</div>' +
-        '<div class="row-meta"><span class="pill brand">' + escapeHtml(h.cat.label) + '</span><span class="pill">' + h.certCount + ' cert' + (h.certCount===1?'':'s') + '</span></div>' +
-        '<div class="row-meta" style="margin-top:6px;">' + h.risks.map(r => '<span class="pill ' + r.level + '">' + escapeHtml(r.text) + '</span>').join('') + '</div>' +
-      '</div><div></div></div>';
+    return '<div class="row flag-' + worst + '"><div><span class="badge ' + worst + '">' + badgeLabel + '</span></div><div>' +
+      '<div class="row-name">' + escapeHtml(h.name) + '</div>' +
+      '<div class="row-meta"><span class="pill brand">' + escapeHtml(h.cat.label) + '</span><span class="pill">' + h.certCount + ' cert' + (h.certCount===1?'':'s') + '</span></div>' +
+      '<div class="row-meta" style="margin-top:6px;">' + h.risks.map(r => '<span class="pill ' + r.level + '">' + escapeHtml(r.text) + '</span>').join('') + '</div>' +
+    '</div><div></div></div>';
   }).join('');
 }
 
@@ -983,12 +1050,10 @@ function renderExpiring() {
   c.innerHTML = expiring.map(cert => {
     const names = [...cert.dns_names, ...cert.wildcard_names];
     const sev = cert.daysToExpiry <= 7 ? 'crit' : 'med';
-    return '<div class="row flag-' + sev + '">' +
-      '<div><span class="badge ' + sev + '">' + cert.daysToExpiry + 'd</span></div>' +
-      '<div>' +
-        '<div class="row-name">' + escapeHtml(names.join(', ')) + '</div>' +
-        '<div class="row-meta"><span class="pill">' + escapeHtml(cert.issuer) + '</span><span class="faint">expires ' + cert.not_after.slice(0,10) + '</span></div>' +
-      '</div><div></div></div>';
+    return '<div class="row flag-' + sev + '"><div><span class="badge ' + sev + '">' + cert.daysToExpiry + 'd</span></div><div>' +
+      '<div class="row-name">' + escapeHtml(names.join(', ')) + '</div>' +
+      '<div class="row-meta"><span class="pill">' + escapeHtml(cert.issuer) + '</span><span class="faint">expires ' + cert.not_after.slice(0,10) + '</span></div>' +
+    '</div><div></div></div>';
   }).join('');
 }
 
@@ -1008,8 +1073,7 @@ function renderTimeline() {
       '<div>' + certs.slice(0,5).map(cert => {
         const names = [...cert.dns_names, ...cert.wildcard_names];
         return '<div class="row-name" style="margin:2px 0; font-size:0.8rem;">' + escapeHtml(names.slice(0,3).join(', ')) + (names.length>3?' +'+(names.length-3)+' more':'') + ' <span class="faint">— ' + escapeHtml(cert.issuer) + '</span></div>';
-      }).join('') + (certs.length > 5 ? '<div class="faint" style="font-size:0.75rem;">+' + (certs.length-5) + ' more</div>' : '') + '</div>' +
-    '</div>'
+      }).join('') + (certs.length > 5 ? '<div class="faint" style="font-size:0.75rem;">+' + (certs.length-5) + ' more</div>' : '') + '</div></div>'
   ).join('');
 }
 
@@ -1023,17 +1087,12 @@ function printReport(mode) {
     'Scan completed ' + new Date(lastScanTime || Date.now()).toLocaleString() +
     ' · ' + allHosts.length.toLocaleString() + ' hosts · ' + allCerts.length.toLocaleString() + ' certificates';
   document.getElementById('printFooterDomain').textContent = currentDomain;
-
   if (mode === 'summary') document.body.classList.add('print-summary');
   else document.body.classList.remove('print-summary');
-
-  // Switch to overview tab so summary panel and overview cards print first
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelector('.tab[data-view="overview"]').classList.add('active');
   document.getElementById('view-overview').classList.add('active');
-
-  // Allow DOM to settle before print
   setTimeout(() => {
     window.print();
     setTimeout(() => document.body.classList.remove('print-summary'), 500);
@@ -1044,12 +1103,9 @@ function printReport(mode) {
 function buildMarkdownReport() {
   const summary = buildSummaryLine().replace(/<\/?strong>/g, '**').replace(/<[^>]+>/g, '');
   const actions = buildPriorityActions();
-
   let md = '# CertLens Report — ' + currentDomain + '\n\n';
   md += '_Generated ' + new Date().toLocaleString() + '_\n\n';
-  md += '## Executive Summary\n\n';
-  md += summary + '\n\n';
-
+  md += '## Executive Summary\n\n' + summary + '\n\n';
   md += '## Top Priority Actions\n\n';
   if (actions.length === 0) md += '_No urgent actions required._\n\n';
   else {
@@ -1058,13 +1114,9 @@ function buildMarkdownReport() {
       md += (i+1) + '. **' + a.title + '** — ' + sev + '\n   ' + a.why + '\n\n';
     });
   }
-
   if (prevScanTime && newIds.size > 0) {
-    md += '## Changes Since Last Scan\n\n';
-    md += '_Last scan: ' + formatAge(prevScanTime) + '_\n\n';
-    md += '**' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + '** detected.\n\n';
+    md += '## Changes Since Last Scan\n\n_Last scan: ' + formatAge(prevScanTime) + '_\n\n**' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + '** detected.\n\n';
   }
-
   md += '## Key Metrics\n\n';
   const expiringSoon = allCerts.filter(c => c.daysToExpiry > 0 && c.daysToExpiry <= 30 && !c.revoked).length;
   const expired = allCerts.filter(c => c.daysToExpiry < 0).length;
@@ -1077,7 +1129,6 @@ function buildMarkdownReport() {
   md += '| Expiring within 30 days | ' + expiringSoon + ' |\n';
   md += '| Expired | ' + expired + ' |\n';
   md += '| Revoked | ' + revoked + ' |\n\n';
-
   const riskyHosts = allHosts.filter(h => h.risks.length > 0);
   if (riskyHosts.length > 0) {
     md += '## All Findings (' + riskyHosts.length + ')\n\n';
@@ -1092,7 +1143,6 @@ function buildMarkdownReport() {
     if (riskyHosts.length > 100) md += '\n_+ ' + (riskyHosts.length - 100) + ' more findings (truncated)_\n';
     md += '\n';
   }
-
   md += '---\n_Report generated by [CertLens](https://owlglass.io/certlens/) — Owlglass suite_\n';
   return md;
 }
@@ -1114,7 +1164,6 @@ function showMarkdownModal() {
   document.body.appendChild(bg);
   document.getElementById('mdContent').value = md;
   document.getElementById('mdContent').select();
-
   const close = () => bg.remove();
   document.getElementById('mdClose').addEventListener('click', close);
   bg.addEventListener('click', e => { if (e.target === bg) close(); });
@@ -1156,17 +1205,13 @@ function exportHostsCsv() {
   const headers = ['hostname','category','cert_count','latest_issue','latest_expiry','days_to_expiry','has_active','revoked','alive','ips','issuers','findings_count','findings'];
   const rows = allHosts.map(h => {
     const daysToExp = h.latestExpiry ? Math.floor((new Date(h.latestExpiry) - Date.now())/86400000) : '';
-    return [
-      h.name, h.cat.label, h.certCount,
+    return [h.name, h.cat.label, h.certCount,
       h.latestIssue ? h.latestIssue.slice(0,10) : '',
       h.latestExpiry ? h.latestExpiry.slice(0,10) : '',
       daysToExp, h.hasActive, h.revoked,
       h.alive === null ? 'not-checked' : h.alive,
-      h.ips.join('; '),
-      h.issuers.join('; '),
-      h.risks.length,
-      h.risks.map(r => '[' + r.level + '] ' + r.text).join(' | ')
-    ];
+      h.ips.join('; '), h.issuers.join('; '),
+      h.risks.length, h.risks.map(r => '[' + r.level + '] ' + r.text).join(' | ')];
   });
   const csv = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
   downloadFile('certlens_' + currentDomain + '_hosts.csv', csv, 'text/csv');
@@ -1174,49 +1219,31 @@ function exportHostsCsv() {
 function exportCertsCsv() {
   if (!allCerts.length) return;
   const headers = ['cert_id','sha256','dns_names','wildcard_names','issuer','not_before','not_after','revoked','days_to_expiry'];
-  const rows = allCerts.map(c => [
-    c.id, c.sha256,
-    c.dns_names.join('; '),
-    c.wildcard_names.join('; '),
-    c.issuer,
-    c.not_before ? c.not_before.slice(0,10) : '',
-    c.not_after ? c.not_after.slice(0,10) : '',
-    c.revoked, c.daysToExpiry
-  ]);
+  const rows = allCerts.map(c => [c.id, c.sha256, c.dns_names.join('; '), c.wildcard_names.join('; '), c.issuer,
+    c.not_before ? c.not_before.slice(0,10) : '', c.not_after ? c.not_after.slice(0,10) : '', c.revoked, c.daysToExpiry]);
   const csv = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
   downloadFile('certlens_' + currentDomain + '_certs.csv', csv, 'text/csv');
 }
 function exportFindingsCsv() {
   const findings = [];
-  allHosts.forEach(h => h.risks.forEach(r => {
-    findings.push({ host:h.name, category:h.cat.label, severity:r.level, type:r.type, finding:r.text });
-  }));
+  allHosts.forEach(h => h.risks.forEach(r => { findings.push({ host:h.name, category:h.cat.label, severity:r.level, type:r.type, finding:r.text }); }));
   if (!findings.length) { alert('No findings to export.'); return; }
   const headers = ['hostname','category','severity','type','finding'];
-  const csv = [headers, ...findings.map(f => [f.host, f.category, f.severity, f.type, f.finding])]
-    .map(r => r.map(csvEscape).join(',')).join('\n');
+  const csv = [headers, ...findings.map(f => [f.host, f.category, f.severity, f.type, f.finding])].map(r => r.map(csvEscape).join(',')).join('\n');
   downloadFile('certlens_' + currentDomain + '_findings.csv', csv, 'text/csv');
 }
 
 // ---------- Watchlist ----------
-function getWatchlist() {
-  try { return JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]'); }
-  catch { return []; }
-}
-function saveWatchlist(list) {
-  localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
-}
-function isWatched(domain) {
-  return getWatchlist().some(w => w.domain === domain);
-}
+function getWatchlist() { try { return JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]'); } catch { return []; } }
+function saveWatchlist(list) { localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list)); }
+function isWatched(domain) { return getWatchlist().some(w => w.domain === domain); }
 function toggleWatch(domain) {
   const list = getWatchlist();
   const i = list.findIndex(w => w.domain === domain);
   if (i >= 0) list.splice(i, 1);
   else list.unshift({ domain, addedAt: new Date().toISOString() });
   saveWatchlist(list);
-  updateWatchStar();
-  renderWatchlistBar();
+  updateWatchStar(); renderWatchlistBar();
 }
 function updateWatchStar() {
   if (!currentDomain) return;
@@ -1247,8 +1274,7 @@ function renderWatchlistBar() {
     return '<span class="cl-watch-chip" data-domain="' + escapeHtml(w.domain) + '">' +
       '<span>' + escapeHtml(w.domain) + '</span>' +
       '<span class="age">' + formatAge(lastScan) + '</span>' +
-      '<span class="rm" title="Remove">×</span>' +
-    '</span>';
+      '<span class="rm" title="Remove">×</span></span>';
   }).join('');
   bar.querySelectorAll('.cl-watch-chip').forEach(chip => {
     chip.addEventListener('click', e => {
@@ -1258,8 +1284,13 @@ function renderWatchlistBar() {
         saveWatchlist(list); renderWatchlistBar(); updateWatchStar();
         return;
       }
-      document.getElementById('domainInput').value = d;
-      scan(d);
+      // Smart: if already in history, restore; else scan fresh
+      if (getHistory().some(e => e.domain === d) && d !== currentDomain) {
+        restoreScanFromHistory(d);
+      } else {
+        document.getElementById('domainInput').value = d;
+        scan(d);
+      }
     });
   });
 }
@@ -1269,10 +1300,7 @@ function showDiffBanner(newCount, prevScanIso) {
   banner.style.display = 'flex';
   banner.innerHTML =
     '<div><strong>' + newCount + ' new certificate' + (newCount===1?'':'s') + '</strong> since ' + ago + '.</div>' +
-    '<div style="display:flex;gap:6px">' +
-      '<button id="diffShow">Show only new</button>' +
-      '<button class="x" id="diffClose">×</button>' +
-    '</div>';
+    '<div style="display:flex;gap:6px"><button id="diffShow">Show only new</button><button class="x" id="diffClose">×</button></div>';
   document.getElementById('diffShow').addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1284,16 +1312,13 @@ function showDiffBanner(newCount, prevScanIso) {
   });
   document.getElementById('diffClose').addEventListener('click', () => banner.style.display = 'none');
 }
-
 function exportWatchlistJson() {
   const list = getWatchlist();
   if (!list.length) { alert('Watchlist is empty.'); return; }
   const out = {
-    exported: new Date().toISOString(),
-    tool: 'CertLens', version: 1,
+    exported: new Date().toISOString(), tool: 'CertLens', version: 1,
     watchlist: list.map(w => ({
-      domain: w.domain,
-      addedAt: w.addedAt,
+      domain: w.domain, addedAt: w.addedAt,
       lastScan: localStorage.getItem(STORAGE_PREFIX + w.domain + '_lastScan') || null,
       knownCertIds: JSON.parse(localStorage.getItem(STORAGE_PREFIX + w.domain + '_ids') || '[]')
     }))
@@ -1329,9 +1354,7 @@ function importWatchlistJson() {
         saveWatchlist(existing);
         renderWatchlistBar(); updateWatchStar();
         alert('Imported ' + added + ' new domain' + (added===1?'':'s') + ' to watchlist (existing entries preserved).');
-      } catch (err) {
-        alert('Import failed: ' + err.message);
-      }
+      } catch (err) { alert('Import failed: ' + err.message); }
     };
     reader.readAsText(f);
   });
@@ -1347,7 +1370,6 @@ document.querySelectorAll('.tab').forEach(t => {
     document.getElementById('view-' + t.dataset.view).classList.add('active');
   });
 });
-
 document.querySelectorAll('#hostFilters .filter').forEach(f => {
   f.addEventListener('click', () => {
     document.querySelectorAll('#hostFilters .filter').forEach(x => x.classList.remove('active'));
@@ -1356,16 +1378,8 @@ document.querySelectorAll('#hostFilters .filter').forEach(f => {
     renderHosts();
   });
 });
-
-document.getElementById('hostSearch').addEventListener('input', e => {
-  hostSearchTerm = e.target.value.trim();
-  renderHosts();
-});
-document.getElementById('hostSort').addEventListener('change', e => {
-  hostSortMode = e.target.value;
-  renderHosts();
-});
-
+document.getElementById('hostSearch').addEventListener('input', e => { hostSearchTerm = e.target.value.trim(); renderHosts(); });
+document.getElementById('hostSort').addEventListener('change', e => { hostSortMode = e.target.value; renderHosts(); });
 document.getElementById('scanBtn').addEventListener('click', () => {
   const v = document.getElementById('domainInput').value;
   if (v.trim()) scan(v);
@@ -1378,18 +1392,11 @@ document.getElementById('domainInput').addEventListener('keydown', e => {
     if (v.trim()) scan(v);
   }
 });
+document.getElementById('watchStar').addEventListener('click', () => { if (currentDomain) toggleWatch(currentDomain); });
 
-document.getElementById('watchStar').addEventListener('click', () => {
-  if (currentDomain) toggleWatch(currentDomain);
-});
-
-// Export dropdown
 const exportBtn = document.getElementById('exportBtn');
 const exportMenu = document.getElementById('exportMenu');
-exportBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  exportMenu.classList.toggle('open');
-});
+exportBtn.addEventListener('click', e => { e.stopPropagation(); exportMenu.classList.toggle('open'); });
 document.addEventListener('click', e => {
   if (!exportMenu.contains(e.target) && e.target !== exportBtn) exportMenu.classList.remove('open');
 });
@@ -1405,15 +1412,22 @@ exportMenu.querySelectorAll('button[data-export]').forEach(b => {
     else if (action === 'findings') exportFindingsCsv();
     else if (action === 'watchlist') exportWatchlistJson();
     else if (action === 'watchlist-import') importWatchlistJson();
+    else if (action === 'clear-history') clearAllHistory();
   });
 });
 
 // Initial load
 renderWatchlistBar();
+renderHistoryBar();
 const h = decodeURIComponent(window.location.hash.replace('#',''));
 if (h && h.includes('.')) {
-  document.getElementById('domainInput').value = h;
-  setTimeout(() => scan(h), 300);
+  // If domain is in history, restore from it; otherwise scan fresh
+  if (getHistory().some(e => e.domain === h)) {
+    restoreScanFromHistory(h);
+  } else {
+    document.getElementById('domainInput').value = h;
+    setTimeout(() => scan(h), 300);
+  }
 }
 document.getElementById('domainInput').focus();
 </script>

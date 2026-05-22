@@ -9,6 +9,42 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/style.css">
+<style>
+/* CertLens additions: export dropdown, watchlist, host search/sort, clickable metrics */
+.cl-menu-wrap{position:relative;display:inline-block}
+.cl-menu{position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:220px;z-index:50;padding:4px;display:none}
+.cl-menu.open{display:block}
+.cl-menu button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:8px 10px;cursor:pointer;font-family:inherit;font-size:0.85rem;border-radius:4px;color:var(--text,#18181b)}
+.cl-menu button:hover{background:#f4f4f5}
+.cl-menu .sep{height:1px;background:var(--border,#e4e4e7);margin:4px 0}
+.cl-menu .label{font-size:0.7rem;color:#71717a;text-transform:uppercase;letter-spacing:.04em;padding:6px 10px 2px;font-weight:600}
+
+.metric-strip .metric.clickable{cursor:pointer;transition:transform .08s,box-shadow .08s}
+.metric-strip .metric.clickable:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+
+.cl-host-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.cl-host-toolbar input.search{flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border,#e4e4e7);border-radius:6px;font-family:inherit;font-size:0.85rem}
+.cl-host-toolbar select.sort{padding:7px 10px;border:1px solid var(--border,#e4e4e7);border-radius:6px;font-family:inherit;font-size:0.85rem;background:#fff}
+
+.cl-watchlist{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cl-watchlist .wl-label{font-size:0.78rem;color:#71717a;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.cl-watch-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:999px;padding:5px 12px;font-size:0.82rem;cursor:pointer;color:var(--text,#18181b)}
+.cl-watch-chip:hover{background:#f4f4f5;border-color:#a78bfa}
+.cl-watch-chip .age{color:#71717a;font-size:0.72rem}
+.cl-watch-chip .new-badge{background:#7c3aed;color:#fff;border-radius:999px;padding:1px 7px;font-size:0.7rem;font-weight:600}
+.cl-watch-chip .rm{color:#a1a1aa;font-weight:700;margin-left:2px}
+.cl-watch-chip .rm:hover{color:#dc2626}
+
+.cl-watch-star{background:transparent;border:0;cursor:pointer;font-size:1.1rem;color:#a1a1aa;padding:0 4px;vertical-align:middle}
+.cl-watch-star.active{color:#f59e0b}
+.cl-watch-star:hover{color:#f59e0b}
+
+.cl-diff-banner{background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6;padding:10px 14px;border-radius:6px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:0.88rem}
+.cl-diff-banner button{background:#7c3aed;color:#fff;border:0;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:0.8rem}
+.cl-diff-banner button:hover{background:#6d28d9}
+.cl-diff-banner .x{background:transparent;color:#5b21b6;padding:4px 8px}
+.cl-diff-banner .x:hover{background:rgba(124,58,237,.1)}
+</style>
 </head>
 <body>
 <div class="app">
@@ -21,7 +57,7 @@
       <div class="topbar">
         <div class="titles">
           <div class="breadcrumb"><a href="/">Owlglass</a> / CertLens</div>
-          <h1>CertLens</h1>
+          <h1>CertLens <button id="watchStar" class="cl-watch-star" title="Add to watchlist" style="display:none">★</button></h1>
           <p class="tagline">Read public Certificate Transparency logs to map every subdomain and certificate ever issued for a domain. Surface shadow IT, expiring certs, and unexpected issuance.</p>
         </div>
       </div>
@@ -37,7 +73,21 @@
           </select>
           <button class="btn primary" id="scanBtn">Analyze</button>
           <button class="btn" id="rescanBtn" disabled>Rescan</button>
+          <div class="cl-menu-wrap">
+            <button class="btn" id="exportBtn" disabled>Export ▾</button>
+            <div class="cl-menu" id="exportMenu">
+              <div class="label">Download CSV</div>
+              <button data-export="hosts">Hosts (all discovered)</button>
+              <button data-export="certs">Certificates (raw)</button>
+              <button data-export="findings">Findings only</button>
+              <div class="sep"></div>
+              <div class="label">Watchlist</div>
+              <button data-export="watchlist">Export watchlist (JSON)</button>
+              <button data-export="watchlist-import">Import watchlist (JSON)</button>
+            </div>
+          </div>
         </div>
+        <div id="watchlistBar" class="cl-watchlist" style="display:none"></div>
       </div>
 
       <div class="status" id="statusBar">
@@ -45,7 +95,8 @@
         <div class="faint" id="lastScanText"></div>
       </div>
 
-      <!-- Top metric strip — populated after scan -->
+      <div id="diffBanner" class="cl-diff-banner" style="display:none"></div>
+
       <div class="metric-strip" id="metricStrip" style="display:none;"></div>
 
       <div class="tabs">
@@ -58,43 +109,41 @@
       </div>
 
       <section class="view active" id="view-overview">
-
         <div class="grid-2">
           <div class="card">
-            <div class="card-header">
-              <h2>Findings by severity</h2>
-            </div>
+            <div class="card-header"><h2>Findings by severity</h2></div>
             <div id="severitySummary"><p class="muted">Will appear after scan.</p></div>
           </div>
-
           <div class="card">
-            <div class="card-header">
-              <h2>Certificate authorities</h2>
-            </div>
+            <div class="card-header"><h2>Certificate authorities</h2></div>
             <div id="issuerDonut"><p class="muted">Will appear after scan.</p></div>
           </div>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <h2>Environment breakdown</h2>
-          </div>
+          <div class="card-header"><h2>Environment breakdown</h2></div>
           <div id="categoryBreakdown"><p class="muted">Will appear after scan.</p></div>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <h2>Recommended actions</h2>
-          </div>
+          <div class="card-header"><h2>Recommended actions</h2></div>
           <div id="recommendations"><p class="muted">A prioritized list will appear after scan.</p></div>
         </div>
-
       </section>
 
       <section class="view" id="view-hosts">
         <div class="card">
-          <div class="card-header">
-            <h2 id="hostsTitle">Discovered hosts</h2>
+          <div class="card-header"><h2 id="hostsTitle">Discovered hosts</h2></div>
+          <div class="cl-host-toolbar">
+            <input type="text" class="search" id="hostSearch" placeholder="Search hostname…">
+            <select class="sort" id="hostSort">
+              <option value="latest-desc">Sort: Latest issue (newest)</option>
+              <option value="latest-asc">Latest issue (oldest)</option>
+              <option value="expiry-asc">Expiry (soonest)</option>
+              <option value="expiry-desc">Expiry (latest)</option>
+              <option value="count-desc">Cert count (most)</option>
+              <option value="count-asc">Cert count (fewest)</option>
+              <option value="name-asc">Hostname (A–Z)</option>
+              <option value="name-desc">Hostname (Z–A)</option>
+            </select>
           </div>
           <div class="filters" id="hostFilters">
             <button class="filter active" data-f="all">All</button>
@@ -104,6 +153,9 @@
             <button class="filter" data-f="dev">Dev / Staging</button>
             <button class="filter" data-f="admin">Admin / Internal</button>
             <button class="filter" data-f="risky">Findings</button>
+            <button class="filter" data-f="new">New since last scan</button>
+            <button class="filter" data-f="revoked">Revoked</button>
+            <button class="filter" data-f="expired">Expired</button>
           </div>
           <div id="hostList"><p class="muted">Will appear after scan.</p></div>
         </div>
@@ -111,9 +163,7 @@
 
       <section class="view" id="view-risks">
         <div class="card">
-          <div class="card-header">
-            <h2>Hosts with findings</h2>
-          </div>
+          <div class="card-header"><h2>Hosts with findings</h2></div>
           <p class="muted" style="margin-bottom: 16px;">Suspicious naming patterns, abnormal issuance frequency, revoked certificates, and expiring or expired certs.</p>
           <div id="riskList"><p class="muted">Will appear after scan.</p></div>
         </div>
@@ -121,18 +171,14 @@
 
       <section class="view" id="view-expiring">
         <div class="card">
-          <div class="card-header">
-            <h2>Certificates expiring within 30 days</h2>
-          </div>
+          <div class="card-header"><h2 id="expiringTitle">Certificates expiring within 30 days</h2></div>
           <div id="expiringList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
 
       <section class="view" id="view-timeline">
         <div class="card">
-          <div class="card-header">
-            <h2>Issuance timeline (last 90 days)</h2>
-          </div>
+          <div class="card-header"><h2>Issuance timeline (last 90 days)</h2></div>
           <div id="timelineList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
@@ -142,6 +188,9 @@
           <h2>How CertLens works</h2>
           <p style="margin-bottom: 12px;">Every public SSL/TLS certificate is logged in <strong>Certificate Transparency</strong> — a public, append-only system designed to detect mis-issuance. Anyone can search this data.</p>
           <p style="margin-bottom: 16px;">CertLens uses the <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">SSLMate CertSpotter API</a> to retrieve certificates for a domain (and all of its subdomains), then runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a> to see which hosts are actually responding.</p>
+
+          <h3 style="margin: 20px 0 8px;">Watchlist & change detection</h3>
+          <p class="muted">Save domains to your local watchlist to track changes over time. CertLens stores known certificate IDs in your browser (localStorage only — nothing is sent anywhere) and flags newly-discovered certificates on each rescan. Export and import your watchlist as JSON to move it between machines.</p>
 
           <h3 style="margin: 20px 0 8px;">What CertLens flags</h3>
           <p class="muted">Suspicious naming patterns (<code>login-</code>, <code>secure-</code>, <code>verify-</code>), abnormal issuance frequency for a single host, revoked certificates, expiring or expired certs, and mixed-issuer patterns that may indicate inconsistent ownership.</p>
@@ -162,22 +211,15 @@
 'use strict';
 
 // ============================================================
-// CertLens — application logic (data layer unchanged)
+// CertLens
 // ============================================================
 
 const CERTSPOTTER_API = 'https://api.certspotter.com/v1/issuances';
 const STORAGE_PREFIX = 'owlglass_certlens_v1_';
+const WATCHLIST_KEY = 'owlglass_certlens_watchlist';
 
-const SEV_COLORS = {
-  crit: '#dc2626',
-  high: '#ea580c',
-  med:  '#d97706',
-  low:  '#2563eb',
-  ok:   '#16a34a'
-};
-
-// Donut palette — Wiz-ish purples + neutrals
-const DONUT_COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd', '#0891b2', '#06b6d4', '#67e8f9', '#64748b', '#94a3b8'];
+const SEV_COLORS = { crit:'#dc2626', high:'#ea580c', med:'#d97706', low:'#2563eb', ok:'#16a34a' };
+const DONUT_COLORS = ['#7c3aed','#a78bfa','#c4b5fd','#0891b2','#06b6d4','#67e8f9','#64748b','#94a3b8'];
 
 let currentDomain = null;
 let allCerts = [];
@@ -185,71 +227,68 @@ let allHosts = [];
 let knownIds = new Set();
 let newIds = new Set();
 let activeHostFilter = 'all';
+let hostSearchTerm = '';
+let hostSortMode = 'latest-desc';
 let scanInProgress = false;
 
+// ---------- Categorization & risks ----------
 function categorizeHost(name) {
   const n = name.toLowerCase();
-  if (/^(login|sso|auth|account|signin|verify|secure)[-.]/.test(n)) return { cat: 'auth', label: 'Auth / Login', risk: 'high' };
-  if (/(admin|panel|control|manage|console|dashboard|portal)[-.]/.test(n)) return { cat: 'admin', label: 'Admin', risk: 'high' };
-  if (/^(dev|test|staging|stage|qa|uat|preview|sandbox|demo|beta)[-.]/.test(n) || /\.(dev|staging|test)\./.test(n)) return { cat: 'dev', label: 'Dev / Staging', risk: 'medium' };
-  if (/^(api|graphql|rest|service|svc|micro)[-.]/.test(n)) return { cat: 'api', label: 'API', risk: 'medium' };
-  if (/^(vpn|gateway|gw|proxy|firewall|fw)[-.]/.test(n)) return { cat: 'network', label: 'Network / VPN', risk: 'high' };
-  if (/^(mail|smtp|imap|pop|webmail|mx|exchange|outlook|email)[-.]/.test(n)) return { cat: 'mail', label: 'Mail', risk: 'medium' };
-  if (/^(www|web|home|main)\./.test(n) || n.split('.').length <= 2) return { cat: 'prod', label: 'Production', risk: 'low' };
-  if (/^(internal|intranet|private|corp|hq|office)[-.]/.test(n)) return { cat: 'internal', label: 'Internal', risk: 'high' };
-  if (/^(git|gitlab|jenkins|ci|cd|build|deploy|nexus|artifactory|registry)[-.]/.test(n)) return { cat: 'devops', label: 'DevOps', risk: 'high' };
-  if (/^(static|cdn|assets|media|img|images|files|download)[-.]/.test(n)) return { cat: 'static', label: 'Static Assets', risk: 'low' };
-  if (/^(blog|docs|help|support|community|forum)[-.]/.test(n)) return { cat: 'content', label: 'Content', risk: 'low' };
-  return { cat: 'other', label: 'Other', risk: 'low' };
+  if (/^(login|sso|auth|account|signin|verify|secure)[-.]/.test(n)) return { cat:'auth', label:'Auth / Login', risk:'high' };
+  if (/(admin|panel|control|manage|console|dashboard|portal)[-.]/.test(n)) return { cat:'admin', label:'Admin', risk:'high' };
+  if (/^(dev|test|staging|stage|qa|uat|preview|sandbox|demo|beta)[-.]/.test(n) || /\.(dev|staging|test)\./.test(n)) return { cat:'dev', label:'Dev / Staging', risk:'medium' };
+  if (/^(api|graphql|rest|service|svc|micro)[-.]/.test(n)) return { cat:'api', label:'API', risk:'medium' };
+  if (/^(vpn|gateway|gw|proxy|firewall|fw)[-.]/.test(n)) return { cat:'network', label:'Network / VPN', risk:'high' };
+  if (/^(mail|smtp|imap|pop|webmail|mx|exchange|outlook|email)[-.]/.test(n)) return { cat:'mail', label:'Mail', risk:'medium' };
+  if (/^(www|web|home|main)\./.test(n) || n.split('.').length <= 2) return { cat:'prod', label:'Production', risk:'low' };
+  if (/^(internal|intranet|private|corp|hq|office)[-.]/.test(n)) return { cat:'internal', label:'Internal', risk:'high' };
+  if (/^(git|gitlab|jenkins|ci|cd|build|deploy|nexus|artifactory|registry)[-.]/.test(n)) return { cat:'devops', label:'DevOps', risk:'high' };
+  if (/^(static|cdn|assets|media|img|images|files|download)[-.]/.test(n)) return { cat:'static', label:'Static Assets', risk:'low' };
+  if (/^(blog|docs|help|support|community|forum)[-.]/.test(n)) return { cat:'content', label:'Content', risk:'low' };
+  return { cat:'other', label:'Other', risk:'low' };
 }
 
 function detectRisks(host, certs) {
   const risks = [];
   const nameLower = host.toLowerCase();
   const suspicious = ['secure-','-secure','login-','-login','verify-','-verify','official-','support-','-support','update-','-update'];
-  for (const pat of suspicious) {
-    if (nameLower.includes(pat)) {
-      risks.push({ type: 'suspicious-name', text: 'Suspicious pattern "' + pat + '"', level: 'med' });
-      break;
-    }
+  const matched = suspicious.filter(p => nameLower.includes(p));
+  if (matched.length > 0) {
+    risks.push({ type:'suspicious-name', text: matched.length === 1 ? 'Suspicious pattern "' + matched[0] + '"' : 'Matches ' + matched.length + ' suspicious patterns: ' + matched.join(', '), level:'med' });
   }
   const revoked = certs.filter(c => c.revoked);
-  if (revoked.length > 0) risks.push({ type: 'revoked', text: revoked.length + ' revoked certificate(s)', level: 'crit' });
+  if (revoked.length > 0) risks.push({ type:'revoked', text: revoked.length + ' revoked certificate(s)', level:'crit' });
   if (certs.length >= 5) {
     const dates = certs.map(c => new Date(c.not_before).getTime()).sort();
     const span = (dates[dates.length-1] - dates[0]) / 86400000;
-    if (span < 30) risks.push({ type: 'rapid-rotation', text: certs.length + ' certs in <30 days (abnormal)', level: 'med' });
+    if (span < 30) risks.push({ type:'rapid-rotation', text: certs.length + ' certs in <30 days (abnormal)', level:'med' });
   }
   const active = certs.filter(c => !c.revoked).sort((a,b) => new Date(b.not_after) - new Date(a.not_after));
   if (active.length > 0) {
     const latest = active[0];
     const daysLeft = (new Date(latest.not_after) - Date.now()) / 86400000;
-    if (daysLeft < 0) risks.push({ type: 'expired', text: 'Latest cert expired ' + Math.abs(Math.round(daysLeft)) + ' days ago', level: 'crit' });
-    else if (daysLeft < 7) risks.push({ type: 'expiring-soon', text: 'Expires in ' + Math.round(daysLeft) + ' days', level: 'high' });
-    else if (daysLeft < 30) risks.push({ type: 'expiring', text: 'Expires in ' + Math.round(daysLeft) + ' days', level: 'med' });
+    if (daysLeft < 0) risks.push({ type:'expired', text:'Latest cert expired ' + Math.abs(Math.round(daysLeft)) + ' days ago', level:'crit' });
+    else if (daysLeft < 7) risks.push({ type:'expiring-soon', text:'Expires in ' + Math.round(daysLeft) + ' days', level:'high' });
+    else if (daysLeft < 30) risks.push({ type:'expiring', text:'Expires in ' + Math.round(daysLeft) + ' days', level:'med' });
   }
   const issuers = new Set(certs.map(c => c.issuer).filter(Boolean));
-  if (issuers.size >= 3 && certs.length >= 3) risks.push({ type: 'multi-issuer', text: issuers.size + ' different CAs — inconsistent issuance', level: 'low' });
+  if (issuers.size >= 3 && certs.length >= 3) risks.push({ type:'multi-issuer', text: issuers.size + ' different CAs — inconsistent issuance', level:'low' });
   return risks;
 }
 
+// ---------- Fetch ----------
 async function fetchCertsAllPages(domain, maxPages) {
   const allResults = [];
-  let after = null;
-  let pageNum = 0;
+  let after = null, pageNum = 0;
   const seen = new Set();
-
   while (pageNum < maxPages) {
-    const params = new URLSearchParams({ domain: domain, include_subdomains: 'true', expand: 'dns_names' });
-    params.append('expand', 'issuer');
+    const params = new URLSearchParams({ domain, include_subdomains:'true', expand:'dns_names' });
+    params.append('expand','issuer');
     if (after) params.append('after', after);
-
     setStatus('busy', 'Fetching page ' + (pageNum + 1) + ' of ' + maxPages + ' from CertSpotter…');
-
     let res;
     try { res = await fetch(CERTSPOTTER_API + '?' + params.toString()); }
     catch (e) { throw new Error('Network error: ' + e.message); }
-
     if (!res.ok) {
       if (res.status === 429) {
         const errBody = await res.json().catch(() => ({}));
@@ -258,10 +297,8 @@ async function fetchCertsAllPages(domain, maxPages) {
       if (pageNum === 0) throw new Error('HTTP ' + res.status + ' from CertSpotter');
       break;
     }
-
     const page = await res.json();
     if (!Array.isArray(page) || page.length === 0) break;
-
     let added = 0;
     for (const cert of page) {
       if (!seen.has(cert.id)) { seen.add(cert.id); allResults.push(cert); added++; }
@@ -271,7 +308,6 @@ async function fetchCertsAllPages(domain, maxPages) {
     pageNum++;
     if (pageNum < maxPages) await new Promise(r => setTimeout(r, 200));
   }
-
   return allResults;
 }
 
@@ -280,24 +316,20 @@ async function checkAlive(hostname) {
     const res = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(hostname) + '&type=A');
     const j = await res.json();
     const ips = (j.Answer || []).filter(a => a.type === 1).map(a => a.data);
-    return { alive: ips.length > 0, ips: ips };
-  } catch { return { alive: false, ips: [] }; }
+    return { alive: ips.length > 0, ips };
+  } catch { return { alive:false, ips:[] }; }
 }
 
 function processData(rawCerts) {
   const certs = rawCerts.map(c => ({
-    id: c.id,
-    sha256: c.cert_sha256,
+    id: c.id, sha256: c.cert_sha256,
     dns_names: (c.dns_names || []).filter(n => !n.startsWith('*')),
     wildcard_names: (c.dns_names || []).filter(n => n.startsWith('*')),
     issuer: (c.issuer && (c.issuer.friendly_name || (c.issuer.name && (c.issuer.name.match(/CN=([^,]+)/) || [])[1]))) || 'Unknown',
-    not_before: c.not_before,
-    not_after: c.not_after,
-    revoked: c.revoked,
+    not_before: c.not_before, not_after: c.not_after, revoked: c.revoked,
     daysAgo: Math.floor((Date.now() - new Date(c.not_before)) / 86400000),
     daysToExpiry: Math.floor((new Date(c.not_after) - Date.now()) / 86400000)
   }));
-
   const hostMap = new Map();
   certs.forEach(c => {
     [...c.dns_names, ...c.wildcard_names].forEach(name => {
@@ -305,81 +337,84 @@ function processData(rawCerts) {
       hostMap.get(name).push(c);
     });
   });
-
   const hosts = [...hostMap.entries()].map(([name, hostCerts]) => {
     const cat = categorizeHost(name);
     const risks = detectRisks(name, hostCerts);
-    const sorted = [...hostCerts].sort((a, b) => new Date(b.not_before) - new Date(a.not_before));
+    const sorted = [...hostCerts].sort((a,b) => new Date(b.not_before) - new Date(a.not_before));
     const latest = sorted[0];
     const active = sorted.filter(c => !c.revoked && new Date(c.not_after) > Date.now());
     return {
-      name: name,
-      isWildcard: name.startsWith('*'),
-      cat: cat, risks: risks,
-      certs: sorted,
-      certCount: hostCerts.length,
+      name, isWildcard: name.startsWith('*'), cat, risks,
+      certs: sorted, certCount: hostCerts.length,
       latestIssue: latest && latest.not_before,
       latestExpiry: active[0] && active[0].not_after,
       revoked: hostCerts.some(c => c.revoked),
       hasActive: active.length > 0,
       issuers: [...new Set(hostCerts.map(c => c.issuer))],
-      alive: null,
-      ips: []
+      alive: null, ips: []
     };
-  }).sort((a, b) => new Date(b.latestIssue || 0) - new Date(a.latestIssue || 0));
-
-  return { certs: certs, hosts: hosts };
+  }).sort((a,b) => new Date(b.latestIssue || 0) - new Date(a.latestIssue || 0));
+  return { certs, hosts };
 }
 
+// ---------- Scan ----------
 async function scan(domain) {
   if (scanInProgress) return;
   scanInProgress = true;
-
   domain = (domain || '').toLowerCase().trim().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0];
   if (!domain || !domain.includes('.')) {
     alert('Please enter a valid domain (e.g. github.com)');
     scanInProgress = false; return;
   }
-
   currentDomain = domain;
+  history.replaceState(null, '', '#' + encodeURIComponent(domain));
+  document.getElementById('domainInput').value = domain;
   const maxPages = parseInt(document.getElementById('depthSelect').value) || 3;
-
   document.getElementById('rescanBtn').disabled = false;
   document.getElementById('scanBtn').disabled = true;
+  document.getElementById('depthSelect').disabled = true;
+  document.getElementById('diffBanner').style.display = 'none';
 
   try {
     setStatus('busy', 'Analyzing ' + domain + '…');
     const rawCerts = await fetchCertsAllPages(domain, maxPages);
     if (!Array.isArray(rawCerts) || rawCerts.length === 0) throw new Error('No certificates found. Domain may be too new, private, or use only self-signed certs.');
-
     setStatus('busy', 'Processing ' + rawCerts.length + ' certificates…');
     const r = processData(rawCerts);
     allCerts = r.certs; allHosts = r.hosts;
 
     const storageKey = STORAGE_PREFIX + domain;
     const known = JSON.parse(localStorage.getItem(storageKey + '_ids') || '[]');
+    const prevScanIso = localStorage.getItem(storageKey + '_lastScan');
     knownIds = new Set(known);
     newIds = new Set();
-    if (knownIds.size === 0) knownIds = new Set(allCerts.map(c => c.id));
+    const isFirstScan = knownIds.size === 0;
+    if (isFirstScan) knownIds = new Set(allCerts.map(c => c.id));
     else allCerts.forEach(c => { if (!knownIds.has(c.id)) { newIds.add(c.id); knownIds.add(c.id); } });
     localStorage.setItem(storageKey + '_ids', JSON.stringify([...knownIds]));
     localStorage.setItem(storageKey + '_lastScan', new Date().toISOString());
 
+    if (!isFirstScan && newIds.size > 0) showDiffBanner(newIds.size, prevScanIso);
+
     setStatus('busy', 'Checking host liveness…');
     const toCheck = allHosts.filter(h => !h.isWildcard).slice(0, 30);
     await Promise.all(toCheck.map(async h => {
-      const r = await checkAlive(h.name);
-      h.alive = r.alive; h.ips = r.ips;
+      const lr = await checkAlive(h.name);
+      h.alive = lr.alive; h.ips = lr.ips;
     }));
 
     renderAll();
     setStatus('ok', 'Complete — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts');
     document.getElementById('lastScanText').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
+    document.getElementById('exportBtn').disabled = false;
+    document.getElementById('watchStar').style.display = '';
+    updateWatchStar();
   } catch (e) {
     console.error('Scan error:', e);
     setStatus('bad', 'Failed: ' + e.message);
   } finally {
     document.getElementById('scanBtn').disabled = false;
+    document.getElementById('depthSelect').disabled = false;
     scanInProgress = false;
   }
 }
@@ -391,7 +426,7 @@ function setStatus(type, text) {
   if (txt) txt.textContent = text;
 }
 
-// ------- Rendering -------
+// ---------- Rendering ----------
 function renderAll() {
   renderMetricStrip();
   renderSeverity();
@@ -420,117 +455,122 @@ function renderMetricStrip() {
   const revoked = allCerts.filter(c => c.revoked).length;
   const recent7 = allCerts.filter(c => c.daysAgo <= 7).length;
 
-  const m = (label, value, meta, mod) =>
-    '<div class="metric ' + (mod||'') + '"><div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
+  const m = (label, value, meta, mod, action) =>
+    '<div class="metric clickable ' + (mod||'') + '" data-action="' + (action||'') + '">' +
+      '<div class="label">' + label + '</div>' +
+      '<div class="value">' + value + '</div>' +
+      '<div class="meta">' + meta + '</div>' +
+    '</div>';
 
   const strip = document.getElementById('metricStrip');
   strip.style.display = 'grid';
   strip.innerHTML =
-    m('Hosts discovered', totalHosts, totalCerts + ' certificates', 'brand') +
-    m('Live (DNS)', aliveCount, 'Top 30 sampled', 'ok') +
-    m('Issued · 7 days', recent7, 'New certificates', recent7 > 5 ? 'med' : '') +
-    m('Expiring · 30 days', expiringSoon, 'Need renewal', expiringSoon > 0 ? 'high' : 'ok') +
-    m('Expired', expired, 'Past validity', expired > 0 ? 'crit' : 'ok') +
-    m('Revoked', revoked, 'Need investigation', revoked > 0 ? 'crit' : 'ok');
+    m('Hosts discovered', totalHosts, totalCerts + ' certificates', 'brand', 'goto-hosts') +
+    m('Live (DNS)', aliveCount, 'Top 30 sampled', 'ok', 'goto-hosts-alive') +
+    m('Issued · 7 days', recent7, 'New certificates', recent7 > 5 ? 'med' : '', 'goto-timeline') +
+    m('Expiring · 30 days', expiringSoon, 'Need renewal', expiringSoon > 0 ? 'high' : 'ok', 'goto-expiring') +
+    m('Expired', expired, 'Past validity', expired > 0 ? 'crit' : 'ok', 'goto-hosts-expired') +
+    m('Revoked', revoked, 'Need investigation', revoked > 0 ? 'crit' : 'ok', 'goto-hosts-revoked');
+
+  strip.querySelectorAll('.metric.clickable').forEach(m => {
+    m.addEventListener('click', () => handleMetricClick(m.dataset.action));
+  });
+}
+
+function handleMetricClick(action) {
+  if (!action) return;
+  const go = view => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelector('.tab[data-view="' + view + '"]').classList.add('active');
+    document.getElementById('view-' + view).classList.add('active');
+  };
+  const setFilter = f => {
+    activeHostFilter = f;
+    document.querySelectorAll('#hostFilters .filter').forEach(x => x.classList.toggle('active', x.dataset.f === f));
+    renderHosts();
+  };
+  if (action === 'goto-hosts') { go('hosts'); setFilter('all'); }
+  else if (action === 'goto-hosts-alive') { go('hosts'); setFilter('alive'); }
+  else if (action === 'goto-hosts-expired') { go('hosts'); setFilter('expired'); }
+  else if (action === 'goto-hosts-revoked') { go('hosts'); setFilter('revoked'); }
+  else if (action === 'goto-expiring') { go('expiring'); }
+  else if (action === 'goto-timeline') { go('timeline'); }
 }
 
 function renderSeverity() {
-  // Aggregate findings by severity across all hosts
-  const counts = { crit: 0, high: 0, med: 0, low: 0, ok: 0 };
+  const counts = { crit:0, high:0, med:0, low:0, ok:0 };
   allHosts.forEach(h => {
     if (h.risks.length === 0) { counts.ok++; return; }
-    const worst = h.risks.reduce((w, r) => {
-      const order = { crit: 4, high: 3, med: 2, low: 1 };
+    const worst = h.risks.reduce((w,r) => {
+      const order = { crit:4, high:3, med:2, low:1 };
       return order[r.level] > order[w] ? r.level : w;
     }, 'low');
     counts[worst]++;
   });
-
-  const total = counts.crit + counts.high + counts.med + counts.low + counts.ok;
-  if (total === 0) {
-    document.getElementById('severitySummary').innerHTML = '<p class="muted">No data yet.</p>';
-    return;
-  }
-
+  const total = counts.crit+counts.high+counts.med+counts.low+counts.ok;
+  if (total === 0) { document.getElementById('severitySummary').innerHTML = '<p class="muted">No data yet.</p>'; return; }
   const segs = [];
   if (counts.crit > 0) segs.push('<div class="seg-crit" style="flex:' + counts.crit + ';"></div>');
   if (counts.high > 0) segs.push('<div class="seg-high" style="flex:' + counts.high + ';"></div>');
   if (counts.med > 0)  segs.push('<div class="seg-med" style="flex:' + counts.med + ';"></div>');
   if (counts.low > 0)  segs.push('<div class="seg-low" style="flex:' + counts.low + ';"></div>');
   if (counts.ok > 0)   segs.push('<div class="seg-ok" style="flex:' + counts.ok + ';"></div>');
-
   const items = [
-    { k: 'crit', label: 'Critical', color: SEV_COLORS.crit, count: counts.crit },
-    { k: 'high', label: 'High',     color: SEV_COLORS.high, count: counts.high },
-    { k: 'med',  label: 'Medium',   color: SEV_COLORS.med,  count: counts.med  },
-    { k: 'low',  label: 'Low',      color: SEV_COLORS.low,  count: counts.low  },
-    { k: 'ok',   label: 'Healthy',  color: SEV_COLORS.ok,   count: counts.ok   }
+    { label:'Critical', color:SEV_COLORS.crit, count:counts.crit },
+    { label:'High',     color:SEV_COLORS.high, count:counts.high },
+    { label:'Medium',   color:SEV_COLORS.med,  count:counts.med },
+    { label:'Low',      color:SEV_COLORS.low,  count:counts.low },
+    { label:'Healthy',  color:SEV_COLORS.ok,   count:counts.ok }
   ];
-
   document.getElementById('severitySummary').innerHTML =
     '<div class="sev-bar">' + segs.join('') + '</div>' +
-    '<div class="sev-legend">' +
-      items.filter(i => i.count > 0).map(i =>
-        '<div class="item"><span class="swatch" style="background:' + i.color + ';"></span><span>' + i.label + '</span><span style="font-weight:600; color: var(--text);">' + i.count + '</span></div>'
-      ).join('') +
-    '</div>';
+    '<div class="sev-legend">' + items.filter(i => i.count>0).map(i =>
+      '<div class="item"><span class="swatch" style="background:' + i.color + ';"></span><span>' + i.label + '</span><span style="font-weight:600; color: var(--text);">' + i.count + '</span></div>'
+    ).join('') + '</div>';
 }
 
 function renderIssuerDonut() {
   const issuerCounts = {};
-  allCerts.forEach(c => { issuerCounts[c.issuer] = (issuerCounts[c.issuer] || 0) + 1; });
-  const sorted = Object.entries(issuerCounts).sort((a,b) => b[1] - a[1]);
-  const top = sorted.slice(0, 7);
-  const otherCount = sorted.slice(7).reduce((s, [, n]) => s + n, 0);
+  allCerts.forEach(c => { issuerCounts[c.issuer] = (issuerCounts[c.issuer]||0)+1; });
+  const sorted = Object.entries(issuerCounts).sort((a,b) => b[1]-a[1]);
+  const top = sorted.slice(0,7);
+  const otherCount = sorted.slice(7).reduce((s,[,n]) => s+n, 0);
   if (otherCount > 0) top.push(['Other', otherCount]);
-
-  const total = top.reduce((s, [, n]) => s + n, 0);
-  if (total === 0) {
-    document.getElementById('issuerDonut').innerHTML = '<p class="muted">No data.</p>';
-    return;
-  }
-
-  // Build donut SVG
-  const cx = 70, cy = 70, r = 50, sw = 18;
-  let angle = -Math.PI / 2;
-  let arcs = '';
-  top.forEach(([name, count], i) => {
-    const portion = count / total;
-    const ang2 = angle + portion * Math.PI * 2;
-    const x1 = cx + Math.cos(angle) * r;
-    const y1 = cy + Math.sin(angle) * r;
-    const x2 = cx + Math.cos(ang2) * r;
-    const y2 = cy + Math.sin(ang2) * r;
+  const total = top.reduce((s,[,n]) => s+n, 0);
+  if (total === 0) { document.getElementById('issuerDonut').innerHTML = '<p class="muted">No data.</p>'; return; }
+  const cx=70, cy=70, r=50, sw=18;
+  let angle = -Math.PI/2, arcs = '';
+  top.forEach(([name,count],i) => {
+    const portion = count/total;
+    const ang2 = angle + portion*Math.PI*2;
+    const x1 = cx+Math.cos(angle)*r, y1 = cy+Math.sin(angle)*r;
+    const x2 = cx+Math.cos(ang2)*r, y2 = cy+Math.sin(ang2)*r;
     const large = portion > 0.5 ? 1 : 0;
     const color = DONUT_COLORS[i % DONUT_COLORS.length];
     arcs += '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2 + ' ' + y2 + '" fill="none" stroke="' + color + '" stroke-width="' + sw + '"/>';
     angle = ang2;
   });
-
-  const svg = '<svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">' +
-    arcs +
-    '<text x="70" y="68" text-anchor="middle" font-size="22" font-weight="700" fill="#18181b" font-family="Inter">' + total + '</text>' +
+  const svg = '<svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">' + arcs +
+    '<text x="70" y="68" text-anchor="middle" font-size="22" font-weight="700" fill="currentColor" font-family="Inter">' + total + '</text>' +
     '<text x="70" y="84" text-anchor="middle" font-size="10" fill="#71717a" font-family="Inter">certs</text>' +
-  '</svg>';
-
-  const legend = top.map(([name, count], i) =>
+    '</svg>';
+  const legend = top.map(([name,count],i) =>
     '<div class="lg-item">' +
       '<span class="swatch" style="background:' + DONUT_COLORS[i % DONUT_COLORS.length] + ';"></span>' +
       '<span class="lg-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</span>' +
       '<span class="lg-value">' + count + '</span>' +
     '</div>'
   ).join('');
-
-  document.getElementById('issuerDonut').innerHTML =
-    '<div class="donut-wrap">' + svg + '<div class="donut-legend">' + legend + '</div></div>';
+  document.getElementById('issuerDonut').innerHTML = '<div class="donut-wrap">' + svg + '<div class="donut-legend">' + legend + '</div></div>';
 }
 
 function renderCategoryBars() {
   const catCounts = {};
-  allHosts.forEach(h => { catCounts[h.cat.label] = (catCounts[h.cat.label] || 0) + 1; });
-  const sorted = Object.entries(catCounts).sort((a,b) => b[1] - a[1]);
+  allHosts.forEach(h => { catCounts[h.cat.label] = (catCounts[h.cat.label]||0)+1; });
+  const sorted = Object.entries(catCounts).sort((a,b) => b[1]-a[1]);
   const max = sorted[0] ? sorted[0][1] : 1;
-  document.getElementById('categoryBreakdown').innerHTML = sorted.map(([label, count]) =>
+  document.getElementById('categoryBreakdown').innerHTML = sorted.map(([label,count]) =>
     '<div class="bar-row">' +
       '<div class="bar-label">' + escapeHtml(label) + '</div>' +
       '<div class="bar-track"><div class="bar-fill" style="width:' + (count/max*100) + '%;"></div></div>' +
@@ -545,17 +585,15 @@ function renderRecommendations() {
   const revoked = allCerts.filter(c => c.revoked).length;
   const adminHosts = allHosts.filter(h => h.cat.cat === 'admin' || h.cat.cat === 'auth');
   const devHosts = allHosts.filter(h => h.cat.cat === 'dev');
-
   const recs = [];
-  if (expired > 0) recs.push({ sev: 'crit', title: 'Renew ' + expired + ' expired certificate' + (expired===1?'':'s'), why: 'Services using expired certificates show browser warnings and break traffic.' });
-  if (revoked > 0) recs.push({ sev: 'crit', title: 'Investigate ' + revoked + ' revoked certificate' + (revoked===1?'':'s'), why: 'Determine if revocation was due to compromise or routine replacement.' });
-  if (expiringSoon > 0) recs.push({ sev: 'high', title: expiringSoon + ' certificate' + (expiringSoon===1?'':'s') + ' expire within 30 days', why: 'Schedule renewals. Verify automatic renewal is configured.' });
-  if (adminHosts.length > 0) recs.push({ sev: '', title: 'Review ' + adminHosts.length + ' admin / auth host' + (adminHosts.length===1?'':'s'), why: 'Externally exposed admin pages are high-value targets. Verify WAF, MFA, and IP allowlists.' });
-  if (devHosts.length > 5) recs.push({ sev: '', title: devHosts.length + ' dev / staging hosts exposed externally', why: 'Non-production environments shouldn\'t be public.' });
-  if (recs.length === 0) recs.push({ sev: '', title: 'No major risks detected', why: 'No immediate action required.' });
-
-  document.getElementById('recommendations').innerHTML = recs.slice(0, 6).map((r, i) =>
-    '<div class="rec ' + (r.sev ? 'sev-' + r.sev : '') + '">' +
+  if (expired > 0) recs.push({ sev:'crit', title:'Renew ' + expired + ' expired certificate' + (expired===1?'':'s'), why:'Services using expired certificates show browser warnings and break traffic.' });
+  if (revoked > 0) recs.push({ sev:'crit', title:'Investigate ' + revoked + ' revoked certificate' + (revoked===1?'':'s'), why:'Determine if revocation was due to compromise or routine replacement.' });
+  if (expiringSoon > 0) recs.push({ sev:'high', title: expiringSoon + ' certificate' + (expiringSoon===1?'':'s') + ' expire within 30 days', why:'Schedule renewals. Verify automatic renewal is configured.' });
+  if (adminHosts.length > 0) recs.push({ sev:'', title:'Review ' + adminHosts.length + ' admin / auth host' + (adminHosts.length===1?'':'s'), why:'Externally exposed admin pages are high-value targets. Verify WAF, MFA, and IP allowlists.' });
+  if (devHosts.length > 5) recs.push({ sev:'', title: devHosts.length + ' dev / staging hosts exposed externally', why:"Non-production environments shouldn't be public." });
+  if (recs.length === 0) recs.push({ sev:'', title:'No major risks detected', why:'No immediate action required.' });
+  document.getElementById('recommendations').innerHTML = recs.slice(0,6).map((r,i) =>
+    '<div class="rec ' + (r.sev ? 'sev-'+r.sev : '') + '">' +
       '<div class="rec-num">' + (i+1) + '</div>' +
       '<div><div class="rec-title">' + escapeHtml(r.title) + '</div><div class="rec-why">' + escapeHtml(r.why) + '</div></div>' +
       '<div></div>' +
@@ -571,22 +609,40 @@ function renderHosts() {
   else if (activeHostFilter === 'dev') filtered = filtered.filter(h => h.cat.cat === 'dev');
   else if (activeHostFilter === 'admin') filtered = filtered.filter(h => ['admin','auth','internal','devops'].includes(h.cat.cat));
   else if (activeHostFilter === 'risky') filtered = filtered.filter(h => h.risks.length > 0);
+  else if (activeHostFilter === 'new') filtered = filtered.filter(h => h.certs.some(c => newIds.has(c.id)));
+  else if (activeHostFilter === 'revoked') filtered = filtered.filter(h => h.revoked);
+  else if (activeHostFilter === 'expired') filtered = filtered.filter(h => !h.hasActive);
+
+  if (hostSearchTerm) {
+    const q = hostSearchTerm.toLowerCase();
+    filtered = filtered.filter(h => h.name.toLowerCase().includes(q));
+  }
+
+  filtered.sort((a,b) => {
+    switch (hostSortMode) {
+      case 'latest-desc': return new Date(b.latestIssue||0) - new Date(a.latestIssue||0);
+      case 'latest-asc':  return new Date(a.latestIssue||0) - new Date(b.latestIssue||0);
+      case 'expiry-asc':  return new Date(a.latestExpiry||'9999-01-01') - new Date(b.latestExpiry||'9999-01-01');
+      case 'expiry-desc': return new Date(b.latestExpiry||0) - new Date(a.latestExpiry||0);
+      case 'count-desc':  return b.certCount - a.certCount;
+      case 'count-asc':   return a.certCount - b.certCount;
+      case 'name-asc':    return a.name.localeCompare(b.name);
+      case 'name-desc':   return b.name.localeCompare(a.name);
+    }
+    return 0;
+  });
 
   const c = document.getElementById('hostList');
   document.getElementById('hostsTitle').textContent = 'Discovered hosts (' + filtered.length + ' / ' + allHosts.length + ')';
+  if (filtered.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>No hosts match this filter.</div>'; return; }
 
-  if (filtered.length === 0) {
-    c.innerHTML = '<div class="empty"><div class="ico">—</div>No hosts match this filter.</div>';
-    return;
-  }
-
-  c.innerHTML = filtered.slice(0, 500).map(h => {
+  c.innerHTML = filtered.slice(0,500).map(h => {
     const isNew = h.certs.some(c => newIds.has(c.id));
     const worstSev = h.risks.length === 0 ? '' :
       h.risks.some(r => r.level==='crit') ? 'crit' :
       h.risks.some(r => r.level==='high') ? 'high' :
       h.risks.some(r => r.level==='med')  ? 'med'  : 'low';
-    const flag = h.revoked ? 'flag-crit' : worstSev ? 'flag-' + worstSev : isNew ? 'flag-new' : '';
+    const flag = h.revoked ? 'flag-crit' : worstSev ? 'flag-'+worstSev : isNew ? 'flag-new' : '';
     const expiryDays = h.latestExpiry ? Math.floor((new Date(h.latestExpiry) - Date.now()) / 86400000) : null;
     let badge = '';
     if (isNew) badge = '<span class="badge new">New</span>';
@@ -594,7 +650,6 @@ function renderHosts() {
     else if (expiryDays !== null && expiryDays < 30) badge = '<span class="badge med">' + expiryDays + 'd left</span>';
     else if (h.revoked) badge = '<span class="badge crit">Revoked</span>';
     else badge = '<span class="badge ok">Active</span>';
-
     return '<div class="row ' + flag + '">' +
       '<div>' + badge + '</div>' +
       '<div>' +
@@ -615,7 +670,7 @@ function renderHosts() {
 
 function renderRisks() {
   const riskyHosts = allHosts.filter(h => h.risks.length > 0).sort((a,b) => {
-    const score = h => h.risks.reduce((s,r) => s + ({crit:4, high:3, med:2, low:1}[r.level] || 0), 0);
+    const score = h => h.risks.reduce((s,r) => s + ({crit:4,high:3,med:2,low:1}[r.level]||0), 0);
     return score(b) - score(a);
   });
   const c = document.getElementById('riskList');
@@ -624,18 +679,14 @@ function renderRisks() {
     const worst = h.risks.some(r => r.level==='crit') ? 'crit' :
                   h.risks.some(r => r.level==='high') ? 'high' :
                   h.risks.some(r => r.level==='med')  ? 'med'  : 'low';
-    const flag = 'flag-' + worst;
-    const badgeLabel = worst === 'crit' ? 'Critical' : worst === 'high' ? 'High' : worst === 'med' ? 'Medium' : 'Low';
-    const badge = '<span class="badge ' + worst + '">' + badgeLabel + '</span>';
-    return '<div class="row ' + flag + '">' +
-      '<div>' + badge + '</div>' +
+    const badgeLabel = worst==='crit'?'Critical':worst==='high'?'High':worst==='med'?'Medium':'Low';
+    return '<div class="row flag-' + worst + '">' +
+      '<div><span class="badge ' + worst + '">' + badgeLabel + '</span></div>' +
       '<div>' +
         '<div class="row-name">' + escapeHtml(h.name) + '</div>' +
         '<div class="row-meta"><span class="pill brand">' + escapeHtml(h.cat.label) + '</span><span class="pill">' + h.certCount + ' cert' + (h.certCount===1?'':'s') + '</span></div>' +
         '<div class="row-meta" style="margin-top:6px;">' + h.risks.map(r => '<span class="pill ' + r.level + '">' + escapeHtml(r.text) + '</span>').join('') + '</div>' +
-      '</div>' +
-      '<div></div>' +
-    '</div>';
+      '</div><div></div></div>';
   }).join('');
 }
 
@@ -646,15 +697,12 @@ function renderExpiring() {
   c.innerHTML = expiring.map(cert => {
     const names = [...cert.dns_names, ...cert.wildcard_names];
     const sev = cert.daysToExpiry <= 7 ? 'crit' : 'med';
-    const badge = '<span class="badge ' + sev + '">' + cert.daysToExpiry + 'd</span>';
     return '<div class="row flag-' + sev + '">' +
-      '<div>' + badge + '</div>' +
+      '<div><span class="badge ' + sev + '">' + cert.daysToExpiry + 'd</span></div>' +
       '<div>' +
         '<div class="row-name">' + escapeHtml(names.join(', ')) + '</div>' +
         '<div class="row-meta"><span class="pill">' + escapeHtml(cert.issuer) + '</span><span class="faint">expires ' + cert.not_after.slice(0,10) + '</span></div>' +
-      '</div>' +
-      '<div></div>' +
-    '</div>';
+      '</div><div></div></div>';
   }).join('');
 }
 
@@ -668,22 +716,223 @@ function renderTimeline() {
     if (!byDate[d]) byDate[d] = [];
     byDate[d].push(cert);
   });
-  c.innerHTML = Object.entries(byDate).map(([date, certs]) =>
+  c.innerHTML = Object.entries(byDate).map(([date,certs]) =>
     '<div class="row" style="grid-template-columns: 100px 1fr;">' +
       '<div class="faint" style="font-size:0.78rem;">' + date + '<br>' + certs.length + ' cert' + (certs.length===1?'':'s') + '</div>' +
-      '<div>' + certs.slice(0, 5).map(cert => {
+      '<div>' + certs.slice(0,5).map(cert => {
         const names = [...cert.dns_names, ...cert.wildcard_names];
-        return '<div class="row-name" style="margin:2px 0; font-size:0.8rem;">' + escapeHtml(names.slice(0,3).join(', ')) + (names.length>3?' +' + (names.length-3) + ' more':'') + ' <span class="faint">— ' + escapeHtml(cert.issuer) + '</span></div>';
+        return '<div class="row-name" style="margin:2px 0; font-size:0.8rem;">' + escapeHtml(names.slice(0,3).join(', ')) + (names.length>3?' +'+(names.length-3)+' more':'') + ' <span class="faint">— ' + escapeHtml(cert.issuer) + '</span></div>';
       }).join('') + (certs.length > 5 ? '<div class="faint" style="font-size:0.75rem;">+' + (certs.length-5) + ' more</div>' : '') + '</div>' +
     '</div>'
   ).join('');
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ---------- CSV Export ----------
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime || 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function exportHostsCsv() {
+  if (!allHosts.length) return;
+  const headers = ['hostname','category','cert_count','latest_issue','latest_expiry','days_to_expiry','has_active','revoked','alive','ips','issuers','findings_count','findings'];
+  const rows = allHosts.map(h => {
+    const daysToExp = h.latestExpiry ? Math.floor((new Date(h.latestExpiry) - Date.now())/86400000) : '';
+    return [
+      h.name, h.cat.label, h.certCount,
+      h.latestIssue ? h.latestIssue.slice(0,10) : '',
+      h.latestExpiry ? h.latestExpiry.slice(0,10) : '',
+      daysToExp, h.hasActive, h.revoked,
+      h.alive === null ? 'not-checked' : h.alive,
+      h.ips.join('; '),
+      h.issuers.join('; '),
+      h.risks.length,
+      h.risks.map(r => '[' + r.level + '] ' + r.text).join(' | ')
+    ];
+  });
+  const csv = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
+  downloadFile('certlens_' + currentDomain + '_hosts.csv', csv, 'text/csv');
+}
+function exportCertsCsv() {
+  if (!allCerts.length) return;
+  const headers = ['cert_id','sha256','dns_names','wildcard_names','issuer','not_before','not_after','revoked','days_to_expiry'];
+  const rows = allCerts.map(c => [
+    c.id, c.sha256,
+    c.dns_names.join('; '),
+    c.wildcard_names.join('; '),
+    c.issuer,
+    c.not_before ? c.not_before.slice(0,10) : '',
+    c.not_after ? c.not_after.slice(0,10) : '',
+    c.revoked, c.daysToExpiry
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
+  downloadFile('certlens_' + currentDomain + '_certs.csv', csv, 'text/csv');
+}
+function exportFindingsCsv() {
+  const findings = [];
+  allHosts.forEach(h => h.risks.forEach(r => {
+    findings.push({ host:h.name, category:h.cat.label, severity:r.level, type:r.type, finding:r.text });
+  }));
+  if (!findings.length) { alert('No findings to export.'); return; }
+  const headers = ['hostname','category','severity','type','finding'];
+  const csv = [headers, ...findings.map(f => [f.host, f.category, f.severity, f.type, f.finding])]
+    .map(r => r.map(csvEscape).join(',')).join('\n');
+  downloadFile('certlens_' + currentDomain + '_findings.csv', csv, 'text/csv');
 }
 
-// ------- Wire up events -------
+// ---------- Watchlist ----------
+function getWatchlist() {
+  try { return JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveWatchlist(list) {
+  localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
+}
+function isWatched(domain) {
+  return getWatchlist().some(w => w.domain === domain);
+}
+function toggleWatch(domain) {
+  const list = getWatchlist();
+  const i = list.findIndex(w => w.domain === domain);
+  if (i >= 0) list.splice(i, 1);
+  else list.unshift({ domain, addedAt: new Date().toISOString() });
+  saveWatchlist(list);
+  updateWatchStar();
+  renderWatchlistBar();
+}
+function updateWatchStar() {
+  if (!currentDomain) return;
+  const star = document.getElementById('watchStar');
+  const watched = isWatched(currentDomain);
+  star.classList.toggle('active', watched);
+  star.textContent = watched ? '★' : '☆';
+  star.title = watched ? 'Remove from watchlist' : 'Add to watchlist';
+}
+function formatAge(iso) {
+  if (!iso) return 'never';
+  const ms = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor(ms / 3600000);
+  const mins = Math.floor(ms / 60000);
+  if (days >= 1) return days + 'd ago';
+  if (hours >= 1) return hours + 'h ago';
+  if (mins >= 1) return mins + 'm ago';
+  return 'just now';
+}
+function renderWatchlistBar() {
+  const list = getWatchlist();
+  const bar = document.getElementById('watchlistBar');
+  if (!list.length) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="wl-label">Watching:</span>' + list.map(w => {
+    const lastScan = localStorage.getItem(STORAGE_PREFIX + w.domain + '_lastScan');
+    return '<span class="cl-watch-chip" data-domain="' + escapeHtml(w.domain) + '">' +
+      '<span>' + escapeHtml(w.domain) + '</span>' +
+      '<span class="age">' + formatAge(lastScan) + '</span>' +
+      '<span class="rm" title="Remove">×</span>' +
+    '</span>';
+  }).join('');
+  bar.querySelectorAll('.cl-watch-chip').forEach(chip => {
+    chip.addEventListener('click', e => {
+      const d = chip.dataset.domain;
+      if (e.target.classList.contains('rm')) {
+        const list = getWatchlist().filter(w => w.domain !== d);
+        saveWatchlist(list); renderWatchlistBar(); updateWatchStar();
+        return;
+      }
+      document.getElementById('domainInput').value = d;
+      scan(d);
+    });
+  });
+}
+function showDiffBanner(newCount, prevScanIso) {
+  const banner = document.getElementById('diffBanner');
+  const ago = prevScanIso ? formatAge(prevScanIso) : 'last scan';
+  banner.style.display = 'flex';
+  banner.innerHTML =
+    '<div><strong>' + newCount + ' new certificate' + (newCount===1?'':'s') + '</strong> since ' + ago + '.</div>' +
+    '<div style="display:flex;gap:6px">' +
+      '<button id="diffShow">Show only new</button>' +
+      '<button class="x" id="diffClose">×</button>' +
+    '</div>';
+  document.getElementById('diffShow').addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelector('.tab[data-view="hosts"]').classList.add('active');
+    document.getElementById('view-hosts').classList.add('active');
+    activeHostFilter = 'new';
+    document.querySelectorAll('#hostFilters .filter').forEach(x => x.classList.toggle('active', x.dataset.f === 'new'));
+    renderHosts();
+  });
+  document.getElementById('diffClose').addEventListener('click', () => banner.style.display = 'none');
+}
+
+function exportWatchlistJson() {
+  const list = getWatchlist();
+  if (!list.length) { alert('Watchlist is empty.'); return; }
+  const out = {
+    exported: new Date().toISOString(),
+    tool: 'CertLens',
+    version: 1,
+    watchlist: list.map(w => ({
+      domain: w.domain,
+      addedAt: w.addedAt,
+      lastScan: localStorage.getItem(STORAGE_PREFIX + w.domain + '_lastScan') || null,
+      knownCertIds: JSON.parse(localStorage.getItem(STORAGE_PREFIX + w.domain + '_ids') || '[]')
+    }))
+  };
+  downloadFile('certlens_watchlist.json', JSON.stringify(out, null, 2), 'application/json');
+}
+function importWatchlistJson() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'application/json,.json';
+  input.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data || !Array.isArray(data.watchlist)) throw new Error('Invalid format');
+        const existing = getWatchlist();
+        const existingDomains = new Set(existing.map(w => w.domain));
+        let added = 0;
+        data.watchlist.forEach(w => {
+          if (!w.domain) return;
+          if (!existingDomains.has(w.domain)) {
+            existing.push({ domain: w.domain, addedAt: w.addedAt || new Date().toISOString() });
+            added++;
+          }
+          if (w.lastScan) localStorage.setItem(STORAGE_PREFIX + w.domain + '_lastScan', w.lastScan);
+          if (Array.isArray(w.knownCertIds) && w.knownCertIds.length) {
+            const key = STORAGE_PREFIX + w.domain + '_ids';
+            const merged = new Set([...(JSON.parse(localStorage.getItem(key) || '[]')), ...w.knownCertIds]);
+            localStorage.setItem(key, JSON.stringify([...merged]));
+          }
+        });
+        saveWatchlist(existing);
+        renderWatchlistBar(); updateWatchStar();
+        alert('Imported ' + added + ' new domain' + (added===1?'':'s') + ' to watchlist (existing entries preserved).');
+      } catch (err) {
+        alert('Import failed: ' + err.message);
+      }
+    };
+    reader.readAsText(f);
+  });
+  input.click();
+}
+
+// ---------- Event wiring ----------
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -702,6 +951,15 @@ document.querySelectorAll('#hostFilters .filter').forEach(f => {
   });
 });
 
+document.getElementById('hostSearch').addEventListener('input', e => {
+  hostSearchTerm = e.target.value.trim();
+  renderHosts();
+});
+document.getElementById('hostSort').addEventListener('change', e => {
+  hostSortMode = e.target.value;
+  renderHosts();
+});
+
 document.getElementById('scanBtn').addEventListener('click', () => {
   const v = document.getElementById('domainInput').value;
   if (v.trim()) scan(v);
@@ -715,6 +973,34 @@ document.getElementById('domainInput').addEventListener('keydown', e => {
   }
 });
 
+document.getElementById('watchStar').addEventListener('click', () => {
+  if (currentDomain) toggleWatch(currentDomain);
+});
+
+// Export dropdown
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
+exportBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  exportMenu.classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!exportMenu.contains(e.target) && e.target !== exportBtn) exportMenu.classList.remove('open');
+});
+exportMenu.querySelectorAll('button[data-export]').forEach(b => {
+  b.addEventListener('click', () => {
+    const action = b.dataset.export;
+    exportMenu.classList.remove('open');
+    if (action === 'hosts') exportHostsCsv();
+    else if (action === 'certs') exportCertsCsv();
+    else if (action === 'findings') exportFindingsCsv();
+    else if (action === 'watchlist') exportWatchlistJson();
+    else if (action === 'watchlist-import') importWatchlistJson();
+  });
+});
+
+// Initial load
+renderWatchlistBar();
 const h = decodeURIComponent(window.location.hash.replace('#',''));
 if (h && h.includes('.')) {
   document.getElementById('domainInput').value = h;

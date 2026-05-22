@@ -18,34 +18,59 @@
     .baseline-item { padding: 10px 12px; background: var(--bg-sunken); border-radius: var(--radius-sm); font-size: 0.82rem; }
     .baseline-item .lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; margin-bottom: 3px; }
     .baseline-item .val { color: var(--text); font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; }
-    .row-score { text-align: right; font-feature-settings: 'tnum'; }
-    .row-score .num { font-weight: 700; font-size: 1rem; }
-    .row-score .lbl { font-size: 0.7rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
-    .row-actions { display: flex; flex-direction: column; gap: 4px; }
+
+    .row-confidence { text-align: right; font-feature-settings: 'tnum'; min-width: 130px; }
+    .row-confidence .conf-label { font-weight: 700; font-size: 0.82rem; line-height: 1.2; }
+    .row-confidence .conf-sub { font-size: 0.7rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+    .row-confidence .readiness {
+      display: inline-block; margin-top: 6px; padding: 2px 8px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      border-radius: 10px; border: 1px solid var(--border);
+    }
+    .readiness.ready { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .readiness.staged { background: #ffedd5; color: #c2410c; border-color: #fdba74; }
+    .readiness.registered { background: var(--bg-sunken); color: var(--text-muted); }
+
+    .row-actions { display: flex; flex-direction: column; gap: 4px; min-width: 110px; }
     .row-actions a, .row-actions button {
       padding: 4px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 4px;
       color: var(--text-secondary); font-size: 0.75rem; text-align: center; transition: all 0.12s;
-      font-family: var(--font-sans); cursor: pointer;
+      font-family: var(--font-sans); cursor: pointer; text-decoration: none; display: block;
     }
     .row-actions a:hover, .row-actions button:hover { border-color: var(--brand); color: var(--brand); }
+    .row-actions .snoozed { color: var(--text-faint); font-style: italic; }
+    .row-actions .danger:hover { border-color: #dc2626; color: #dc2626; }
+
     .signals-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .signals-row .pill { font-size: 0.78rem; }
+    .signal-action {
+      display: block; margin-top: 6px; padding: 8px 10px;
+      background: var(--bg-sunken); border-left: 3px solid var(--brand);
+      border-radius: 4px; font-size: 0.82rem; color: var(--text);
+    }
+    .signal-action strong { color: var(--brand); }
+    .row.flag-crit .signal-action { border-left-color: #dc2626; }
+    .row.flag-crit .signal-action strong { color: #dc2626; }
+    .row.flag-high .signal-action { border-left-color: #ea580c; }
+    .row.flag-high .signal-action strong { color: #ea580c; }
+
     .examples-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-size: 0.82rem; }
     .example-link { padding: 3px 10px; background: var(--bg-sunken); border: 1px solid var(--border); border-radius: 12px; color: var(--text-secondary); font-size: 0.78rem; cursor: pointer; transition: all 0.12s; }
     .example-link:hover { border-color: var(--brand); color: var(--brand); }
     .row-doppler { grid-template-columns: auto 1fr auto auto; }
+    .row-doppler.snoozed-row { opacity: 0.55; }
+    .row-doppler.snoozed-row .row-name::after {
+      content: ' · snoozed'; color: var(--text-faint); font-weight: 400; font-size: 0.78rem;
+    }
 
-    /* "NEW" badge specifically tuned for prominence on findings */
     .badge.new-finding {
-      background: var(--brand);
-      color: white;
-      animation: pulse-new 2s infinite;
+      background: var(--brand); color: white; animation: pulse-new 2s infinite;
     }
     @keyframes pulse-new {
       0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
       50% { box-shadow: 0 0 0 4px rgba(124, 58, 237, 0); }
     }
 
-    /* Baseline status banner */
     .baseline-banner {
       display: flex; gap: 10px; align-items: center;
       padding: 8px 14px; border-radius: var(--radius-sm);
@@ -63,6 +88,10 @@
       background: var(--brand-soft); color: var(--brand);
       border-color: var(--brand-soft-strong);
     }
+    .baseline-banner.delta.stable {
+      background: #ecfdf5; color: #047857;
+      border: 1px solid #a7f3d0;
+    }
     .baseline-banner button {
       margin-left: auto; padding: 4px 10px; background: transparent;
       border: 1px solid currentColor; border-radius: 4px; color: inherit;
@@ -70,7 +99,11 @@
     }
     .baseline-banner button:hover { background: rgba(255,255,255,0.5); }
 
-    /* Modal for abuse report */
+    .rec code {
+      background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 0.85em; color: var(--brand);
+    }
+
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(15, 15, 20, 0.6);
       display: none; align-items: center; justify-content: center; z-index: 200;
@@ -127,6 +160,38 @@
       opacity: 0; transition: opacity 0.2s;
     }
     .copy-feedback.show { opacity: 1; }
+
+    .visit-warning {
+      padding: 12px 14px; background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: var(--radius-sm); color: #991b1b; font-size: 0.85rem;
+      margin-bottom: 12px; line-height: 1.5;
+    }
+    .visit-warning strong { color: #7f1d1d; }
+    .safe-tools { display: grid; gap: 8px; margin-top: 8px; }
+    .safe-tool {
+      display: grid; grid-template-columns: 130px 1fr auto; gap: 12px;
+      align-items: center; padding: 10px 12px;
+      background: var(--bg-sunken); border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    .safe-tool .st-label { font-weight: 600; color: var(--text); font-size: 0.82rem; }
+    .safe-tool .st-desc { color: var(--text-muted); font-size: 0.78rem; }
+
+    /* Export dropdown */
+    .export-wrap { position: relative; display: inline-block; }
+    .export-menu {
+      position: absolute; top: calc(100% + 4px); right: 0;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      min-width: 200px; z-index: 50; display: none; padding: 4px;
+    }
+    .export-menu.open { display: block; }
+    .export-menu button {
+      display: block; width: 100%; text-align: left; padding: 8px 12px;
+      background: none; border: none; cursor: pointer; font-size: 0.85rem;
+      color: var(--text); border-radius: 4px;
+    }
+    .export-menu button:hover { background: var(--bg-hover); }
   </style>
 </head>
 <body>
@@ -178,7 +243,7 @@
 
       <div id="baselineCard" class="card hidden">
         <div class="card-header"><h2>Your domain · baseline fingerprint</h2></div>
-        <p class="muted" style="font-size: 0.85rem; margin-bottom: 6px;">DopplerLens compares each lookalike against this fingerprint. Matches on IP, nameserver, or mail server suggest a defensive registration; mismatches with active services suggest phishing infrastructure.</p>
+        <p class="muted" style="font-size: 0.85rem; margin-bottom: 6px;">DopplerLens compares each lookalike against this fingerprint. Matches on IP, nameserver, or mail server suggest a defensive registration; mismatches with active services suggest phishing infrastructure. <em>Favicon comparison works only on domains with permissive CORS headers — absence of a match is not evidence of innocence.</em></p>
         <div class="baseline-grid" id="baselineGrid"></div>
       </div>
 
@@ -257,7 +322,13 @@
         <div class="card">
           <div class="card-header">
             <h2 id="allTitle">All findings</h2>
-            <button class="btn" id="exportBtn">Export CSV</button>
+            <div class="export-wrap">
+              <button class="btn" id="exportBtn">Export ▾</button>
+              <div class="export-menu" id="exportMenu">
+                <button data-export="csv">Export as CSV</button>
+                <button data-export="md">Copy as Markdown report</button>
+              </div>
+            </div>
           </div>
           <div class="filters" id="vFilters">
             <button class="filter active" data-f="all">All</button>
@@ -266,6 +337,7 @@
             <button class="filter" data-f="high">Suspicious</button>
             <button class="filter" data-f="med">Parked</button>
             <button class="filter" data-f="ok">Defensive</button>
+            <button class="filter" data-f="snoozed">Snoozed</button>
           </div>
           <div id="allList"><p class="muted">Will appear after scan.</p></div>
         </div>
@@ -277,14 +349,20 @@
           <p style="margin-bottom: 12px;">DopplerLens uses the same family of algorithms as <a href="https://github.com/elceef/dnstwist" target="_blank" rel="noopener">dnstwist</a> — character omission, duplication, transposition, keyboard-adjacent substitution, homoglyph substitution, character insertion, hyphenation, TLD swaps, common prefixes/suffixes, and bitsquatting. Each algorithm produces variations of your domain that humans might mistype or fail to notice.</p>
           <p style="margin-bottom: 12px;">For each candidate, DopplerLens runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a> to see if the domain is registered. Live candidates get deeper analysis: nameservers, mail servers, web server reachability, and a favicon hash comparison against your domain.</p>
 
-          <h3 style="margin: 18px 0 8px;">Baseline tracking</h3>
-          <p class="muted" style="font-size: 0.88rem;">Each scan is compared against your previous scan of the same domain. Domains seen for the first time are flagged as <strong>new</strong>. Newly registered phishing infrastructure is the most actionable signal this tool produces. Baselines are stored only in your browser (localStorage) and are never sent anywhere.</p>
+          <h3 style="margin: 18px 0 8px;">Confidence and readiness</h3>
+          <p class="muted" style="font-size: 0.88rem;">Each finding shows a <strong>confidence</strong> (how sure we are it's malicious) and a <strong>readiness</strong> tag describing how operationally prepared the domain is to host an attack: <em>Ready</em> means web + mail are both active, <em>Staged</em> means web only, <em>Registered</em> means DNS only. A "Ready" domain can phish your users today; a "Registered" one needs the attacker to do more work first.</p>
+
+          <h3 style="margin: 18px 0 8px;">Baseline tracking and snoozing</h3>
+          <p class="muted" style="font-size: 0.88rem;">Each scan is compared against your previous scan of the same domain. Domains seen for the first time are flagged as <strong>new</strong>. You can <strong>snooze</strong> any finding you've already triaged (defensive registrations you own, expired threats, known false positives) — snoozed domains stay visible but don't clutter the New tab on subsequent scans. Baselines and snoozes are stored only in your browser (localStorage) and are never sent anywhere.</p>
+
+          <h3 style="margin: 18px 0 8px;">Safe investigation</h3>
+          <p class="muted" style="font-size: 0.88rem;">Visiting a suspected phishing site from a corporate browser is risky — the page may host browser exploits or session-stealing scripts. DopplerLens prefers <strong>urlscan.io</strong> (sandboxed rendering with screenshot), <strong>web.archive.org</strong> (cached static view), and <strong>VirusTotal</strong> over direct visits. Direct "Open" is available but warns first.</p>
 
           <h3 style="margin: 18px 0 8px;">Abuse reports</h3>
-          <p class="muted" style="font-size: 0.88rem;">For high-confidence findings, DopplerLens generates a structured abuse report you can paste into the appropriate channels: registrar abuse contact, hosting provider abuse contact, Google Safe Browsing, Microsoft SmartScreen, APWG, and Cisco Talos. The report includes domain ownership signals, infrastructure evidence, and recommended actions — formatted for human reviewers at takedown teams.</p>
+          <p class="muted" style="font-size: 0.88rem;">For high-confidence findings, DopplerLens generates a structured abuse report you can paste into the appropriate channels: registrar abuse contact, hosting provider abuse contact, Google Safe Browsing, Microsoft SmartScreen, APWG, and Cisco Talos. Before reporting, please verify the site is actually impersonating you — false-positive abuse reports damage your credibility with takedown teams.</p>
 
           <h3 style="margin: 18px 0 8px;">Honest limits</h3>
-          <p class="muted" style="font-size: 0.88rem;">DopplerLens does not detect <strong>IDN homograph attacks</strong> using non-Latin Unicode reliably from the browser. Favicon comparison only works when the suspect domain serves its favicon with permissive CORS headers, which most don't, so absence of a favicon match is not exonerating evidence. The DNS-based liveness check can produce false positives for shared parking infrastructure.</p>
+          <p class="muted" style="font-size: 0.88rem;">DopplerLens does not detect <strong>IDN homograph attacks</strong> using non-Latin Unicode reliably from the browser. Favicon comparison only works when the suspect domain serves its favicon with permissive CORS headers, which most don't, so absence of a favicon match is not exonerating evidence. The DNS-based liveness check can produce false positives for shared parking infrastructure. Keyboard-adjacency uses a US QWERTY layout.</p>
         </div>
       </section>
 
@@ -303,6 +381,9 @@
       <button class="modal-close" id="reportClose" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
+      <div class="visit-warning" style="background:#fffbeb;border-color:#fde68a;color:#92400e;">
+        <strong>Before reporting:</strong> please verify this domain is actually impersonating you. False-positive abuse reports damage your reputation with registrars. Use the <em>urlscan.io</em> link on the finding row to view the site safely first.
+      </div>
       <h3>Report text</h3>
       <textarea class="report-text" id="reportText" readonly></textarea>
 
@@ -313,6 +394,51 @@
         <button class="btn" id="reportCopyBtn">Copy to clipboard</button>
         <span class="copy-feedback" id="reportCopyFeedback">Copied</span>
         <button class="btn primary" id="reportDoneBtn">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Visit-warning modal -->
+<div class="modal-backdrop" id="visitModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <div>
+        <h2>Open suspect domain?</h2>
+        <div class="sub" id="visitSub">You're about to visit a domain flagged as suspicious.</div>
+      </div>
+      <button class="modal-close" id="visitClose" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="visit-warning">
+        <strong>This may be hostile infrastructure.</strong> Phishing sites can host browser exploits, drive-by downloads, or session-hijacking scripts. Prefer the safer options below.
+      </div>
+      <h3>Safer ways to investigate</h3>
+      <div class="safe-tools" id="visitSafeTools"></div>
+      <div class="modal-actions">
+        <button class="btn" id="visitCancelBtn">Cancel</button>
+        <button class="btn danger" id="visitProceedBtn" style="background:#dc2626;color:white;border-color:#dc2626;">Open anyway</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Markdown report modal -->
+<div class="modal-backdrop" id="mdModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Markdown report</h2>
+        <div class="sub">Paste into a ticket, Slack message, or doc.</div>
+      </div>
+      <button class="modal-close" id="mdClose" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <textarea class="report-text" id="mdText" readonly style="min-height:400px;"></textarea>
+      <div class="modal-actions">
+        <button class="btn" id="mdCopyBtn">Copy to clipboard</button>
+        <span class="copy-feedback" id="mdCopyFeedback">Copied</span>
+        <button class="btn primary" id="mdDoneBtn">Done</button>
       </div>
     </div>
   </div>
@@ -337,6 +463,7 @@ const VERDICT = {
 };
 
 const STORAGE_PREFIX = 'owlglass_dopplerlens_v1_';
+const SNOOZE_PREFIX = 'owlglass_dopplerlens_snooze_v1_';
 
 const KEYBOARD = {
   q:'wa',w:'qeas',e:'wrds',r:'etdf',t:'ryfg',y:'tugh',u:'yihj',i:'uojk',o:'ipkl',p:'ol',
@@ -357,10 +484,12 @@ let currentScan = null;
 let currentResults = [];
 let currentFilter = 'all';
 let currentOriginal = '';
-let priorBaseline = null; // { ts, domains: Set<string> }
+let priorBaseline = null;
+let snoozedSet = new Set();
+let pendingVisitDomain = null;
 
 // ----------------------------------------------------------
-// Variation generation (unchanged)
+// Variation generation
 // ----------------------------------------------------------
 function generateVariations(domain) {
   const parts = domain.split('.');
@@ -414,7 +543,7 @@ function generateVariations(domain) {
 }
 
 // ----------------------------------------------------------
-// DNS / fingerprint helpers (unchanged)
+// DNS / fingerprint helpers
 // ----------------------------------------------------------
 async function dnsLookup(domain, type) {
   try {
@@ -454,7 +583,7 @@ function probeWebServer(domain) {
 }
 
 // ----------------------------------------------------------
-// Baseline storage
+// Storage: baseline + snooze
 // ----------------------------------------------------------
 function loadBaseline(original) {
   try {
@@ -470,8 +599,26 @@ function saveBaseline(original, liveDomains) {
   catch (e) { console.warn('Failed to save baseline', e); }
 }
 function clearBaseline(original) {
-  try { localStorage.removeItem(STORAGE_PREFIX + original); }
-  catch {}
+  try { localStorage.removeItem(STORAGE_PREFIX + original); } catch {}
+}
+function loadSnoozed(original) {
+  try {
+    const raw = localStorage.getItem(SNOOZE_PREFIX + original);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw) || []);
+  } catch { return new Set(); }
+}
+function saveSnoozed(original, set) {
+  try { localStorage.setItem(SNOOZE_PREFIX + original, JSON.stringify([...set])); } catch {}
+}
+function toggleSnooze(domain) {
+  if (snoozedSet.has(domain)) snoozedSet.delete(domain);
+  else snoozedSet.add(domain);
+  saveSnoozed(currentOriginal, snoozedSet);
+  // Update the flag on currentResults
+  currentResults.forEach(r => { r.snoozed = snoozedSet.has(r.domain); });
+  // Re-render everything so counts update
+  renderAll(currentOriginal, currentResults, window.__lastTotalChecked || currentResults.length);
 }
 function relativeTime(ts) {
   const d = (Date.now() - ts) / 86400000;
@@ -493,6 +640,7 @@ async function scanDomain(rawInput) {
   const myScan = currentScan;
   currentOriginal = original;
   priorBaseline = loadBaseline(original);
+  snoozedSet = loadSnoozed(original);
 
   document.getElementById('progressBox').classList.remove('hidden');
   document.getElementById('baselineCard').classList.add('hidden');
@@ -560,16 +708,18 @@ async function scanDomain(rawInput) {
     }
     if (myScan.aborted) return;
 
-    // Classify and mark new
+    // Classify, compute readiness, mark new and snoozed
     const classified = detailed.map(d => {
       const r = classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHash);
       r.isNew = priorBaseline ? !priorBaseline.domains.has(r.domain) : false;
+      r.snoozed = snoozedSet.has(r.domain);
+      r.readiness = computeReadiness(r);
+      r.confidence = computeConfidence(r);
       return r;
     });
 
     const order = { crit: 0, high: 1, med: 2, ok: 3 };
     classified.sort((a, b) => {
-      // New findings of crit/high float to top within their bucket
       if (a.verdict === b.verdict) {
         if (a.isNew !== b.isNew) return a.isNew ? -1 : 1;
         return a.domain.localeCompare(b.domain);
@@ -578,8 +728,8 @@ async function scanDomain(rawInput) {
     });
 
     currentResults = classified;
+    window.__lastTotalChecked = candidates.length;
 
-    // Save new baseline
     saveBaseline(original, liveCandidates.map(c => c.domain));
 
     setProgress('Scan complete', 'Found ' + liveCandidates.length + ' registered lookalikes among ' + candidates.length + ' variations', 100, candidates.length + ' / ' + candidates.length);
@@ -600,7 +750,7 @@ async function scanDomain(rawInput) {
 }
 
 // ----------------------------------------------------------
-// Classification (unchanged)
+// Classification + readiness + confidence
 // ----------------------------------------------------------
 function classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHash) {
   const signals = [];
@@ -611,15 +761,52 @@ function classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHas
   const sharedMX = d.mx.some(m => origMXSet.has(m.toLowerCase().split(' ').pop().replace(/\.$/, '')));
   const protectionNS = d.ns.some(n => BRAND_REGISTRARS.test(n));
 
-  if (sharedIP) { signals.push({ text: 'Same IP as your domain', cls: 'ok' }); score -= 100; }
-  if (sharedNS) { signals.push({ text: 'Same nameservers', cls: 'ok' }); score -= 50; }
-  if (sharedMX) { signals.push({ text: 'Mail routed to your servers', cls: 'ok' }); score -= 40; }
-  if (protectionNS && !sharedNS) { signals.push({ text: 'Brand-protection registrar', cls: 'ok' }); score -= 60; }
-  if (d.mx.length > 0 && !sharedMX) { signals.push({ text: 'Has mail server (can send)', cls: 'crit' }); score += 30; }
-  if (d.webAlive && !sharedIP) { signals.push({ text: 'Active web server', cls: 'high' }); score += 25; }
-  if (origFavHash && d.favHash && d.favHash === origFavHash && !sharedIP) { signals.push({ text: 'Favicon matches yours', cls: 'crit' }); score += 60; }
-  if (!d.webAlive && d.mx.length === 0 && !sharedIP) { signals.push({ text: 'No active services', cls: 'med' }); score += 5; }
-  if (SUSPICIOUS_TLDS.test(d.domain)) { signals.push({ text: 'Low-trust TLD', cls: 'med' }); score += 15; }
+  // Each signal carries an `action` — what this signal *means* for the user.
+  if (sharedIP) {
+    signals.push({ key: 'sharedIP', text: 'Same IP as your domain', cls: 'ok',
+      action: 'Resolves to your own infrastructure — this is yours or a partner.' });
+    score -= 100;
+  }
+  if (sharedNS) {
+    signals.push({ key: 'sharedNS', text: 'Same nameservers', cls: 'ok',
+      action: 'Uses your DNS infrastructure — almost certainly yours.' });
+    score -= 50;
+  }
+  if (sharedMX) {
+    signals.push({ key: 'sharedMX', text: 'Mail routed to your servers', cls: 'ok',
+      action: 'Mail flows to your servers — yours or a known partner.' });
+    score -= 40;
+  }
+  if (protectionNS && !sharedNS) {
+    signals.push({ key: 'protectionNS', text: 'Brand-protection registrar', cls: 'ok',
+      action: 'Registered through a known brand-protection registrar (MarkMonitor, CSC, etc.) — typically defensive.' });
+    score -= 60;
+  }
+  if (d.mx.length > 0 && !sharedMX) {
+    signals.push({ key: 'foreignMX', text: 'Has mail server (can send)', cls: 'crit',
+      action: '<strong>Can send email impersonating your brand.</strong> Verify your SPF/DMARC blocks spoofing from this domain.' });
+    score += 30;
+  }
+  if (d.webAlive && !sharedIP) {
+    signals.push({ key: 'foreignWeb', text: 'Active web server', cls: 'high',
+      action: '<strong>Live phishing page possible.</strong> Use the urlscan.io link to view safely before reporting.' });
+    score += 25;
+  }
+  if (origFavHash && d.favHash && d.favHash === origFavHash && !sharedIP) {
+    signals.push({ key: 'favMatch', text: 'Favicon matches yours', cls: 'crit',
+      action: '<strong>Brand cloning confirmed.</strong> Site is serving your favicon — strong impersonation evidence for a takedown report.' });
+    score += 60;
+  }
+  if (!d.webAlive && d.mx.length === 0 && !sharedIP) {
+    signals.push({ key: 'dormant', text: 'No active services', cls: 'med',
+      action: 'Registered but no live web or mail. Re-scan periodically — squatters often activate dormant domains later.' });
+    score += 5;
+  }
+  if (SUSPICIOUS_TLDS.test(d.domain)) {
+    signals.push({ key: 'suspTLD', text: 'Low-trust TLD', cls: 'med',
+      action: 'TLD frequently abused for phishing — registrars in this zone often act on takedowns within 48 hours.' });
+    score += 15;
+  }
 
   let verdict;
   if (score <= -30) verdict = 'ok';
@@ -628,6 +815,35 @@ function classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHas
   else verdict = 'med';
 
   return Object.assign({}, d, { signals, score, verdict });
+}
+
+function computeReadiness(r) {
+  // Only meaningful for non-defensive findings
+  if (r.verdict === 'ok') return null;
+  const hasWeb = r.webAlive;
+  const hasMX = r.mx.length > 0;
+  // Don't count shared MX as "ready to send" — that's our own mail
+  const ownMX = r.signals.some(s => s.key === 'sharedMX');
+  const sendingMX = hasMX && !ownMX;
+  if (hasWeb && sendingMX) return { tag: 'ready', label: 'Ready', desc: 'Can host a page and send mail today.' };
+  if (hasWeb || sendingMX) return { tag: 'staged', label: 'Staged', desc: hasWeb ? 'Web is live; no mail yet.' : 'Mail configured; no live web yet.' };
+  return { tag: 'registered', label: 'Registered', desc: 'DNS only — no active services.' };
+}
+
+function computeConfidence(r) {
+  // Map verdict + score to a plain-English statement
+  if (r.verdict === 'ok') {
+    if (r.score <= -100) return { label: 'Confirmed yours', desc: 'Shared IP' };
+    if (r.score <= -50) return { label: 'Likely defensive', desc: 'Shared infra' };
+    return { label: 'Defensive', desc: 'Brand registrar' };
+  }
+  if (r.verdict === 'crit') {
+    if (r.score >= 100) return { label: 'Very high', desc: 'Phishing-ready' };
+    if (r.score >= 70) return { label: 'High', desc: 'Multiple signals' };
+    return { label: 'High', desc: 'Phishing-pattern' };
+  }
+  if (r.verdict === 'high') return { label: 'Medium', desc: 'Investigate' };
+  return { label: 'Low', desc: 'Dormant' };
 }
 
 // ----------------------------------------------------------
@@ -641,23 +857,20 @@ function buildAbuseReport(r, original) {
   if (r.mx.length > 0) services.push('mail server (' + r.mx.length + ' MX record' + (r.mx.length === 1 ? '' : 's') + ')');
 
   const evidence = [];
-  if (r.signals.some(s => s.text === 'Favicon matches yours')) evidence.push('• Favicon SHA-256 hash matches the legitimate domain — strong indicator of brand cloning.');
-  if (r.signals.some(s => s.text === 'Has mail server (can send)')) evidence.push('• Domain is configured to send email (MX records present), enabling phishing email delivery from this domain.');
-  if (r.signals.some(s => s.text === 'Active web server')) evidence.push('• Active web server hosting content on infrastructure unrelated to the legitimate domain.');
-  if (r.signals.some(s => s.text === 'Low-trust TLD')) evidence.push('• Domain uses a TLD frequently abused for phishing (.tk, .ml, .xyz, .top, etc.).');
+  if (r.signals.some(s => s.key === 'favMatch')) evidence.push('• Favicon SHA-256 hash matches the legitimate domain — strong indicator of brand cloning.');
+  if (r.signals.some(s => s.key === 'foreignMX')) evidence.push('• Domain is configured to send email (MX records present), enabling phishing email delivery from this domain.');
+  if (r.signals.some(s => s.key === 'foreignWeb')) evidence.push('• Active web server hosting content on infrastructure unrelated to the legitimate domain.');
+  if (r.signals.some(s => s.key === 'suspTLD')) evidence.push('• Domain uses a TLD frequently abused for phishing (.tk, .ml, .xyz, .top, etc.).');
 
   const methodLabel = {
-    'omission': 'character omission',
-    'duplication': 'character duplication',
+    'omission': 'character omission', 'duplication': 'character duplication',
     'transposition': 'adjacent character transposition',
     'keyboard-sub': 'keyboard-adjacent character substitution',
     'homoglyph': 'visually similar character substitution (homoglyph)',
-    'insertion': 'character insertion',
-    'hyphenation': 'inserted hyphen',
+    'insertion': 'character insertion', 'hyphenation': 'inserted hyphen',
     'tld-swap': 'top-level domain substitution',
     'affix': 'added prefix or suffix',
-    'bitsquat': 'single bit-flip (bitsquatting)',
-    'other': 'character variation'
+    'bitsquat': 'single bit-flip (bitsquatting)', 'other': 'character variation'
   }[r.method] || r.method;
 
   return [
@@ -674,8 +887,9 @@ function buildAbuseReport(r, original) {
     '  Variation technique: ' + methodLabel,
     '  IP address(es):      ' + (r.ips.join(', ') || 'unknown'),
     '  Active services:     ' + (services.join(', ') || 'none confirmed'),
+    '  Operational status:  ' + (r.readiness ? r.readiness.label + ' — ' + r.readiness.desc : 'unknown'),
     '  Date observed:       ' + date,
-    '  Suspicion score:     ' + (r.score > 0 ? '+' : '') + r.score + ' (verdict: ' + v.label + ')',
+    '  Confidence:          ' + r.confidence.label + ' (' + r.confidence.desc + ')',
     r.isNew ? '  Newly registered:    yes — first observed in this scan' : '',
     '',
     'EVIDENCE',
@@ -706,7 +920,6 @@ function buildAbuseChannels(r) {
     { label: 'Netcraft', target: 'netcraft.com/anti-phishing/report-a-url/', href: 'https://report.netcraft.com/report' },
     { label: 'PhishTank', target: 'phishtank.org/add_web_phish.php', href: 'https://www.phishtank.org/add_web_phish.php' }
   ];
-  // TLD-specific registry abuse hint
   const tldRegistries = {
     'com': 'verisign.com/en_US/channel-resources/domain-registry-products/dns-abuse/index.xhtml',
     'net': 'verisign.com/en_US/channel-resources/domain-registry-products/dns-abuse/index.xhtml',
@@ -746,6 +959,30 @@ function closeAbuseReport() {
 }
 
 // ----------------------------------------------------------
+// Visit-warning modal
+// ----------------------------------------------------------
+function openVisitWarning(domain) {
+  pendingVisitDomain = domain;
+  document.getElementById('visitSub').textContent = 'You\'re about to visit ' + domain;
+  document.getElementById('visitSafeTools').innerHTML = [
+    { lbl: 'urlscan.io', desc: 'Sandboxed render with screenshot — safe', href: 'https://urlscan.io/domain/' + encodeURIComponent(domain) },
+    { lbl: 'Wayback Machine', desc: 'Cached static view — no live JS', href: 'https://web.archive.org/web/*/' + encodeURIComponent(domain) },
+    { lbl: 'VirusTotal', desc: 'Reputation and detection check', href: 'https://www.virustotal.com/gui/domain/' + encodeURIComponent(domain) }
+  ].map(t =>
+    '<div class="safe-tool">' +
+      '<span class="st-label">' + t.lbl + '</span>' +
+      '<span class="st-desc">' + t.desc + '</span>' +
+      '<a class="btn" href="' + t.href + '" target="_blank" rel="noopener">Open →</a>' +
+    '</div>'
+  ).join('');
+  document.getElementById('visitModal').classList.add('show');
+}
+function closeVisitWarning() {
+  document.getElementById('visitModal').classList.remove('show');
+  pendingVisitDomain = null;
+}
+
+// ----------------------------------------------------------
 // Rendering
 // ----------------------------------------------------------
 function setStatus(type, text) {
@@ -768,19 +1005,30 @@ function renderBaseline(domain, ips, mx, ns, favHash) {
   card.classList.remove('hidden');
 }
 
-function renderBaselineBanner(newCount) {
+function renderBaselineBanner(newCount, stillLiveCritCount) {
   const banner = document.getElementById('baselineBanner');
   if (!priorBaseline) {
     banner.className = 'baseline-banner first';
     banner.innerHTML =
       '<div><strong>First scan recorded.</strong> ' +
       'Re-scan this domain in a week or a month — DopplerLens will flag any new lookalikes that appear since today.</div>';
+  } else if (newCount === 0) {
+    // Reframe stable baseline as a positive, contextualized signal
+    banner.className = 'baseline-banner delta stable';
+    const stillLive = stillLiveCritCount > 0
+      ? ' The ' + stillLiveCritCount + ' phishing-suspect ' + (stillLiveCritCount === 1 ? 'domain' : 'domains') + ' from your last scan ' + (stillLiveCritCount === 1 ? 'is' : 'are') + ' still live — re-check ' + (stillLiveCritCount === 1 ? 'its' : 'their') + ' status.'
+      : '';
+    banner.innerHTML =
+      '<div><strong>Baseline stable.</strong> ' +
+      'No new lookalike registrations since ' + relativeTime(priorBaseline.ts) + '.' +
+      stillLive +
+      '</div>' +
+      '<button id="resetBaselineBtn">Reset baseline</button>';
   } else {
-    const cls = newCount > 0 ? 'baseline-banner delta has-new' : 'baseline-banner delta';
-    banner.className = cls;
+    banner.className = 'baseline-banner delta has-new';
     banner.innerHTML =
       '<div>' +
-      '<strong>' + (newCount > 0 ? newCount + ' new ' + (newCount === 1 ? 'lookalike' : 'lookalikes') + ' since last scan' : 'No new lookalikes since last scan') + '.</strong> ' +
+      '<strong>' + newCount + ' new ' + (newCount === 1 ? 'lookalike' : 'lookalikes') + ' since last scan.</strong> ' +
       'Previous baseline from ' + relativeTime(priorBaseline.ts) + '.' +
       '</div>' +
       '<button id="resetBaselineBtn">Reset baseline</button>';
@@ -792,20 +1040,24 @@ function renderBaselineBanner(newCount) {
     if (confirm('Clear the saved baseline for ' + currentOriginal + '? Your next scan will treat all results as new.')) {
       clearBaseline(currentOriginal);
       priorBaseline = null;
-      renderBaselineBanner(0);
+      renderBaselineBanner(0, 0);
     }
   });
 }
 
 function renderAll(original, results, totalChecked) {
+  // Exclude snoozed from counts for active tabs, but keep them in `results` for the All view
+  const active = results.filter(r => !r.snoozed);
+
   const counts = {
-    crit: results.filter(r => r.verdict === 'crit').length,
-    high: results.filter(r => r.verdict === 'high').length,
-    med:  results.filter(r => r.verdict === 'med').length,
-    ok:   results.filter(r => r.verdict === 'ok').length
+    crit: active.filter(r => r.verdict === 'crit').length,
+    high: active.filter(r => r.verdict === 'high').length,
+    med:  active.filter(r => r.verdict === 'med').length,
+    ok:   active.filter(r => r.verdict === 'ok').length
   };
-  const newFindings = results.filter(r => r.isNew && (r.verdict === 'crit' || r.verdict === 'high'));
+  const newFindings = active.filter(r => r.isNew && (r.verdict === 'crit' || r.verdict === 'high'));
   const newCount = newFindings.length;
+  const stillLiveCrit = active.filter(r => r.verdict === 'crit' && !r.isNew).length;
 
   document.getElementById('newCount').textContent = newCount;
   document.getElementById('critCount').textContent = counts.crit;
@@ -814,7 +1066,7 @@ function renderAll(original, results, totalChecked) {
   document.getElementById('okCount').textContent = counts.ok;
   document.getElementById('allCount').textContent = results.length;
 
-  renderBaselineBanner(newCount);
+  renderBaselineBanner(newCount, stillLiveCrit);
 
   const m = (label, value, meta, mod) =>
     '<div class="metric ' + (mod || '') + '"><div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
@@ -829,14 +1081,14 @@ function renderAll(original, results, totalChecked) {
     m('Defensive', counts.ok, 'Yours or registrar', 'ok');
 
   renderSeveritySummary(counts);
-  renderMethodBreakdown(results);
-  renderRecommendations(counts, newCount);
+  renderMethodBreakdown(active);
+  renderRecommendations(active, counts, newCount, newFindings);
 
   renderBucket('newList', newFindings);
-  renderBucket('critList', results.filter(r => r.verdict === 'crit'));
-  renderBucket('highList', results.filter(r => r.verdict === 'high'));
-  renderBucket('medList',  results.filter(r => r.verdict === 'med'));
-  renderBucket('okList',   results.filter(r => r.verdict === 'ok'));
+  renderBucket('critList', active.filter(r => r.verdict === 'crit'));
+  renderBucket('highList', active.filter(r => r.verdict === 'high'));
+  renderBucket('medList',  active.filter(r => r.verdict === 'med'));
+  renderBucket('okList',   active.filter(r => r.verdict === 'ok'));
   renderAllList();
 }
 
@@ -885,34 +1137,60 @@ function renderMethodBreakdown(results) {
   ).join('');
 }
 
-function renderRecommendations(counts, newCount) {
+function renderRecommendations(active, counts, newCount, newFindings) {
   const recs = [];
+
+  // Helper to render a list of domain names as <code> tags, capped
+  const listDomains = (items, cap = 5) => {
+    const shown = items.slice(0, cap).map(r => '<code>' + escapeHtml(r.domain) + '</code>').join(', ');
+    const extra = items.length > cap ? ' and ' + (items.length - cap) + ' more' : '';
+    return shown + extra;
+  };
+
   if (newCount > 0) {
     recs.push({
       sev: 'crit',
       title: newCount + ' new ' + (newCount === 1 ? 'high-priority finding' : 'high-priority findings') + ' since your last scan',
-      why: 'New lookalikes registered between scans are the strongest possible signal of active threat activity. Review the "New since last scan" tab and submit takedown reports for any that look like real phishing infrastructure.'
+      why: 'New lookalikes registered between scans are the strongest signal of active threat activity: ' +
+           listDomains(newFindings) + '. Review the "New since last scan" tab and submit takedown reports.'
     });
   }
-  if (counts.crit > 0) {
-    recs.push({
-      sev: 'crit',
-      title: 'Investigate ' + counts.crit + ' likely phishing domain' + (counts.crit === 1 ? '' : 's'),
-      why: 'Active services on infrastructure unrelated to yours, with phishing indicators. Use the "Report" button on each finding to generate an abuse report ready to send to registrars and threat-feed services.'
-    });
+  const critList = active.filter(r => r.verdict === 'crit');
+  if (critList.length > 0) {
+    const ready = critList.filter(r => r.readiness && r.readiness.tag === 'ready');
+    if (ready.length > 0) {
+      recs.push({
+        sev: 'crit',
+        title: ready.length + ' phishing-ready ' + (ready.length === 1 ? 'domain' : 'domains') + ' — can attack today',
+        why: 'Both web and mail are active: ' + listDomains(ready) + '. These are operationally ready to phish your customers right now. Use the "Report" button on each to generate an abuse report.'
+      });
+    }
+    const otherCrit = critList.filter(r => !r.readiness || r.readiness.tag !== 'ready');
+    if (otherCrit.length > 0) {
+      recs.push({
+        sev: 'crit',
+        title: 'Investigate ' + otherCrit.length + ' likely phishing ' + (otherCrit.length === 1 ? 'domain' : 'domains'),
+        why: 'High confidence but not yet fully armed: ' + listDomains(otherCrit) + '. Verify each via urlscan.io before reporting.'
+      });
+    }
   }
   if (counts.high > 0) {
+    const highList = active.filter(r => r.verdict === 'high');
     recs.push({
       sev: 'high',
-      title: 'Review ' + counts.high + ' suspicious domain' + (counts.high === 1 ? '' : 's'),
-      why: 'These have warning signs but aren\'t conclusive. Check whether they belong to your organization first; if not, monitor and consider takedown if intent becomes clear.'
+      title: 'Review ' + counts.high + ' suspicious ' + (counts.high === 1 ? 'domain' : 'domains'),
+      why: 'Warning signs but not conclusive: ' + listDomains(highList) + '. Check first whether any belong to your organization; if not, monitor for changes.'
     });
   }
   if (counts.med > 5) {
+    const tldSwaps = active.filter(r => r.verdict === 'med' && r.method === 'tld-swap');
+    const tldHint = tldSwaps.length > 0
+      ? ' The highest-value defensive registrations are usually TLD swaps such as ' + listDomains(tldSwaps, 3) + '.'
+      : '';
     recs.push({
       sev: '',
       title: counts.med + ' parked domains may become future phishing infrastructure',
-      why: 'Squatters often park lookalikes for years before activating. Consider defensive registration of the highest-risk variants (your TLD swaps and most common typos) before someone else does.'
+      why: 'Squatters often park lookalikes for years before activating. Consider defensive registration of the highest-risk variants before someone else does.' + tldHint
     });
   }
   if (counts.ok > 0) {
@@ -928,7 +1206,7 @@ function renderRecommendations(counts, newCount) {
   document.getElementById('recommendations').innerHTML = recs.slice(0, 6).map((r, i) =>
     '<div class="rec ' + (r.sev ? 'sev-' + r.sev : '') + '">' +
       '<div class="rec-num">' + (i + 1) + '</div>' +
-      '<div><div class="rec-title">' + escapeHtml(r.title) + '</div><div class="rec-why">' + escapeHtml(r.why) + '</div></div>' +
+      '<div><div class="rec-title">' + escapeHtml(r.title) + '</div><div class="rec-why">' + r.why + '</div></div>' +
       '<div></div>' +
     '</div>'
   ).join('');
@@ -938,25 +1216,35 @@ function renderBucket(elId, items) {
   const c = document.getElementById(elId);
   if (items.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>None in this category.</div>'; return; }
   c.innerHTML = items.map((r, i) => renderRow(r, elId + '-' + i)).join('');
-  attachReportButtons(c, items, elId + '-');
+  attachRowButtons(c, items);
 }
 
 function renderAllList() {
   document.getElementById('allTitle').textContent = 'All findings (' + currentResults.length + ')';
   let filtered = currentResults;
-  if (currentFilter === 'new') filtered = filtered.filter(r => r.isNew);
-  else if (currentFilter !== 'all') filtered = filtered.filter(r => r.verdict === currentFilter);
+  if (currentFilter === 'snoozed') filtered = filtered.filter(r => r.snoozed);
+  else if (currentFilter === 'new') filtered = filtered.filter(r => r.isNew && !r.snoozed);
+  else if (currentFilter === 'all') filtered = filtered.filter(r => !r.snoozed);
+  else filtered = filtered.filter(r => r.verdict === currentFilter && !r.snoozed);
 
   const c = document.getElementById('allList');
   if (filtered.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>No domains in this filter.</div>'; return; }
   c.innerHTML = filtered.map((r, i) => renderRow(r, 'all-' + i)).join('');
-  attachReportButtons(c, filtered, 'all-');
+  attachRowButtons(c, filtered);
 }
 
-function attachReportButtons(container, items, prefix) {
-  container.querySelectorAll('button[data-report-idx]').forEach(btn => {
-    const idx = parseInt(btn.getAttribute('data-report-idx'), 10);
-    btn.addEventListener('click', () => openAbuseReport(items[idx]));
+function attachRowButtons(container, items) {
+  container.querySelectorAll('[data-action]').forEach(btn => {
+    const idx = parseInt(btn.getAttribute('data-idx'), 10);
+    const action = btn.getAttribute('data-action');
+    const item = items[idx];
+    if (!item) return;
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      if (action === 'report') openAbuseReport(item);
+      else if (action === 'visit') openVisitWarning(item.domain);
+      else if (action === 'snooze') toggleSnooze(item.domain);
+    });
   });
 }
 
@@ -965,7 +1253,7 @@ function renderRow(r, idPrefix) {
   const ipDisplay = r.ips.slice(0, 2).join(', ') + (r.ips.length > 2 ? ' +' + (r.ips.length - 2) : '');
   const flag = 'flag-' + v.sev;
   const idx = idPrefix.split('-').pop();
-  const showReportBtn = r.verdict === 'crit' || r.verdict === 'high';
+  const showReportBtn = (r.verdict === 'crit' || r.verdict === 'high') && !r.snoozed;
 
   const methodLabel = {
     'omission': 'Omission', 'duplication': 'Duplication', 'transposition': 'Transposition',
@@ -978,11 +1266,37 @@ function renderRow(r, idPrefix) {
   if (r.webAlive) services.push('<span class="pill">Web</span>');
   if (r.mx.length > 0) services.push('<span class="pill">Mail</span>');
 
-  const newBadge = r.isNew && (r.verdict === 'crit' || r.verdict === 'high')
+  const newBadge = r.isNew && (r.verdict === 'crit' || r.verdict === 'high') && !r.snoozed
     ? '<span class="badge new-finding">NEW</span> '
     : '';
 
-  return '<div class="row row-doppler ' + flag + '">' +
+  // Pick the most important action message — prefer crit signals
+  const topAction = (() => {
+    const crit = r.signals.find(s => s.cls === 'crit' && s.action);
+    if (crit) return crit;
+    const high = r.signals.find(s => s.cls === 'high' && s.action);
+    if (high) return high;
+    const ok = r.signals.find(s => s.cls === 'ok' && s.action);
+    return ok || null;
+  })();
+
+  const readinessTag = r.readiness
+    ? '<div class="readiness ' + r.readiness.tag + '" title="' + escapeHtml(r.readiness.desc) + '">' + r.readiness.label + '</div>'
+    : '';
+
+  // Action buttons — safer investigation links replace the old Visit/VT pair
+  const actionBtns = r.snoozed
+    ? '<button data-action="snooze" data-idx="' + idx + '" class="danger">Unsnooze</button>'
+    : (
+      (showReportBtn ? '<button data-action="report" data-idx="' + idx + '" title="Generate abuse report">Report</button>' : '') +
+      '<a href="https://urlscan.io/domain/' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener" title="Sandboxed render — safe">urlscan</a>' +
+      '<a href="https://web.archive.org/web/*/' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener" title="Cached static view">Archive</a>' +
+      '<a href="https://www.virustotal.com/gui/domain/' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener">VT</a>' +
+      '<button data-action="visit" data-idx="' + idx + '" title="Open the live domain (with warning)">Open ⚠</button>' +
+      '<button data-action="snooze" data-idx="' + idx + '" title="Mark as triaged — hides from New tab">Snooze</button>'
+    );
+
+  return '<div class="row row-doppler ' + flag + (r.snoozed ? ' snoozed-row' : '') + '">' +
     '<div>' + newBadge + '<span class="badge ' + v.sev + '">' + v.short + '</span></div>' +
     '<div>' +
       '<div class="row-name">' + escapeHtml(r.domain) + '</div>' +
@@ -994,16 +1308,15 @@ function renderRow(r, idPrefix) {
       (r.signals.length > 0 ? '<div class="signals-row">' +
         r.signals.map(s => '<span class="pill ' + s.cls + '">' + escapeHtml(s.text) + '</span>').join('') +
       '</div>' : '') +
+      (topAction && (r.verdict === 'crit' || r.verdict === 'high') ?
+        '<div class="signal-action">' + topAction.action + '</div>' : '') +
     '</div>' +
-    '<div class="row-score">' +
-      '<div class="num" style="color:' + SEV_COLORS[v.sev] + ';">' + (r.score > 0 ? '+' : '') + r.score + '</div>' +
-      '<div class="lbl">Score</div>' +
+    '<div class="row-confidence" title="Score: ' + (r.score > 0 ? '+' : '') + r.score + '">' +
+      '<div class="conf-label" style="color:' + SEV_COLORS[v.sev] + ';">' + escapeHtml(r.confidence.label) + '</div>' +
+      '<div class="conf-sub">' + escapeHtml(r.confidence.desc) + '</div>' +
+      readinessTag +
     '</div>' +
-    '<div class="row-actions">' +
-      (showReportBtn ? '<button data-report-idx="' + idx + '" title="Generate abuse report">Report</button>' : '') +
-      '<a href="https://' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener noreferrer" title="Open in new tab — be careful">Visit</a>' +
-      '<a href="https://www.virustotal.com/gui/domain/' + encodeURIComponent(r.domain) + '" target="_blank" rel="noopener">VT</a>' +
-    '</div>' +
+    '<div class="row-actions">' + actionBtns + '</div>' +
   '</div>';
 }
 
@@ -1012,15 +1325,18 @@ function escapeHtml(s) {
 }
 
 // ----------------------------------------------------------
-// CSV export
+// CSV + Markdown export
 // ----------------------------------------------------------
 function exportCSV() {
   if (currentResults.length === 0) return;
-  const headers = ['Domain', 'Verdict', 'IsNew', 'Score', 'Method', 'IPs', 'HasMX', 'HasWeb', 'FaviconMatch', 'Signals'];
+  const headers = ['Domain', 'Verdict', 'Confidence', 'Readiness', 'IsNew', 'Snoozed', 'Score', 'Method', 'IPs', 'HasMX', 'HasWeb', 'FaviconMatch', 'Signals'];
   const rows = currentResults.map(r => [
-    r.domain, VERDICT[r.verdict].label, r.isNew ? 'yes' : 'no', r.score, r.method,
+    r.domain, VERDICT[r.verdict].label, r.confidence.label,
+    r.readiness ? r.readiness.label : '',
+    r.isNew ? 'yes' : 'no', r.snoozed ? 'yes' : 'no',
+    r.score, r.method,
     r.ips.join('|'), r.mx.length > 0, r.webAlive,
-    r.signals.some(s => s.text === 'Favicon matches yours'),
+    r.signals.some(s => s.key === 'favMatch'),
     r.signals.map(s => s.text).join('; ')
   ]);
   const csv = [headers, ...rows].map(row => row.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
@@ -1031,6 +1347,93 @@ function exportCSV() {
   a.download = 'dopplerlens-' + currentOriginal + '-' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function buildMarkdownReport() {
+  if (currentResults.length === 0) return '';
+  const active = currentResults.filter(r => !r.snoozed);
+  const crit = active.filter(r => r.verdict === 'crit');
+  const high = active.filter(r => r.verdict === 'high');
+  const med = active.filter(r => r.verdict === 'med');
+  const ok = active.filter(r => r.verdict === 'ok');
+  const newFindings = active.filter(r => r.isNew && (r.verdict === 'crit' || r.verdict === 'high'));
+  const ready = active.filter(r => r.readiness && r.readiness.tag === 'ready' && r.verdict !== 'ok');
+
+  const lines = [];
+  lines.push('# DopplerLens report — ' + currentOriginal);
+  lines.push('');
+  lines.push('**Scan date:** ' + new Date().toISOString().slice(0, 10));
+  lines.push('**Live lookalikes:** ' + active.length);
+  lines.push('');
+  lines.push('## Summary');
+  lines.push('');
+  lines.push('- 🚨 **Likely phishing:** ' + crit.length);
+  lines.push('- ⚠️ **Suspicious:** ' + high.length);
+  lines.push('- 🆕 **New since last scan:** ' + newFindings.length);
+  lines.push('- 🎯 **Phishing-ready (web + mail):** ' + ready.length);
+  lines.push('- 💤 **Parked:** ' + med.length);
+  lines.push('- 🛡 **Defensive:** ' + ok.length);
+  lines.push('');
+
+  if (ready.length > 0) {
+    lines.push('## Phishing-ready domains (act now)');
+    lines.push('');
+    ready.forEach(r => {
+      lines.push('- **`' + r.domain + '`** — ' + r.confidence.label + ' confidence' + (r.isNew ? ' · NEW' : ''));
+      lines.push('  - IPs: ' + (r.ips.join(', ') || 'unknown'));
+      lines.push('  - Services: web' + (r.mx.length > 0 ? ' + mail (' + r.mx.length + ' MX)' : ''));
+      const fav = r.signals.find(s => s.key === 'favMatch');
+      if (fav) lines.push('  - Favicon matches yours (brand cloning)');
+    });
+    lines.push('');
+  }
+
+  if (newFindings.length > 0) {
+    lines.push('## New since last scan');
+    lines.push('');
+    newFindings.forEach(r => {
+      lines.push('- **`' + r.domain + '`** — ' + VERDICT[r.verdict].label + (r.readiness ? ' · ' + r.readiness.label : ''));
+    });
+    lines.push('');
+  }
+
+  if (crit.length > 0) {
+    lines.push('## All likely-phishing findings');
+    lines.push('');
+    lines.push('| Domain | Confidence | Readiness | Method | New |');
+    lines.push('|---|---|---|---|---|');
+    crit.forEach(r => {
+      lines.push('| `' + r.domain + '` | ' + r.confidence.label + ' | ' +
+        (r.readiness ? r.readiness.label : '—') + ' | ' + r.method + ' | ' +
+        (r.isNew ? 'yes' : 'no') + ' |');
+    });
+    lines.push('');
+  }
+
+  if (high.length > 0) {
+    lines.push('## Suspicious findings');
+    lines.push('');
+    lines.push('| Domain | Confidence | Readiness | Method |');
+    lines.push('|---|---|---|---|');
+    high.slice(0, 50).forEach(r => {
+      lines.push('| `' + r.domain + '` | ' + r.confidence.label + ' | ' +
+        (r.readiness ? r.readiness.label : '—') + ' | ' + r.method + ' |');
+    });
+    lines.push('');
+  }
+
+  lines.push('---');
+  lines.push('*Generated by DopplerLens · Owlglass · ' + new Date().toLocaleString() + '*');
+  return lines.join('\n');
+}
+
+function openMarkdownReport() {
+  document.getElementById('mdText').value = buildMarkdownReport();
+  document.getElementById('mdModal').classList.add('show');
+}
+function closeMarkdownReport() {
+  document.getElementById('mdModal').classList.remove('show');
+  document.getElementById('mdCopyFeedback').classList.remove('show');
 }
 
 // ----------------------------------------------------------
@@ -1074,16 +1477,30 @@ document.querySelectorAll('.example-link').forEach(b => {
   });
 });
 
-document.getElementById('exportBtn').addEventListener('click', exportCSV);
+// Export dropdown
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
+exportBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  exportMenu.classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!exportMenu.contains(e.target) && e.target !== exportBtn) exportMenu.classList.remove('open');
+});
+exportMenu.querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', () => {
+    exportMenu.classList.remove('open');
+    const t = b.getAttribute('data-export');
+    if (t === 'csv') exportCSV();
+    else if (t === 'md') openMarkdownReport();
+  });
+});
 
-// Modal events
+// Abuse report modal events
 document.getElementById('reportClose').addEventListener('click', closeAbuseReport);
 document.getElementById('reportDoneBtn').addEventListener('click', closeAbuseReport);
 document.getElementById('reportModal').addEventListener('click', e => {
   if (e.target.id === 'reportModal') closeAbuseReport();
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('reportModal').classList.contains('show')) closeAbuseReport();
 });
 document.getElementById('reportCopyBtn').addEventListener('click', async () => {
   const text = document.getElementById('reportText').value;
@@ -1096,6 +1513,46 @@ document.getElementById('reportCopyBtn').addEventListener('click', async () => {
     document.getElementById('reportText').select();
     document.execCommand('copy');
   }
+});
+
+// Visit-warning modal events
+document.getElementById('visitClose').addEventListener('click', closeVisitWarning);
+document.getElementById('visitCancelBtn').addEventListener('click', closeVisitWarning);
+document.getElementById('visitProceedBtn').addEventListener('click', () => {
+  if (pendingVisitDomain) {
+    window.open('https://' + pendingVisitDomain, '_blank', 'noopener,noreferrer');
+  }
+  closeVisitWarning();
+});
+document.getElementById('visitModal').addEventListener('click', e => {
+  if (e.target.id === 'visitModal') closeVisitWarning();
+});
+
+// Markdown modal events
+document.getElementById('mdClose').addEventListener('click', closeMarkdownReport);
+document.getElementById('mdDoneBtn').addEventListener('click', closeMarkdownReport);
+document.getElementById('mdModal').addEventListener('click', e => {
+  if (e.target.id === 'mdModal') closeMarkdownReport();
+});
+document.getElementById('mdCopyBtn').addEventListener('click', async () => {
+  const text = document.getElementById('mdText').value;
+  try {
+    await navigator.clipboard.writeText(text);
+    const fb = document.getElementById('mdCopyFeedback');
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 1500);
+  } catch {
+    document.getElementById('mdText').select();
+    document.execCommand('copy');
+  }
+});
+
+// Global Escape
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('reportModal').classList.contains('show')) closeAbuseReport();
+  else if (document.getElementById('visitModal').classList.contains('show')) closeVisitWarning();
+  else if (document.getElementById('mdModal').classList.contains('show')) closeMarkdownReport();
 });
 
 // URL hash auto-scan

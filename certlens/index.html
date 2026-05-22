@@ -10,9 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/style.css">
 <style>
-/* CertLens additions: export dropdown, watchlist, host search/sort, clickable metrics */
+/* CertLens additions: export dropdown, watchlist, host search/sort, clickable metrics, exec summary, print */
 .cl-menu-wrap{position:relative;display:inline-block}
-.cl-menu{position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:220px;z-index:50;padding:4px;display:none}
+.cl-menu{position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:240px;z-index:50;padding:4px;display:none}
 .cl-menu.open{display:block}
 .cl-menu button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:8px 10px;cursor:pointer;font-family:inherit;font-size:0.85rem;border-radius:4px;color:var(--text,#18181b)}
 .cl-menu button:hover{background:#f4f4f5}
@@ -31,7 +31,6 @@
 .cl-watch-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border,#e4e4e7);border-radius:999px;padding:5px 12px;font-size:0.82rem;cursor:pointer;color:var(--text,#18181b)}
 .cl-watch-chip:hover{background:#f4f4f5;border-color:#a78bfa}
 .cl-watch-chip .age{color:#71717a;font-size:0.72rem}
-.cl-watch-chip .new-badge{background:#7c3aed;color:#fff;border-radius:999px;padding:1px 7px;font-size:0.7rem;font-weight:600}
 .cl-watch-chip .rm{color:#a1a1aa;font-weight:700;margin-left:2px}
 .cl-watch-chip .rm:hover{color:#dc2626}
 
@@ -44,6 +43,119 @@
 .cl-diff-banner button:hover{background:#6d28d9}
 .cl-diff-banner .x{background:transparent;color:#5b21b6;padding:4px 8px}
 .cl-diff-banner .x:hover{background:rgba(124,58,237,.1)}
+
+/* Executive summary panel */
+.cl-exec{background:linear-gradient(180deg,#faf5ff 0%,#fff 100%);border:1px solid #e9d5ff;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:16px}
+.cl-exec h2{margin:0 0 8px;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.cl-exec h2 .tag{background:#7c3aed;color:#fff;font-size:0.65rem;padding:2px 8px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.cl-exec .summary-line{font-size:0.95rem;line-height:1.6;color:#1f2937;margin-bottom:14px}
+.cl-exec .summary-line strong{color:#5b21b6}
+.cl-exec .actions{margin-top:10px}
+.cl-exec .actions-title{font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5b21b6;margin-bottom:8px}
+.cl-exec .action{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3e8ff;font-size:0.88rem;align-items:flex-start}
+.cl-exec .action:last-child{border-bottom:0}
+.cl-exec .action-rank{font-weight:700;color:#7c3aed;flex-shrink:0;width:20px}
+.cl-exec .action-body{flex:1}
+.cl-exec .action-title{font-weight:600;color:#1f2937}
+.cl-exec .action-title code{background:#f3e8ff;padding:1px 5px;border-radius:3px;font-size:0.82rem}
+.cl-exec .action-why{color:#6b7280;font-size:0.8rem;margin-top:2px}
+.cl-exec .action-sev{font-size:0.65rem;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;flex-shrink:0}
+.cl-exec .action-sev.crit{background:#fee2e2;color:#991b1b}
+.cl-exec .action-sev.high{background:#ffedd5;color:#9a3412}
+.cl-exec .action-sev.med{background:#fef3c7;color:#92400e}
+.cl-exec .changed{margin-top:10px;font-size:0.82rem;color:#6b7280;padding-top:10px;border-top:1px solid #f3e8ff}
+.cl-exec .footer{margin-top:12px;font-size:0.72rem;color:#9ca3af;padding-top:10px;border-top:1px solid #f3e8ff}
+
+/* Print-only header (hidden on screen) */
+.print-header{display:none}
+
+/* ============ PRINT STYLES ============ */
+@media print {
+  @page { margin: 0.5in; size: letter; }
+
+  body { background: #fff !important; font-size: 10pt; }
+
+  /* Hide all interactive chrome */
+  .sidebar, #sidebar-slot, .mobile-toggle, .topbar .btn, .input-row, .tabs,
+  .cl-menu-wrap, .cl-host-toolbar, #hostFilters, .cl-watchlist,
+  .cl-watch-star, .cl-diff-banner, .status .faint,
+  #watchlistBar, .rec, .recommendations {
+    display: none !important;
+  }
+  .main { margin-left: 0 !important; }
+  .main-inner { padding: 0 !important; max-width: 100% !important; }
+
+  /* Show print header */
+  .print-header { display: block !important; border-bottom: 2px solid #7c3aed; padding-bottom: 10px; margin-bottom: 18px; }
+  .print-header h1 { margin: 0 0 4px; font-size: 18pt; color: #1f2937; }
+  .print-header .meta { color: #6b7280; font-size: 9pt; }
+  .print-header .domain { font-weight: 700; color: #5b21b6; font-size: 11pt; margin-top: 4px; }
+
+  /* Hide the screen topbar */
+  .topbar { display: none !important; }
+
+  /* Show all tab content in summary mode order; full-mode adds extra sections */
+  .view { display: block !important; page-break-inside: avoid; margin-bottom: 18px; }
+  .view h2 { font-size: 13pt; margin: 14px 0 8px; color: #1f2937; border-bottom: 1px solid #e4e4e7; padding-bottom: 4px; }
+
+  /* Hide certain sections in summary mode */
+  body.print-summary #view-timeline,
+  body.print-summary #view-about,
+  body.print-summary .card #issuerDonut,
+  body.print-summary #view-hosts .row:nth-of-type(n+21) {
+    display: none !important;
+  }
+  body.print-summary #view-expiring .row:nth-of-type(n+11) { display: none !important; }
+  body.print-summary #view-risks .row:nth-of-type(n+16) { display: none !important; }
+
+  /* Hide "Method" tab content always in print */
+  #view-about { display: none !important; }
+
+  /* Executive summary panel — make it the centerpiece on print */
+  .cl-exec { background: #fff !important; border: 1px solid #c4b5fd; page-break-inside: avoid; margin-bottom: 18px; }
+  .cl-exec h2 .tag { background: #7c3aed !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Metric strip compact */
+  .metric-strip { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; margin-bottom: 14px; }
+  .metric { padding: 8px !important; }
+  .metric .value { font-size: 14pt !important; }
+  .metric .label { font-size: 7pt !important; }
+  .metric .meta { font-size: 7pt !important; }
+  .metric.clickable { box-shadow: none !important; transform: none !important; }
+
+  /* Cards compact */
+  .card { box-shadow: none !important; border: 1px solid #e4e4e7 !important; page-break-inside: avoid; margin-bottom: 12px; padding: 12px !important; }
+  .card-header h2 { font-size: 11pt !important; }
+
+  /* Rows compact */
+  .row { padding: 6px 8px !important; page-break-inside: avoid; }
+  .row-name { font-size: 9pt !important; }
+  .row-meta { font-size: 7.5pt !important; }
+  .pill, .badge { font-size: 7pt !important; padding: 1px 5px !important; }
+
+  /* Donut & charts: ensure colors print */
+  .donut-svg, .sev-bar, .bar-fill, .pill, .badge, .metric, .cl-exec {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page break hints */
+  .card { break-inside: avoid; }
+  h2 { break-after: avoid; }
+
+  /* Footer on every page */
+  .print-footer { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 7pt; color: #9ca3af; padding-top: 4px; border-top: 1px solid #e4e4e7; }
+}
+
+.print-footer { display: none; }
+
+/* Markdown preview modal */
+.cl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200}
+.cl-modal{background:#fff;border-radius:8px;padding:20px;max-width:720px;width:90%;max-height:85vh;display:flex;flex-direction:column}
+.cl-modal h3{margin:0 0 12px;font-size:1rem;display:flex;align-items:center;justify-content:space-between}
+.cl-modal h3 .close{background:transparent;border:0;font-size:1.4rem;color:#9ca3af;cursor:pointer;line-height:1}
+.cl-modal textarea{flex:1;width:100%;padding:12px;border:1px solid var(--border,#e4e4e7);border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.78rem;line-height:1.5;resize:none;min-height:300px}
+.cl-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 </style>
 </head>
 <body>
@@ -53,6 +165,13 @@
   <main class="main">
     <div class="main-inner">
       <button class="mobile-toggle" aria-label="Toggle menu"></button>
+
+      <!-- Print-only header -->
+      <div class="print-header">
+        <h1>CertLens Report</h1>
+        <div class="domain" id="printDomain"></div>
+        <div class="meta" id="printMeta"></div>
+      </div>
 
       <div class="topbar">
         <div class="titles">
@@ -76,6 +195,11 @@
           <div class="cl-menu-wrap">
             <button class="btn" id="exportBtn" disabled>Export ▾</button>
             <div class="cl-menu" id="exportMenu">
+              <div class="label">PDF / Report</div>
+              <button data-export="print-summary">Print summary (PDF)</button>
+              <button data-export="print-full">Print full report (PDF)</button>
+              <button data-export="markdown">Copy as Markdown</button>
+              <div class="sep"></div>
               <div class="label">Download CSV</div>
               <button data-export="hosts">Hosts (all discovered)</button>
               <button data-export="certs">Certificates (raw)</button>
@@ -96,6 +220,9 @@
       </div>
 
       <div id="diffBanner" class="cl-diff-banner" style="display:none"></div>
+
+      <!-- Executive summary -->
+      <div id="execSummary" class="cl-exec" style="display:none"></div>
 
       <div class="metric-strip" id="metricStrip" style="display:none;"></div>
 
@@ -189,6 +316,9 @@
           <p style="margin-bottom: 12px;">Every public SSL/TLS certificate is logged in <strong>Certificate Transparency</strong> — a public, append-only system designed to detect mis-issuance. Anyone can search this data.</p>
           <p style="margin-bottom: 16px;">CertLens uses the <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">SSLMate CertSpotter API</a> to retrieve certificates for a domain (and all of its subdomains), then runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a> to see which hosts are actually responding.</p>
 
+          <h3 style="margin: 20px 0 8px;">Executive summary & PDF export</h3>
+          <p class="muted">The Executive Summary panel surfaces a plain-English overview and the top 5 prioritized actions tied to specific hosts. Use <em>Export → Print summary (PDF)</em> for a 2-3 page report suitable for leadership; use <em>Print full report (PDF)</em> to include all hosts, findings, and the issuance timeline. Use <em>Copy as Markdown</em> for pasting into Jira, Slack, Confluence, or GitHub issues.</p>
+
           <h3 style="margin: 20px 0 8px;">Watchlist & change detection</h3>
           <p class="muted">Save domains to your local watchlist to track changes over time. CertLens stores known certificate IDs in your browser (localStorage only — nothing is sent anywhere) and flags newly-discovered certificates on each rescan. Export and import your watchlist as JSON to move it between machines.</p>
 
@@ -200,6 +330,8 @@
         </div>
       </section>
 
+      <div class="print-footer">Generated by CertLens · Owlglass · <span id="printFooterDomain"></span></div>
+
     </div>
   </main>
 </div>
@@ -209,10 +341,6 @@
 
 <script>
 'use strict';
-
-// ============================================================
-// CertLens
-// ============================================================
 
 const CERTSPOTTER_API = 'https://api.certspotter.com/v1/issuances';
 const STORAGE_PREFIX = 'owlglass_certlens_v1_';
@@ -230,6 +358,8 @@ let activeHostFilter = 'all';
 let hostSearchTerm = '';
 let hostSortMode = 'latest-desc';
 let scanInProgress = false;
+let lastScanTime = null;
+let prevScanTime = null;
 
 // ---------- Categorization & risks ----------
 function categorizeHost(name) {
@@ -267,9 +397,9 @@ function detectRisks(host, certs) {
   if (active.length > 0) {
     const latest = active[0];
     const daysLeft = (new Date(latest.not_after) - Date.now()) / 86400000;
-    if (daysLeft < 0) risks.push({ type:'expired', text:'Latest cert expired ' + Math.abs(Math.round(daysLeft)) + ' days ago', level:'crit' });
-    else if (daysLeft < 7) risks.push({ type:'expiring-soon', text:'Expires in ' + Math.round(daysLeft) + ' days', level:'high' });
-    else if (daysLeft < 30) risks.push({ type:'expiring', text:'Expires in ' + Math.round(daysLeft) + ' days', level:'med' });
+    if (daysLeft < 0) risks.push({ type:'expired', text:'Latest cert expired ' + Math.abs(Math.round(daysLeft)) + ' days ago', level:'crit', daysLeft:Math.round(daysLeft) });
+    else if (daysLeft < 7) risks.push({ type:'expiring-soon', text:'Expires in ' + Math.round(daysLeft) + ' days', level:'high', daysLeft:Math.round(daysLeft) });
+    else if (daysLeft < 30) risks.push({ type:'expiring', text:'Expires in ' + Math.round(daysLeft) + ' days', level:'med', daysLeft:Math.round(daysLeft) });
   }
   const issuers = new Set(certs.map(c => c.issuer).filter(Boolean));
   if (issuers.size >= 3 && certs.length >= 3) risks.push({ type:'multi-issuer', text: issuers.size + ' different CAs — inconsistent issuance', level:'low' });
@@ -385,16 +515,17 @@ async function scan(domain) {
 
     const storageKey = STORAGE_PREFIX + domain;
     const known = JSON.parse(localStorage.getItem(storageKey + '_ids') || '[]');
-    const prevScanIso = localStorage.getItem(storageKey + '_lastScan');
+    prevScanTime = localStorage.getItem(storageKey + '_lastScan');
     knownIds = new Set(known);
     newIds = new Set();
     const isFirstScan = knownIds.size === 0;
     if (isFirstScan) knownIds = new Set(allCerts.map(c => c.id));
     else allCerts.forEach(c => { if (!knownIds.has(c.id)) { newIds.add(c.id); knownIds.add(c.id); } });
+    lastScanTime = new Date().toISOString();
     localStorage.setItem(storageKey + '_ids', JSON.stringify([...knownIds]));
-    localStorage.setItem(storageKey + '_lastScan', new Date().toISOString());
+    localStorage.setItem(storageKey + '_lastScan', lastScanTime);
 
-    if (!isFirstScan && newIds.size > 0) showDiffBanner(newIds.size, prevScanIso);
+    if (!isFirstScan && newIds.size > 0) showDiffBanner(newIds.size, prevScanTime);
 
     setStatus('busy', 'Checking host liveness…');
     const toCheck = allHosts.filter(h => !h.isWildcard).slice(0, 30);
@@ -428,6 +559,7 @@ function setStatus(type, text) {
 
 // ---------- Rendering ----------
 function renderAll() {
+  renderExecSummary();
   renderMetricStrip();
   renderSeverity();
   renderIssuerDonut();
@@ -444,6 +576,160 @@ function updateCounts() {
   document.getElementById('hostCount').textContent = allHosts.length;
   document.getElementById('riskCount').textContent = allHosts.filter(h => h.risks.length > 0).length;
   document.getElementById('expCount').textContent = allCerts.filter(c => c.daysToExpiry > 0 && c.daysToExpiry <= 30 && !c.revoked).length;
+}
+
+// ---------- Executive Summary ----------
+function buildPriorityActions() {
+  // Build host-specific, ranked action list. Each action gets: severity, title, why, host(s).
+  const actions = [];
+
+  // Revoked certs — group by host
+  const revokedHosts = allHosts.filter(h => h.revoked);
+  revokedHosts.slice(0, 3).forEach(h => {
+    const n = h.certs.filter(c => c.revoked).length;
+    actions.push({
+      sev: 'crit',
+      title: 'Investigate revoked cert on ' + h.name,
+      why: n + ' revoked certificate' + (n===1?'':'s') + '. Confirm whether revocation was due to key compromise or routine replacement.',
+      score: 100
+    });
+  });
+
+  // Expired hosts (most recently expired first)
+  const expiredHosts = allHosts.filter(h => !h.hasActive && h.latestIssue).slice(0, 5);
+  expiredHosts.forEach(h => {
+    actions.push({
+      sev: 'crit',
+      title: 'Renew expired certificate on ' + h.name,
+      why: 'Latest cert has expired. Service likely broken or shows browser warning.',
+      score: 90
+    });
+  });
+
+  // Expiring within 7 days
+  const expiringSoonHosts = allHosts.filter(h => {
+    return h.risks.some(r => r.type === 'expiring-soon');
+  });
+  expiringSoonHosts.slice(0, 5).forEach(h => {
+    const r = h.risks.find(r => r.type === 'expiring-soon');
+    actions.push({
+      sev: 'high',
+      title: 'Renew ' + h.name + ' (' + r.daysLeft + ' days left)',
+      why: 'Expires soon. Confirm automatic renewal is configured or renew manually.',
+      score: 80 - r.daysLeft
+    });
+  });
+
+  // Expiring 7-30 days
+  const expiringHosts = allHosts.filter(h => h.risks.some(r => r.type === 'expiring'));
+  expiringHosts.slice(0, 3).forEach(h => {
+    const r = h.risks.find(r => r.type === 'expiring');
+    actions.push({
+      sev: 'med',
+      title: 'Plan renewal for ' + h.name + ' (' + r.daysLeft + ' days left)',
+      why: 'Within standard renewal window. Verify renewal is scheduled.',
+      score: 60 - r.daysLeft
+    });
+  });
+
+  // Suspicious-name hosts (potential phishing infra or stale)
+  const suspiciousHosts = allHosts.filter(h => h.risks.some(r => r.type === 'suspicious-name'));
+  suspiciousHosts.slice(0, 3).forEach(h => {
+    actions.push({
+      sev: 'med',
+      title: 'Review suspicious hostname: ' + h.name,
+      why: 'Naming pattern often used in phishing. Verify ownership and intended use.',
+      score: 50
+    });
+  });
+
+  // Rapid rotation
+  const rapidHosts = allHosts.filter(h => h.risks.some(r => r.type === 'rapid-rotation'));
+  rapidHosts.slice(0, 2).forEach(h => {
+    actions.push({
+      sev: 'med',
+      title: 'Investigate rapid cert rotation on ' + h.name,
+      why: 'Multiple certs issued in <30 days is unusual. Check for misconfigured automation or compromise.',
+      score: 45
+    });
+  });
+
+  // Sort by score (already roughly in order, but be safe), then return top 5
+  actions.sort((a,b) => b.score - a.score);
+  return actions.slice(0, 5);
+}
+
+function buildSummaryLine() {
+  const total = allHosts.length;
+  const certs = allCerts.length;
+  const findings = allHosts.filter(h => h.risks.length > 0).length;
+  const crit = allHosts.filter(h => h.risks.some(r => r.level === 'crit')).length;
+  const high = allHosts.filter(h => h.risks.some(r => r.level === 'high')).length;
+  const med = allHosts.filter(h => h.risks.some(r => r.level === 'med')).length;
+  const expired = allCerts.filter(c => c.daysToExpiry < 0).length;
+  const expiring7 = allCerts.filter(c => c.daysToExpiry > 0 && c.daysToExpiry <= 7 && !c.revoked).length;
+  const revoked = allCerts.filter(c => c.revoked).length;
+
+  let line = 'Scanned <strong>' + escapeHtml(currentDomain) + '</strong> and found <strong>' + total.toLocaleString() + ' unique hosts</strong> across <strong>' + certs.toLocaleString() + ' certificates</strong>. ';
+
+  if (findings === 0) {
+    line += 'No findings detected — certificate hygiene looks healthy.';
+  } else {
+    const parts = [];
+    if (crit > 0) parts.push(crit + ' critical');
+    if (high > 0) parts.push(high + ' high');
+    if (med > 0) parts.push(med + ' medium');
+    line += '<strong>' + findings + ' host' + (findings===1?'':'s') + ' with findings</strong> (' + parts.join(', ') + '). ';
+
+    const urgents = [];
+    if (revoked > 0) urgents.push(revoked + ' revoked cert' + (revoked===1?'':'s'));
+    if (expired > 0) urgents.push(expired + ' expired cert' + (expired===1?'':'s'));
+    if (expiring7 > 0) urgents.push(expiring7 + ' expiring within 7 days');
+    if (urgents.length) line += 'Most urgent: ' + urgents.join(', ') + '.';
+  }
+  return line;
+}
+
+function renderExecSummary() {
+  const panel = document.getElementById('execSummary');
+  if (!allHosts.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  const summary = buildSummaryLine();
+  const actions = buildPriorityActions();
+
+  let changedHtml = '';
+  if (prevScanTime && newIds.size > 0) {
+    changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> ' +
+      newIds.size + ' new certificate' + (newIds.size===1?'':'s') + ' detected.</div>';
+  } else if (prevScanTime) {
+    changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> no new certificates.</div>';
+  }
+
+  const actionsHtml = actions.length === 0
+    ? '<div class="action"><div class="action-body"><div class="action-title">No urgent actions required.</div><div class="action-why">No critical, high, or medium findings detected at this time.</div></div></div>'
+    : actions.map((a,i) => {
+        // Replace bare hostnames with <code>
+        const titleHtml = escapeHtml(a.title).replace(/([a-z0-9*][a-z0-9.\-_*]*\.[a-z]{2,})/gi, '<code>$1</code>');
+        return '<div class="action">' +
+          '<div class="action-rank">' + (i+1) + '.</div>' +
+          '<div class="action-body">' +
+            '<div class="action-title">' + titleHtml + '</div>' +
+            '<div class="action-why">' + escapeHtml(a.why) + '</div>' +
+          '</div>' +
+          '<div class="action-sev ' + a.sev + '">' + (a.sev==='crit'?'Critical':a.sev==='high'?'High':'Medium') + '</div>' +
+        '</div>';
+      }).join('');
+
+  panel.innerHTML =
+    '<h2>Executive Summary <span class="tag">For leadership</span></h2>' +
+    '<div class="summary-line">' + summary + '</div>' +
+    '<div class="actions">' +
+      '<div class="actions-title">Top priority actions</div>' +
+      actionsHtml +
+    '</div>' +
+    changedHtml +
+    '<div class="footer">Generated by CertLens · ' + new Date().toLocaleString() + '</div>';
 }
 
 function renderMetricStrip() {
@@ -729,6 +1015,127 @@ function renderTimeline() {
 
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+// ---------- Print ----------
+function printReport(mode) {
+  if (!currentDomain || !allHosts.length) { alert('Run a scan first.'); return; }
+  document.getElementById('printDomain').textContent = currentDomain;
+  document.getElementById('printMeta').textContent =
+    'Scan completed ' + new Date(lastScanTime || Date.now()).toLocaleString() +
+    ' · ' + allHosts.length.toLocaleString() + ' hosts · ' + allCerts.length.toLocaleString() + ' certificates';
+  document.getElementById('printFooterDomain').textContent = currentDomain;
+
+  if (mode === 'summary') document.body.classList.add('print-summary');
+  else document.body.classList.remove('print-summary');
+
+  // Switch to overview tab so summary panel and overview cards print first
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelector('.tab[data-view="overview"]').classList.add('active');
+  document.getElementById('view-overview').classList.add('active');
+
+  // Allow DOM to settle before print
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('print-summary'), 500);
+  }, 100);
+}
+
+// ---------- Markdown export ----------
+function buildMarkdownReport() {
+  const summary = buildSummaryLine().replace(/<\/?strong>/g, '**').replace(/<[^>]+>/g, '');
+  const actions = buildPriorityActions();
+
+  let md = '# CertLens Report — ' + currentDomain + '\n\n';
+  md += '_Generated ' + new Date().toLocaleString() + '_\n\n';
+  md += '## Executive Summary\n\n';
+  md += summary + '\n\n';
+
+  md += '## Top Priority Actions\n\n';
+  if (actions.length === 0) md += '_No urgent actions required._\n\n';
+  else {
+    actions.forEach((a,i) => {
+      const sev = a.sev==='crit'?'🔴 Critical':a.sev==='high'?'🟠 High':'🟡 Medium';
+      md += (i+1) + '. **' + a.title + '** — ' + sev + '\n   ' + a.why + '\n\n';
+    });
+  }
+
+  if (prevScanTime && newIds.size > 0) {
+    md += '## Changes Since Last Scan\n\n';
+    md += '_Last scan: ' + formatAge(prevScanTime) + '_\n\n';
+    md += '**' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + '** detected.\n\n';
+  }
+
+  md += '## Key Metrics\n\n';
+  const expiringSoon = allCerts.filter(c => c.daysToExpiry > 0 && c.daysToExpiry <= 30 && !c.revoked).length;
+  const expired = allCerts.filter(c => c.daysToExpiry < 0).length;
+  const revoked = allCerts.filter(c => c.revoked).length;
+  const aliveCount = allHosts.filter(h => h.alive === true).length;
+  md += '| Metric | Value |\n|---|---|\n';
+  md += '| Hosts discovered | ' + allHosts.length.toLocaleString() + ' |\n';
+  md += '| Certificates analyzed | ' + allCerts.length.toLocaleString() + ' |\n';
+  md += '| Live (DNS responding) | ' + aliveCount + ' of 30 sampled |\n';
+  md += '| Expiring within 30 days | ' + expiringSoon + ' |\n';
+  md += '| Expired | ' + expired + ' |\n';
+  md += '| Revoked | ' + revoked + ' |\n\n';
+
+  const riskyHosts = allHosts.filter(h => h.risks.length > 0);
+  if (riskyHosts.length > 0) {
+    md += '## All Findings (' + riskyHosts.length + ')\n\n';
+    md += '| Severity | Host | Category | Finding |\n|---|---|---|---|\n';
+    riskyHosts.slice(0, 100).forEach(h => {
+      const worst = h.risks.some(r => r.level==='crit') ? 'Critical' :
+                    h.risks.some(r => r.level==='high') ? 'High' :
+                    h.risks.some(r => r.level==='med') ? 'Medium' : 'Low';
+      const findings = h.risks.map(r => r.text).join('; ');
+      md += '| ' + worst + ' | `' + h.name + '` | ' + h.cat.label + ' | ' + findings.replace(/\|/g,'\\|') + ' |\n';
+    });
+    if (riskyHosts.length > 100) md += '\n_+ ' + (riskyHosts.length - 100) + ' more findings (truncated)_\n';
+    md += '\n';
+  }
+
+  md += '---\n_Report generated by [CertLens](https://owlglass.io/certlens/) — Owlglass suite_\n';
+  return md;
+}
+
+function showMarkdownModal() {
+  if (!currentDomain || !allHosts.length) { alert('Run a scan first.'); return; }
+  const md = buildMarkdownReport();
+  const bg = document.createElement('div');
+  bg.className = 'cl-modal-bg';
+  bg.innerHTML =
+    '<div class="cl-modal">' +
+      '<h3>Markdown report <button class="close" id="mdClose">×</button></h3>' +
+      '<textarea id="mdContent" readonly></textarea>' +
+      '<div class="cl-modal-actions">' +
+        '<button class="btn" id="mdDownload">Download .md</button>' +
+        '<button class="btn primary" id="mdCopy">Copy to clipboard</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(bg);
+  document.getElementById('mdContent').value = md;
+  document.getElementById('mdContent').select();
+
+  const close = () => bg.remove();
+  document.getElementById('mdClose').addEventListener('click', close);
+  bg.addEventListener('click', e => { if (e.target === bg) close(); });
+  document.getElementById('mdCopy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(md);
+      document.getElementById('mdCopy').textContent = '✓ Copied';
+      setTimeout(close, 800);
+    } catch {
+      document.getElementById('mdContent').select();
+      document.execCommand('copy');
+      document.getElementById('mdCopy').textContent = '✓ Copied';
+      setTimeout(close, 800);
+    }
+  });
+  document.getElementById('mdDownload').addEventListener('click', () => {
+    downloadFile('certlens_' + currentDomain + '_report.md', md, 'text/markdown');
+    close();
+  });
+}
+
 // ---------- CSV Export ----------
 function csvEscape(v) {
   if (v == null) return '';
@@ -883,8 +1290,7 @@ function exportWatchlistJson() {
   if (!list.length) { alert('Watchlist is empty.'); return; }
   const out = {
     exported: new Date().toISOString(),
-    tool: 'CertLens',
-    version: 1,
+    tool: 'CertLens', version: 1,
     watchlist: list.map(w => ({
       domain: w.domain,
       addedAt: w.addedAt,
@@ -991,7 +1397,10 @@ exportMenu.querySelectorAll('button[data-export]').forEach(b => {
   b.addEventListener('click', () => {
     const action = b.dataset.export;
     exportMenu.classList.remove('open');
-    if (action === 'hosts') exportHostsCsv();
+    if (action === 'print-summary') printReport('summary');
+    else if (action === 'print-full') printReport('full');
+    else if (action === 'markdown') showMarkdownModal();
+    else if (action === 'hosts') exportHostsCsv();
     else if (action === 'certs') exportCertsCsv();
     else if (action === 'findings') exportFindingsCsv();
     else if (action === 'watchlist') exportWatchlistJson();

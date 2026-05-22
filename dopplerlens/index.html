@@ -57,9 +57,72 @@
     .example-link { padding: 3px 10px; background: var(--bg-sunken); border: 1px solid var(--border); border-radius: 12px; color: var(--text-secondary); font-size: 0.78rem; cursor: pointer; transition: all 0.12s; }
     .example-link:hover { border-color: var(--brand); color: var(--brand); }
     .row-doppler { grid-template-columns: auto 1fr auto auto; }
+    .row-doppler.with-thumb { grid-template-columns: auto 1fr auto auto auto; }
     .row-doppler.snoozed-row { opacity: 0.55; }
     .row-doppler.snoozed-row .row-name::after {
       content: ' · snoozed'; color: var(--text-faint); font-weight: 400; font-size: 0.78rem;
+    }
+
+    /* urlscan thumbnail column */
+    .row-thumb {
+      width: 100px; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 4px;
+      align-items: center; justify-content: flex-start;
+    }
+    .row-thumb .thumb-img {
+      width: 100px; height: 70px;
+      border: 1px solid var(--border); border-radius: 4px;
+      background: var(--bg-sunken);
+      object-fit: cover; object-position: top center;
+      cursor: zoom-in; transition: border-color 0.12s;
+      display: block;
+    }
+    .row-thumb .thumb-img:hover { border-color: var(--brand); }
+    .row-thumb .thumb-placeholder {
+      width: 100px; height: 70px;
+      border: 1px dashed var(--border); border-radius: 4px;
+      background: var(--bg-sunken);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; color: var(--text-faint); text-align: center;
+      padding: 4px; line-height: 1.2; box-sizing: border-box;
+    }
+    .row-thumb .thumb-placeholder.loading { color: var(--text-muted); font-style: italic; }
+    .row-thumb .thumb-submit {
+      font-size: 0.68rem; color: var(--brand); text-decoration: none;
+      text-align: center; padding: 4px; line-height: 1.2;
+      border: 1px dashed var(--border); border-radius: 4px;
+      width: 100px; height: 70px; cursor: pointer; background: var(--bg-sunken);
+      display: flex; align-items: center; justify-content: center;
+      box-sizing: border-box;
+    }
+    .row-thumb .thumb-submit:hover { border-color: var(--brand); }
+    .row-thumb .thumb-meta {
+      font-size: 0.65rem; color: var(--text-faint);
+      text-align: center; line-height: 1.2; width: 100px;
+    }
+
+    /* Lightbox for full-size screenshot */
+    .lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: none; align-items: center; justify-content: center;
+      z-index: 300; padding: 40px; cursor: zoom-out;
+    }
+    .lightbox.show { display: flex; }
+    .lightbox img {
+      max-width: 100%; max-height: 100%;
+      border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .lightbox .lb-meta {
+      position: absolute; top: 20px; left: 20px; right: 80px;
+      color: white; font-size: 0.85rem;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+    .lightbox .lb-meta a { color: #c4b5fd; }
+    .lightbox .lb-close {
+      position: absolute; top: 20px; right: 20px;
+      background: none; border: none; color: white;
+      font-size: 2rem; cursor: pointer; line-height: 1;
+      width: 40px; height: 40px;
     }
 
     .badge.new-finding {
@@ -91,12 +154,21 @@
       background: #ecfdf5; color: #047857;
       border: 1px solid #a7f3d0;
     }
-    .baseline-banner button {
-      margin-left: auto; padding: 4px 10px; background: transparent;
-      border: 1px solid currentColor; border-radius: 4px; color: inherit;
-      font-size: 0.75rem; cursor: pointer;
+
+    /* Topbar with export button (CertLens pattern) */
+    .topbar {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px;
     }
-    .baseline-banner button:hover { background: rgba(255,255,255,0.5); }
+    .topbar .titles { flex: 1; min-width: 0; }
+    .topbar-actions {
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0; margin-top: 4px;
+    }
+    @media (max-width: 720px) {
+      .topbar { flex-direction: column; align-items: stretch; }
+      .topbar-actions { justify-content: flex-end; }
+    }
 
     /* Scan history strip */
     .dl-history {
@@ -289,9 +361,9 @@
       @page { size: letter; margin: 0.6in 0.5in; }
       body { background: white; color: black; font-size: 10pt; }
       .app { display: block; }
-      .sidebar, #sidebar-slot, .mobile-toggle, .topbar, .examples-row,
+      .sidebar, #sidebar-slot, .mobile-toggle, .topbar-actions, .examples-row,
       .tabs, .filters, .input-row, #scanBtn, .row-actions,
-      .modal-backdrop, .export-wrap, .progress-card, #progressBox,
+      .modal-backdrop, .lightbox, .row-thumb, .progress-card, #progressBox,
       .dl-history .clear-all, .dl-history .x,
       .dl-history .chip:not(.active) {
         display: none !important;
@@ -314,13 +386,13 @@
         text-align: center;
       }
       .row { page-break-inside: avoid; }
+      .row-doppler.with-thumb { grid-template-columns: auto 1fr auto auto; }
       .signal-action { background: #f5f5f5 !important; }
       a { color: black !important; text-decoration: none; }
       .pill, .badge { border: 1px solid #999 !important; background: white !important; color: black !important; }
       .badge.new-finding { background: #7c3aed !important; color: white !important; animation: none !important; }
       .metric { border: 1px solid #ccc; padding: 8px; }
       .baseline-banner { border: 1px solid #ccc !important; background: #f8f8f8 !important; color: black !important; }
-      /* Summary print mode hides detailed lists */
       body.print-summary .view:not(#view-overview),
       body.print-summary .tabs,
       body.print-summary #baselineCard,
@@ -351,6 +423,24 @@
           <div class="breadcrumb"><a href="/">Owlglass</a> / DopplerLens</div>
           <h1>DopplerLens</h1>
           <p class="tagline">Generate hundreds of lookalike variations of a domain — typosquats, homoglyphs, TLD swaps, bitsquats — then check which are actually registered. For each live one, classify it as defensive, parked, suspicious, or likely phishing based on DNS, mail, web, and favicon evidence. Re-scan periodically to detect new threats as they appear.</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="export-wrap">
+            <button class="btn" id="exportBtn">Export ▾</button>
+            <div class="export-menu" id="exportMenu">
+              <div class="menu-label">Reports</div>
+              <button data-export="print-summary">Print summary as PDF</button>
+              <button data-export="print-full">Print full report as PDF</button>
+              <button data-export="md">Copy as Markdown</button>
+              <div class="sep"></div>
+              <div class="menu-label">Data</div>
+              <button data-export="csv-findings">Findings CSV</button>
+              <button data-export="csv-summary">Summary CSV</button>
+              <div class="sep"></div>
+              <div class="menu-label">History</div>
+              <button data-export="clear-history">Clear scan history</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -383,10 +473,8 @@
         </div>
       </div>
 
-      <!-- Scan history strip -->
       <div id="historyStrip" class="dl-history hidden"></div>
 
-      <!-- Executive summary -->
       <div id="execSummary" class="card exec-summary hidden"></div>
 
       <div id="baselineBanner" class="hidden"></div>
@@ -423,25 +511,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header">
-            <h2>Recommended actions</h2>
-            <div class="export-wrap">
-              <button class="btn" id="exportBtn">Export ▾</button>
-              <div class="export-menu" id="exportMenu">
-                <div class="menu-label">Reports</div>
-                <button data-export="print-summary">Print summary as PDF</button>
-                <button data-export="print-full">Print full report as PDF</button>
-                <button data-export="md">Copy as Markdown</button>
-                <div class="sep"></div>
-                <div class="menu-label">Data</div>
-                <button data-export="csv-findings">Findings CSV</button>
-                <button data-export="csv-summary">Summary CSV</button>
-                <div class="sep"></div>
-                <div class="menu-label">History</div>
-                <button data-export="clear-history">Clear scan history</button>
-              </div>
-            </div>
-          </div>
+          <div class="card-header"><h2>Recommended actions</h2></div>
           <div id="recommendations"><p class="muted">A prioritized list will appear after scan.</p></div>
         </div>
       </section>
@@ -449,7 +519,7 @@
       <section class="view" id="view-new">
         <div class="card">
           <div class="card-header"><h2>New since last scan</h2></div>
-          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Lookalike domains that did not exist (or were not registered) at the time of your previous scan. Newly registered phishing infrastructure is the highest-priority finding — it indicates active threat activity rather than long-dormant squatting.</p>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Lookalike domains that did not exist (or were not registered) at the time of your previous scan. Newly registered phishing infrastructure is the highest-priority finding.</p>
           <div id="newList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
@@ -457,7 +527,7 @@
       <section class="view" id="view-phishing">
         <div class="card">
           <div class="card-header"><h2>Likely phishing infrastructure</h2></div>
-          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">High-suspicion domains: active services on infrastructure unrelated to yours, often with characteristics consistent with phishing kits.</p>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">High-suspicion domains: active services on infrastructure unrelated to yours.</p>
           <div id="critList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
@@ -465,7 +535,7 @@
       <section class="view" id="view-suspicious">
         <div class="card">
           <div class="card-header"><h2>Suspicious — investigate</h2></div>
-          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Live infrastructure with some warning signs but not conclusive. May be unrelated services, may be early-stage phishing setup, may be brand-related properties you didn't catalog.</p>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Live infrastructure with warning signs but not conclusive.</p>
           <div id="highList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
@@ -473,7 +543,7 @@
       <section class="view" id="view-parked">
         <div class="card">
           <div class="card-header"><h2>Parked or dormant registrations</h2></div>
-          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Registered but not currently hosting active web or mail services. Could be domain squatters, defensive registrations by competitors, or future phishing infrastructure not yet activated.</p>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Registered but not currently hosting active web or mail services.</p>
           <div id="medList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
@@ -481,7 +551,7 @@
       <section class="view" id="view-defensive">
         <div class="card">
           <div class="card-header"><h2>Likely defensive (yours or your registrar)</h2></div>
-          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Lookalikes that resolve to your own infrastructure or to known brand-protection registrars. These are working in your favor.</p>
+          <p class="muted" style="margin-bottom: 14px; font-size: 0.88rem;">Lookalikes that resolve to your own infrastructure or known brand-protection registrars.</p>
           <div id="okList"><p class="muted">Will appear after scan.</p></div>
         </div>
       </section>
@@ -511,17 +581,19 @@
           <p style="margin-bottom: 12px;">For each candidate, DopplerLens runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a>. Live candidates get deeper analysis: nameservers, mail servers, web server reachability, and a favicon hash comparison.</p>
 
           <h3 style="margin: 18px 0 8px;">Confidence and readiness</h3>
-          <p class="muted" style="font-size: 0.88rem;">Each finding shows a <strong>confidence</strong> and a <strong>readiness</strong> tag describing operational state: <em>Ready</em> means web + mail are both active, <em>Staged</em> means web only, <em>Registered</em> means DNS only.</p>
+          <p class="muted" style="font-size: 0.88rem;">Each finding shows a <strong>confidence</strong> and a <strong>readiness</strong> tag: <em>Ready</em> means web + mail are both active, <em>Staged</em> means web only, <em>Registered</em> means DNS only.</p>
+
+          <h3 style="margin: 18px 0 8px;">Screenshots via urlscan.io</h3>
+          <p class="muted" style="font-size: 0.88rem;">For Likely-phishing and Suspicious findings, DopplerLens queries <a href="https://urlscan.io" target="_blank" rel="noopener">urlscan.io</a>'s public search API for an existing screenshot of the domain. We don't submit new scans — only show what's already in their public archive. If no prior scan exists, you'll see a "Submit to urlscan" link instead. Click any thumbnail to enlarge.</p>
 
           <h3 style="margin: 18px 0 8px;">Scan history and baselines</h3>
-          <p class="muted" style="font-size: 0.88rem;">DopplerLens keeps your last 10 scans in browser storage (localStorage). Click any chip in the history strip to instantly restore that scan's results without re-fetching. Each scan also stores a <strong>baseline</strong> — the list of live lookalikes at that point in time — so the next scan of the same domain can flag what's <strong>new</strong>. Snoozes follow scans through history.</p>
+          <p class="muted" style="font-size: 0.88rem;">DopplerLens keeps your last 10 scans in browser storage. Click any chip in the history strip to instantly restore that scan without re-fetching. Each scan also stores a <strong>baseline</strong> for diffing the next scan.</p>
 
           <h3 style="margin: 18px 0 8px;">Honest limits</h3>
-          <p class="muted" style="font-size: 0.88rem;">DopplerLens does not detect <strong>IDN homograph attacks</strong> using non-Latin Unicode reliably from the browser. Favicon comparison only works when the suspect domain serves its favicon with permissive CORS headers. Keyboard-adjacency uses a US QWERTY layout.</p>
+          <p class="muted" style="font-size: 0.88rem;">DopplerLens does not detect <strong>IDN homograph attacks</strong> using non-Latin Unicode reliably from the browser. Favicon comparison only works when the suspect domain serves its favicon with permissive CORS headers. Keyboard-adjacency uses a US QWERTY layout. urlscan thumbnails only appear for domains with prior public scans.</p>
         </div>
       </section>
 
-      <!-- Print-only footer -->
       <div class="print-only print-footer">
         DopplerLens · Owlglass · <span id="printFooterDate">—</span>
       </div>
@@ -604,6 +676,13 @@
   </div>
 </div>
 
+<!-- Screenshot lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose" aria-label="Close">×</button>
+  <div class="lb-meta" id="lbMeta">—</div>
+  <img id="lbImg" src="" alt="">
+</div>
+
 <script src="/assets/shared.js"></script>
 <script>Owlglass.mount({ active: 'dopplerlens' });</script>
 
@@ -646,8 +725,7 @@ let currentScan = null;
 let currentResults = [];
 let currentFilter = 'all';
 let currentOriginal = '';
-let currentBaselineInfo = null; // { ts, count, isFirst } from scan time
-let currentScanMeta = null; // { ts, totalChecked, baseline fingerprint }
+let currentScanMeta = null;
 let priorBaseline = null;
 let snoozedSet = new Set();
 let pendingVisitDomain = null;
@@ -748,6 +826,124 @@ function probeWebServer(domain) {
 }
 
 // ----------------------------------------------------------
+// urlscan.io thumbnails (public search API — no key needed)
+// ----------------------------------------------------------
+// Uses urlscan's public search endpoint to find existing scans.
+// No submissions, no API key, free quota is generous.
+
+const urlscanCache = new Map(); // domain -> { status, screenshot, scanUrl, scanTs }
+const urlscanQueue = [];
+let urlscanInFlight = 0;
+const URLSCAN_CONCURRENCY = 3;
+const urlscanObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const slot = entry.target;
+      const domain = slot.getAttribute('data-thumb-domain');
+      if (domain) {
+        urlscanObserver.unobserve(slot);
+        enqueueUrlscan(domain, slot);
+      }
+    }
+  });
+}, { rootMargin: '200px' }) : null;
+
+async function fetchUrlscanForDomain(domain) {
+  if (urlscanCache.has(domain) && urlscanCache.get(domain).status !== 'loading') {
+    return urlscanCache.get(domain);
+  }
+  urlscanCache.set(domain, { status: 'loading' });
+  try {
+    const q = encodeURIComponent('domain:' + domain);
+    const res = await fetch('https://urlscan.io/api/v1/search/?q=' + q + '&size=1', { mode: 'cors' });
+    if (!res.ok) {
+      urlscanCache.set(domain, { status: 'error' });
+    } else {
+      const json = await res.json();
+      if (!json.results || json.results.length === 0) {
+        urlscanCache.set(domain, { status: 'none' });
+      } else {
+        const r = json.results[0];
+        urlscanCache.set(domain, {
+          status: 'found',
+          screenshot: r.screenshot,
+          scanUrl: r.result,
+          scanTs: r.task && r.task.time
+        });
+      }
+    }
+  } catch {
+    urlscanCache.set(domain, { status: 'error' });
+  }
+  return urlscanCache.get(domain);
+}
+
+function enqueueUrlscan(domain, slotEl) {
+  const cached = urlscanCache.get(domain);
+  if (cached && cached.status !== 'loading') {
+    renderThumbSlot(slotEl, domain, cached);
+    return;
+  }
+  urlscanQueue.push({ domain, slotEl });
+  pumpUrlscanQueue();
+}
+
+function pumpUrlscanQueue() {
+  while (urlscanInFlight < URLSCAN_CONCURRENCY && urlscanQueue.length > 0) {
+    const { domain, slotEl } = urlscanQueue.shift();
+    if (!document.body.contains(slotEl)) continue;
+    urlscanInFlight++;
+    fetchUrlscanForDomain(domain)
+      .then(result => {
+        if (document.body.contains(slotEl)) renderThumbSlot(slotEl, domain, result);
+      })
+      .finally(() => {
+        urlscanInFlight--;
+        pumpUrlscanQueue();
+      });
+  }
+}
+
+function renderThumbSlot(slotEl, domain, result) {
+  if (!result || result.status === 'loading') {
+    slotEl.innerHTML = '<div class="thumb-placeholder loading">Loading…</div>';
+    return;
+  }
+  if (result.status === 'found' && result.screenshot) {
+    const ageStr = result.scanTs ? relativeTime(new Date(result.scanTs).getTime()) : '';
+    slotEl.innerHTML =
+      '<img class="thumb-img" src="' + escapeAttr(result.screenshot) + '" alt="Screenshot of ' + escapeAttr(domain) + '" ' +
+        'data-domain="' + escapeAttr(domain) + '" ' +
+        'data-scan-url="' + escapeAttr(result.scanUrl || '') + '" ' +
+        'data-scan-ts="' + escapeAttr(result.scanTs || '') + '" ' +
+        'loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=&quot;thumb-placeholder&quot;>Image failed</div>\'">' +
+      (ageStr ? '<div class="thumb-meta">' + escapeHtml(ageStr) + '</div>' : '');
+    const img = slotEl.querySelector('.thumb-img');
+    if (img) img.addEventListener('click', () => openLightbox(domain, result));
+  } else if (result.status === 'none') {
+    slotEl.innerHTML =
+      '<a class="thumb-submit" href="https://urlscan.io/search/#domain%3A' + encodeURIComponent(domain) + '" target="_blank" rel="noopener" title="No public scan yet — submit on urlscan.io">No preview<br>Submit →</a>';
+  } else {
+    slotEl.innerHTML = '<div class="thumb-placeholder">Unavailable</div>';
+  }
+}
+
+function openLightbox(domain, result) {
+  document.getElementById('lbImg').src = result.screenshot;
+  const tsStr = result.scanTs ? new Date(result.scanTs).toLocaleString() : 'unknown';
+  document.getElementById('lbMeta').innerHTML =
+    '<strong>' + escapeHtml(domain) + '</strong> · Scanned ' + escapeHtml(tsStr) +
+    (result.scanUrl ? ' · <a href="' + escapeAttr(result.scanUrl) + '" target="_blank" rel="noopener">View on urlscan.io →</a>' : '');
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lbImg').src = '';
+}
+
+function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
+
+// ----------------------------------------------------------
 // Storage: baseline + snooze + history
 // ----------------------------------------------------------
 function loadBaseline(original) {
@@ -778,7 +974,6 @@ function toggleSnooze(domain) {
   else snoozedSet.add(domain);
   saveSnoozed(currentOriginal, snoozedSet);
   currentResults.forEach(r => { r.snoozed = snoozedSet.has(r.domain); });
-  // Persist updated snooze state into the active history scan
   if (activeScanId) updateHistoryScanSnooze(activeScanId);
   renderAll();
 }
@@ -790,7 +985,6 @@ function relativeTime(ts) {
   return Math.round(d / 30) + 'mo ago';
 }
 
-// History API
 function getHistory() {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
@@ -801,7 +995,6 @@ function getHistory() {
 function saveHistory(history) {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
   catch (e) {
-    // Likely a quota error — evict oldest and retry once
     if (history.length > 1) {
       try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, history.length - 1))); }
       catch {}
@@ -811,7 +1004,6 @@ function saveHistory(history) {
 }
 function addScanToHistory(scan) {
   let history = getHistory();
-  // Remove any existing entry for this domain
   history = history.filter(s => s.original !== scan.original);
   history.unshift(scan);
   history = history.slice(0, HISTORY_MAX);
@@ -831,7 +1023,6 @@ function removeFromHistory(scanId) {
   saveHistory(history);
   if (activeScanId === scanId) {
     activeScanId = null;
-    // Hide the entire scan area; user can start a new scan
     document.getElementById('execSummary').classList.add('hidden');
     document.getElementById('baselineBanner').classList.add('hidden');
     document.getElementById('baselineCard').classList.add('hidden');
@@ -890,9 +1081,7 @@ async function scanDomain(rawInput) {
     const origNSSet = new Set(origNS.map(n => n.toLowerCase().replace(/\.$/, '')));
     const origMXSet = new Set(origMX.map(m => m.toLowerCase().split(' ').pop().replace(/\.$/, '')));
 
-    const baselineFingerprint = {
-      domain: original, ips: origIPs, mx: origMX, ns: origNS, favHash: origFavHash
-    };
+    const baselineFingerprint = { domain: original, ips: origIPs, mx: origMX, ns: origNS, favHash: origFavHash };
 
     setProgress('Step 2 of 4: Generating lookalikes', 'Applying dnstwist algorithms…', 10, '');
     const candidates = generateVariations(original);
@@ -957,27 +1146,19 @@ async function scanDomain(rawInput) {
     currentResults = classified;
     currentScanMeta = {
       ts: Date.now(), totalChecked: candidates.length,
-      baseline: baselineFingerprint,
-      priorBaselineTs: priorTs,
-      isFirstScan: wasFirst
+      baseline: baselineFingerprint, priorBaselineTs: priorTs, isFirstScan: wasFirst
     };
 
     saveBaseline(original, liveCandidates.map(c => c.domain));
 
-    // Save to history
     const scanRecord = {
       id: 'scan_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-      original,
-      ts: currentScanMeta.ts,
+      original, ts: currentScanMeta.ts,
       totalChecked: currentScanMeta.totalChecked,
-      baseline: baselineFingerprint,
-      priorBaselineTs: priorTs,
-      isFirstScan: wasFirst,
-      snoozed: [...snoozedSet],
-      results: classified
+      baseline: baselineFingerprint, priorBaselineTs: priorTs, isFirstScan: wasFirst,
+      snoozed: [...snoozedSet], results: classified
     };
     addScanToHistory(scanRecord);
-    // Update URL hash for deep-link
     try { history.replaceState(null, '', '#' + encodeURIComponent(original)); } catch {}
 
     setProgress('Scan complete', 'Found ' + liveCandidates.length + ' registered lookalikes among ' + candidates.length + ' variations', 100, candidates.length + ' / ' + candidates.length);
@@ -1012,7 +1193,7 @@ function restoreScanFromHistory(scanId) {
   snoozedSet = new Set(scan.snoozed || []);
   currentResults.forEach(r => { r.snoozed = snoozedSet.has(r.domain); });
   document.getElementById('domainInput').value = scan.original;
-  try { history.replaceState(null, '', '#' + encodeURIComponent(scan.original)); } catch {}
+  try { window.history.replaceState(null, '', '#' + encodeURIComponent(scan.original)); } catch {}
   document.getElementById('progressBox').classList.add('hidden');
   setStatus('ok', 'Restored scan of ' + scan.original + ' from ' + relativeTime(scan.ts));
   document.getElementById('lastScanText').textContent = 'Scan from: ' + new Date(scan.ts).toLocaleString();
@@ -1031,51 +1212,15 @@ function classifyDomain(d, original, origIPSet, origNSSet, origMXSet, origFavHas
   const sharedMX = d.mx.some(m => origMXSet.has(m.toLowerCase().split(' ').pop().replace(/\.$/, '')));
   const protectionNS = d.ns.some(n => BRAND_REGISTRARS.test(n));
 
-  if (sharedIP) {
-    signals.push({ key: 'sharedIP', text: 'Same IP as your domain', cls: 'ok',
-      action: 'Resolves to your own infrastructure — this is yours or a partner.' });
-    score -= 100;
-  }
-  if (sharedNS) {
-    signals.push({ key: 'sharedNS', text: 'Same nameservers', cls: 'ok',
-      action: 'Uses your DNS infrastructure — almost certainly yours.' });
-    score -= 50;
-  }
-  if (sharedMX) {
-    signals.push({ key: 'sharedMX', text: 'Mail routed to your servers', cls: 'ok',
-      action: 'Mail flows to your servers — yours or a known partner.' });
-    score -= 40;
-  }
-  if (protectionNS && !sharedNS) {
-    signals.push({ key: 'protectionNS', text: 'Brand-protection registrar', cls: 'ok',
-      action: 'Registered through a known brand-protection registrar — typically defensive.' });
-    score -= 60;
-  }
-  if (d.mx.length > 0 && !sharedMX) {
-    signals.push({ key: 'foreignMX', text: 'Has mail server (can send)', cls: 'crit',
-      action: '<strong>Can send email impersonating your brand.</strong> Verify your SPF/DMARC blocks spoofing from this domain.' });
-    score += 30;
-  }
-  if (d.webAlive && !sharedIP) {
-    signals.push({ key: 'foreignWeb', text: 'Active web server', cls: 'high',
-      action: '<strong>Live phishing page possible.</strong> Use the urlscan.io link to view safely before reporting.' });
-    score += 25;
-  }
-  if (origFavHash && d.favHash && d.favHash === origFavHash && !sharedIP) {
-    signals.push({ key: 'favMatch', text: 'Favicon matches yours', cls: 'crit',
-      action: '<strong>Brand cloning confirmed.</strong> Site is serving your favicon — strong impersonation evidence for a takedown report.' });
-    score += 60;
-  }
-  if (!d.webAlive && d.mx.length === 0 && !sharedIP) {
-    signals.push({ key: 'dormant', text: 'No active services', cls: 'med',
-      action: 'Registered but no live web or mail. Re-scan periodically — squatters often activate dormant domains later.' });
-    score += 5;
-  }
-  if (SUSPICIOUS_TLDS.test(d.domain)) {
-    signals.push({ key: 'suspTLD', text: 'Low-trust TLD', cls: 'med',
-      action: 'TLD frequently abused for phishing — registrars in this zone often act on takedowns within 48 hours.' });
-    score += 15;
-  }
+  if (sharedIP) { signals.push({ key: 'sharedIP', text: 'Same IP as your domain', cls: 'ok', action: 'Resolves to your own infrastructure — this is yours or a partner.' }); score -= 100; }
+  if (sharedNS) { signals.push({ key: 'sharedNS', text: 'Same nameservers', cls: 'ok', action: 'Uses your DNS infrastructure — almost certainly yours.' }); score -= 50; }
+  if (sharedMX) { signals.push({ key: 'sharedMX', text: 'Mail routed to your servers', cls: 'ok', action: 'Mail flows to your servers — yours or a known partner.' }); score -= 40; }
+  if (protectionNS && !sharedNS) { signals.push({ key: 'protectionNS', text: 'Brand-protection registrar', cls: 'ok', action: 'Registered through a known brand-protection registrar — typically defensive.' }); score -= 60; }
+  if (d.mx.length > 0 && !sharedMX) { signals.push({ key: 'foreignMX', text: 'Has mail server (can send)', cls: 'crit', action: '<strong>Can send email impersonating your brand.</strong> Verify your SPF/DMARC blocks spoofing from this domain.' }); score += 30; }
+  if (d.webAlive && !sharedIP) { signals.push({ key: 'foreignWeb', text: 'Active web server', cls: 'high', action: '<strong>Live phishing page possible.</strong> Use the urlscan.io link to view safely before reporting.' }); score += 25; }
+  if (origFavHash && d.favHash && d.favHash === origFavHash && !sharedIP) { signals.push({ key: 'favMatch', text: 'Favicon matches yours', cls: 'crit', action: '<strong>Brand cloning confirmed.</strong> Site is serving your favicon — strong impersonation evidence for a takedown report.' }); score += 60; }
+  if (!d.webAlive && d.mx.length === 0 && !sharedIP) { signals.push({ key: 'dormant', text: 'No active services', cls: 'med', action: 'Registered but no live web or mail. Re-scan periodically — squatters often activate dormant domains later.' }); score += 5; }
+  if (SUSPICIOUS_TLDS.test(d.domain)) { signals.push({ key: 'suspTLD', text: 'Low-trust TLD', cls: 'med', action: 'TLD frequently abused for phishing — registrars often act on takedowns within 48 hours.' }); score += 15; }
 
   let verdict;
   if (score <= -30) verdict = 'ok';
@@ -1115,7 +1260,6 @@ function computeConfidence(r) {
 // Abuse report
 // ----------------------------------------------------------
 function buildAbuseReport(r, original) {
-  const v = VERDICT[r.verdict];
   const date = new Date().toISOString().slice(0, 10);
   const services = [];
   if (r.webAlive) services.push('active web server');
@@ -1187,8 +1331,7 @@ function buildAbuseChannels(r) {
   };
   if (tldRegistries[tld]) {
     channels.unshift({
-      label: '.' + tld + ' Registry',
-      target: tldRegistries[tld],
+      label: '.' + tld + ' Registry', target: tldRegistries[tld],
       href: tldRegistries[tld].includes('@') ? 'mailto:' + tldRegistries[tld] : 'https://www.' + tldRegistries[tld]
     });
   }
@@ -1318,31 +1461,21 @@ function renderExecSummary(active, counts, newCount, newFindings, ready) {
   panel.classList.remove('hidden');
 
   const totalConcerning = counts.crit + counts.high;
-
-  // Lead sentence — frame around readiness + newness, the two most actionable signals
   let lead;
   if (totalConcerning === 0) {
     lead = 'No phishing or suspicious lookalikes are currently live for <strong>' + escapeHtml(currentOriginal) + '</strong>. The ' + active.length + ' registered ' + (active.length === 1 ? 'variation' : 'variations') + ' detected are defensive or dormant.';
   } else {
-    const readyClause = ready.length > 0
-      ? '<strong>' + ready.length + ' ' + (ready.length === 1 ? 'is' : 'are') + ' operationally ready</strong> to phish your users today (web + mail active)'
-      : null;
-    const critClause = counts.crit > 0
-      ? '<strong>' + counts.crit + ' likely phishing ' + (counts.crit === 1 ? 'domain' : 'domains')+ '</strong>'
-      : null;
-    const highClause = counts.high > 0
-      ? counts.high + ' suspicious'
-      : null;
+    const readyClause = ready.length > 0 ? '<strong>' + ready.length + ' ' + (ready.length === 1 ? 'is' : 'are') + ' operationally ready</strong> to phish your users today (web + mail active)' : null;
+    const critClause = counts.crit > 0 ? '<strong>' + counts.crit + ' likely phishing ' + (counts.crit === 1 ? 'domain' : 'domains') + '</strong>' : null;
+    const highClause = counts.high > 0 ? counts.high + ' suspicious' : null;
     const parts = [readyClause, critClause, highClause].filter(Boolean);
     lead = 'DopplerLens found ' + parts.join(', ') + ' impersonating <strong>' + escapeHtml(currentOriginal) + '</strong>.';
   }
 
-  // Since-last-scan line
   let sinceHTML = '';
   if (!currentScanMeta.isFirstScan && currentScanMeta.priorBaselineTs) {
     if (newCount > 0) {
-      sinceHTML = '<div class="since"><strong>Since ' + relativeTime(currentScanMeta.priorBaselineTs) + ':</strong> ' +
-        newCount + ' new high-priority ' + (newCount === 1 ? 'lookalike was' : 'lookalikes were') + ' registered. New registrations are the strongest signal of active threat activity.</div>';
+      sinceHTML = '<div class="since"><strong>Since ' + relativeTime(currentScanMeta.priorBaselineTs) + ':</strong> ' + newCount + ' new high-priority ' + (newCount === 1 ? 'lookalike was' : 'lookalikes were') + ' registered. New registrations are the strongest signal of active threat activity.</div>';
     } else {
       sinceHTML = '<div class="since"><strong>Since ' + relativeTime(currentScanMeta.priorBaselineTs) + ':</strong> baseline is stable — no new registrations.</div>';
     }
@@ -1350,37 +1483,15 @@ function renderExecSummary(active, counts, newCount, newFindings, ready) {
     sinceHTML = '<div class="since"><strong>First scan.</strong> Re-scan in a week to start tracking newly-registered threats.</div>';
   }
 
-  // Top 5 priority actions — name specific domains
   const priorityList = [];
-  // 1. Phishing-ready + new (most urgent)
-  ready.filter(r => r.isNew).slice(0, 5).forEach(r => {
-    priorityList.push({ sev: 'crit', tag: 'NEW · READY', domain: r.domain, why: 'Newly registered with active web + mail — can phish users today.' });
+  ready.filter(r => r.isNew).slice(0, 5).forEach(r => priorityList.push({ sev: 'crit', tag: 'NEW · READY', domain: r.domain, why: 'Newly registered with active web + mail — can phish users today.' }));
+  if (priorityList.length < 5) ready.filter(r => !r.isNew).slice(0, 5 - priorityList.length).forEach(r => priorityList.push({ sev: 'crit', tag: 'READY', domain: r.domain, why: 'Web + mail active — investigate and consider takedown report.' }));
+  if (priorityList.length < 5) newFindings.filter(r => r.verdict === 'crit' && !ready.includes(r)).slice(0, 5 - priorityList.length).forEach(r => {
+    const hasFav = r.signals.some(s => s.key === 'favMatch');
+    priorityList.push({ sev: 'crit', tag: 'NEW', domain: r.domain, why: hasFav ? 'Newly registered and serving your favicon — brand cloning.' : 'Newly registered with phishing-pattern signals.' });
   });
-  // 2. Phishing-ready (not new)
-  if (priorityList.length < 5) {
-    ready.filter(r => !r.isNew).slice(0, 5 - priorityList.length).forEach(r => {
-      priorityList.push({ sev: 'crit', tag: 'READY', domain: r.domain, why: 'Web + mail active — investigate and consider takedown report.' });
-    });
-  }
-  // 3. New phishing-class (not necessarily ready)
-  if (priorityList.length < 5) {
-    newFindings.filter(r => r.verdict === 'crit' && !ready.includes(r)).slice(0, 5 - priorityList.length).forEach(r => {
-      const hasFav = r.signals.some(s => s.key === 'favMatch');
-      priorityList.push({ sev: 'crit', tag: 'NEW', domain: r.domain, why: hasFav ? 'Newly registered and serving your favicon — brand cloning.' : 'Newly registered with phishing-pattern signals.' });
-    });
-  }
-  // 4. Other crit
-  if (priorityList.length < 5) {
-    active.filter(r => r.verdict === 'crit' && !priorityList.find(p => p.domain === r.domain)).slice(0, 5 - priorityList.length).forEach(r => {
-      priorityList.push({ sev: 'crit', tag: 'PHISHING', domain: r.domain, why: 'Phishing-pattern signals on third-party infrastructure.' });
-    });
-  }
-  // 5. Suspicious fallback
-  if (priorityList.length < 5) {
-    active.filter(r => r.verdict === 'high' && !priorityList.find(p => p.domain === r.domain)).slice(0, 5 - priorityList.length).forEach(r => {
-      priorityList.push({ sev: 'high', tag: 'INVESTIGATE', domain: r.domain, why: 'Warning signs but not conclusive — verify ownership first.' });
-    });
-  }
+  if (priorityList.length < 5) active.filter(r => r.verdict === 'crit' && !priorityList.find(p => p.domain === r.domain)).slice(0, 5 - priorityList.length).forEach(r => priorityList.push({ sev: 'crit', tag: 'PHISHING', domain: r.domain, why: 'Phishing-pattern signals on third-party infrastructure.' }));
+  if (priorityList.length < 5) active.filter(r => r.verdict === 'high' && !priorityList.find(p => p.domain === r.domain)).slice(0, 5 - priorityList.length).forEach(r => priorityList.push({ sev: 'high', tag: 'INVESTIGATE', domain: r.domain, why: 'Warning signs but not conclusive — verify ownership first.' }));
 
   const actionsHTML = priorityList.length === 0
     ? '<p class="muted" style="margin: 8px 0 0;">No urgent actions — keep monitoring with periodic rescans.</p>'
@@ -1401,12 +1512,8 @@ function renderExecSummary(active, counts, newCount, newFindings, ready) {
 }
 
 function renderAll() {
-  if (!currentScanMeta || currentResults.length === 0) {
-    renderHistory();
-    return;
-  }
+  if (!currentScanMeta || currentResults.length === 0) { renderHistory(); return; }
   const active = currentResults.filter(r => !r.snoozed);
-
   const counts = {
     crit: active.filter(r => r.verdict === 'crit').length,
     high: active.filter(r => r.verdict === 'high').length,
@@ -1564,6 +1671,7 @@ function renderBucket(elId, items) {
   if (items.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>None in this category.</div>'; return; }
   c.innerHTML = items.map((r, i) => renderRow(r, elId + '-' + i)).join('');
   attachRowButtons(c, items);
+  attachThumbObservers(c);
 }
 
 function renderAllList() {
@@ -1578,6 +1686,7 @@ function renderAllList() {
   if (filtered.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>No domains in this filter.</div>'; return; }
   c.innerHTML = filtered.map((r, i) => renderRow(r, 'all-' + i)).join('');
   attachRowButtons(c, filtered);
+  attachThumbObservers(c);
 }
 
 function attachRowButtons(container, items) {
@@ -1595,12 +1704,30 @@ function attachRowButtons(container, items) {
   });
 }
 
+function attachThumbObservers(container) {
+  container.querySelectorAll('.row-thumb[data-thumb-domain]').forEach(slot => {
+    const domain = slot.getAttribute('data-thumb-domain');
+    const cached = urlscanCache.get(domain);
+    if (cached && cached.status !== 'loading') {
+      renderThumbSlot(slot, domain, cached);
+      return;
+    }
+    if (urlscanObserver) {
+      urlscanObserver.observe(slot);
+    } else {
+      // Fallback: no IntersectionObserver, just enqueue immediately
+      enqueueUrlscan(domain, slot);
+    }
+  });
+}
+
 function renderRow(r, idPrefix) {
   const v = VERDICT[r.verdict];
   const ipDisplay = r.ips.slice(0, 2).join(', ') + (r.ips.length > 2 ? ' +' + (r.ips.length - 2) : '');
   const flag = 'flag-' + v.sev;
   const idx = idPrefix.split('-').pop();
   const showReportBtn = (r.verdict === 'crit' || r.verdict === 'high') && !r.snoozed;
+  const showThumb = (r.verdict === 'crit' || r.verdict === 'high') && !r.snoozed;
 
   const methodLabel = {
     'omission': 'Omission', 'duplication': 'Duplication', 'transposition': 'Transposition',
@@ -1614,8 +1741,7 @@ function renderRow(r, idPrefix) {
   if (r.mx.length > 0) services.push('<span class="pill">Mail</span>');
 
   const newBadge = r.isNew && (r.verdict === 'crit' || r.verdict === 'high') && !r.snoozed
-    ? '<span class="badge new-finding">NEW</span> '
-    : '';
+    ? '<span class="badge new-finding">NEW</span> ' : '';
 
   const topAction = (() => {
     const crit = r.signals.find(s => s.cls === 'crit' && s.action);
@@ -1640,7 +1766,11 @@ function renderRow(r, idPrefix) {
       '<button data-action="snooze" data-idx="' + idx + '" title="Mark as triaged">Snooze</button>'
     );
 
-  return '<div class="row row-doppler ' + flag + (r.snoozed ? ' snoozed-row' : '') + '">' +
+  const thumbSlot = showThumb
+    ? '<div class="row-thumb" data-thumb-domain="' + escapeAttr(r.domain) + '"><div class="thumb-placeholder">…</div></div>'
+    : '';
+
+  return '<div class="row row-doppler ' + flag + (showThumb ? ' with-thumb' : '') + (r.snoozed ? ' snoozed-row' : '') + '">' +
     '<div>' + newBadge + '<span class="badge ' + v.sev + '">' + v.short + '</span></div>' +
     '<div>' +
       '<div class="row-name">' + escapeHtml(r.domain) + '</div>' +
@@ -1655,6 +1785,7 @@ function renderRow(r, idPrefix) {
       (topAction && (r.verdict === 'crit' || r.verdict === 'high') ?
         '<div class="signal-action">' + topAction.action + '</div>' : '') +
     '</div>' +
+    thumbSlot +
     '<div class="row-confidence" title="Score: ' + (r.score > 0 ? '+' : '') + r.score + '">' +
       '<div class="conf-label" style="color:' + SEV_COLORS[v.sev] + ';">' + escapeHtml(r.confidence.label) + '</div>' +
       '<div class="conf-sub">' + escapeHtml(r.confidence.desc) + '</div>' +
@@ -1697,7 +1828,6 @@ function exportCSVSummary() {
   };
   const ready = active.filter(r => r.readiness && r.readiness.tag === 'ready' && r.verdict !== 'ok').length;
   const newFindings = active.filter(r => r.isNew && (r.verdict === 'crit' || r.verdict === 'high')).length;
-
   const headers = ['Metric', 'Value'];
   const rows = [
     ['Scan domain', currentOriginal],
@@ -1823,14 +1953,12 @@ function closeMarkdownReport() {
 
 function printReport(mode) {
   if (!currentScanMeta) { alert('Run a scan first.'); return; }
-  // Populate print header/footer
   document.getElementById('printMeta').textContent =
     'Domain: ' + currentOriginal + ' · Scan date: ' + new Date(currentScanMeta.ts).toLocaleString() +
     ' · Variations: ' + currentScanMeta.totalChecked + ' · Live: ' + currentResults.length;
   document.getElementById('printFooterDate').textContent = new Date().toLocaleString();
   document.body.classList.remove('print-summary', 'print-full');
   document.body.classList.add(mode === 'summary' ? 'print-summary' : 'print-full');
-  // Switch active view to overview so summary mode prints the right thing
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === 'overview'));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-overview'));
   setTimeout(() => {
@@ -1936,21 +2064,28 @@ document.getElementById('mdCopyBtn').addEventListener('click', async () => {
   } catch { document.getElementById('mdText').select(); document.execCommand('copy'); }
 });
 
+// Lightbox events
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target.id === 'lightbox') closeLightbox();
+});
+
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  if (document.getElementById('reportModal').classList.contains('show')) closeAbuseReport();
+  if (document.getElementById('lightbox').classList.contains('show')) closeLightbox();
+  else if (document.getElementById('reportModal').classList.contains('show')) closeAbuseReport();
   else if (document.getElementById('visitModal').classList.contains('show')) closeVisitWarning();
   else if (document.getElementById('mdModal').classList.contains('show')) closeMarkdownReport();
 });
 
-// Initial render of history (in case there are scans from previous sessions)
+// Initial render
 renderHistory();
 
-// URL hash deep-link → restore matching scan if present, else scan fresh
+// URL hash deep-link
 const hashDomain = decodeURIComponent(window.location.hash.replace('#', ''));
 if (hashDomain && hashDomain.includes('.')) {
-  const history = getHistory();
-  const existing = history.find(s => s.original === hashDomain);
+  const histArr = getHistory();
+  const existing = histArr.find(s => s.original === hashDomain);
   if (existing) {
     restoreScanFromHistory(existing.id);
   } else {

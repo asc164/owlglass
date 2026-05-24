@@ -62,6 +62,22 @@
       content: ' · snoozed'; color: var(--text-faint); font-weight: 400; font-size: 0.78rem;
     }
 
+    /* Clickable metric cards */
+    .metric.clickable {
+      cursor: pointer;
+      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+    }
+    .metric.clickable:hover {
+      border-color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
+    }
+    .metric.clickable:active { transform: translateY(0); }
+    .metric.clickable:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
     /* urlscan thumbnail - inline preview inside row body (always visible) */
     .thumb-block {
       display: flex;
@@ -412,6 +428,7 @@
       .pill, .badge { border: 1px solid #999 !important; background: white !important; color: black !important; }
       .badge.new-finding { background: #7c3aed !important; color: white !important; animation: none !important; }
       .metric { border: 1px solid #ccc; padding: 8px; }
+      .metric.clickable { cursor: default !important; transform: none !important; box-shadow: none !important; }
       .baseline-banner { border: 1px solid #ccc !important; background: #f8f8f8 !important; color: black !important; }
       body.print-summary .view:not(#view-overview),
       body.print-summary .tabs,
@@ -724,9 +741,8 @@ const STORAGE_PREFIX = 'owlglass_dopplerlens_v1_';
 const SNOOZE_PREFIX = 'owlglass_dopplerlens_snooze_v1_';
 const HISTORY_KEY = 'owlglass_dopplerlens_history_v1';
 const HISTORY_MAX = 10;
-  
 const URLSCAN_PROXY = 'https://urlscan-proxy.asc164.workers.dev';
-  
+
 const KEYBOARD = {
   q:'wa',w:'qeas',e:'wrds',r:'etdf',t:'ryfg',y:'tugh',u:'yihj',i:'uojk',o:'ipkl',p:'ol',
   a:'qwsz',s:'awedxz',d:'serfcx',f:'drtgvc',g:'ftyhbv',h:'gyujnb',j:'huiknm',k:'jiolm',l:'kop',
@@ -847,7 +863,7 @@ function probeWebServer(domain) {
 }
 
 // ----------------------------------------------------------
-// urlscan.io thumbnails (public search API — no key needed)
+// urlscan.io thumbnails (via Cloudflare Worker proxy)
 // ----------------------------------------------------------
 const urlscanCache = new Map();
 const urlscanQueue = [];
@@ -1411,6 +1427,19 @@ function setStatus(type, text) {
   if (txt) txt.textContent = text;
 }
 
+function navigateToTab(tabName, filterName) {
+  const tabBtn = document.querySelector('.tab[data-view="' + tabName + '"]');
+  if (tabBtn) tabBtn.click();
+  if (filterName) {
+    const fBtn = document.querySelector('#vFilters .filter[data-f="' + filterName + '"]');
+    if (fBtn) fBtn.click();
+  }
+  const viewEl = document.getElementById('view-' + tabName);
+  if (viewEl) {
+    setTimeout(() => viewEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
 function renderHistory() {
   const history = getHistory();
   const strip = document.getElementById('historyStrip');
@@ -1562,17 +1591,40 @@ function renderAll() {
   renderBaselineBanner(newCount, stillLiveCrit);
   renderExecSummary(active, counts, newCount, newFindings, ready);
 
-  const m = (label, value, meta, mod) =>
-    '<div class="metric ' + (mod || '') + '"><div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
+  // Clickable metric cards — each routes to a relevant tab
+  const m = (label, value, meta, mod, target, filter) => {
+    const isClickable = !!target;
+    const dataAttrs = isClickable
+      ? ' data-go-tab="' + target + '"' + (filter ? ' data-go-filter="' + filter + '"' : '') +
+        ' role="button" tabindex="0" title="View ' + label.toLowerCase() + '"'
+      : '';
+    return '<div class="metric ' + (mod || '') + (isClickable ? ' clickable' : '') + '"' + dataAttrs + '>' +
+      '<div class="label">' + label + '</div>' +
+      '<div class="value">' + value + '</div>' +
+      '<div class="meta">' + meta + '</div>' +
+    '</div>';
+  };
   const strip = document.getElementById('metricStrip');
   strip.style.display = 'grid';
   strip.innerHTML =
-    m('Lookalikes generated', currentScanMeta.totalChecked, 'Total candidates', 'brand') +
-    m('Live registrations', currentResults.length, Math.round(currentResults.length / currentScanMeta.totalChecked * 100) + '% live', '') +
-    m('New since last scan', newCount, currentScanMeta.isFirstScan ? 'First scan' : 'Crit + Susp', newCount > 0 ? 'crit' : 'ok') +
-    m('Likely phishing', counts.crit, 'High suspicion', counts.crit > 0 ? 'crit' : 'ok') +
-    m('Phishing-ready', ready.length, 'Web + mail', ready.length > 0 ? 'crit' : '') +
-    m('Defensive', counts.ok, 'Yours or registrar', 'ok');
+    m('Lookalikes generated', currentScanMeta.totalChecked, 'Total candidates', 'brand', 'about') +
+    m('Live registrations', currentResults.length, Math.round(currentResults.length / currentScanMeta.totalChecked * 100) + '% live', '', 'all') +
+    m('New since last scan', newCount, currentScanMeta.isFirstScan ? 'First scan' : 'Crit + Susp', newCount > 0 ? 'crit' : 'ok', 'new') +
+    m('Likely phishing', counts.crit, 'High suspicion', counts.crit > 0 ? 'crit' : 'ok', 'phishing') +
+    m('Phishing-ready', ready.length, 'Web + mail', ready.length > 0 ? 'crit' : '', 'all', 'crit') +
+    m('Defensive', counts.ok, 'Yours or registrar', 'ok', 'defensive');
+
+  strip.querySelectorAll('.metric.clickable').forEach(el => {
+    const go = () => {
+      const tab = el.getAttribute('data-go-tab');
+      const filter = el.getAttribute('data-go-filter');
+      navigateToTab(tab, filter);
+    };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+    });
+  });
 
   renderSeveritySummary(counts);
   renderMethodBreakdown(active);
@@ -1730,8 +1782,6 @@ function attachRowButtons(container, items) {
 }
 
 function loadThumbsForContainer(container) {
-  // Eagerly fetch thumbnails for all visible thumb-blocks in this container.
-  // Concurrency is capped at URLSCAN_CONCURRENCY in the queue.
   container.querySelectorAll('.thumb-block[data-thumb-domain]').forEach(slot => {
     const domain = slot.getAttribute('data-thumb-domain');
     enqueueUrlscan(domain, slot);

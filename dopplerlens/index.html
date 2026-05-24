@@ -724,7 +724,9 @@ const STORAGE_PREFIX = 'owlglass_dopplerlens_v1_';
 const SNOOZE_PREFIX = 'owlglass_dopplerlens_snooze_v1_';
 const HISTORY_KEY = 'owlglass_dopplerlens_history_v1';
 const HISTORY_MAX = 10;
-
+  
+const URLSCAN_PROXY = 'https://urlscan-proxy.asc164.workers.dev';
+  
 const KEYBOARD = {
   q:'wa',w:'qeas',e:'wrds',r:'etdf',t:'ryfg',y:'tugh',u:'yihj',i:'uojk',o:'ipkl',p:'ol',
   a:'qwsz',s:'awedxz',d:'serfcx',f:'drtgvc',g:'ftyhbv',h:'gyujnb',j:'huiknm',k:'jiolm',l:'kop',
@@ -859,7 +861,7 @@ async function fetchUrlscanForDomain(domain) {
   urlscanCache.set(domain, { status: 'loading' });
   try {
     const q = encodeURIComponent('domain:' + domain);
-    const res = await fetch('https://urlscan.io/api/v1/search/?q=' + q + '&size=1', { mode: 'cors' });
+    const res = await fetch(URLSCAN_PROXY + '/?q=' + q, { mode: 'cors' });
     if (!res.ok) {
       urlscanCache.set(domain, { status: 'error' });
     } else {

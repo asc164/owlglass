@@ -57,49 +57,70 @@
     .example-link { padding: 3px 10px; background: var(--bg-sunken); border: 1px solid var(--border); border-radius: 12px; color: var(--text-secondary); font-size: 0.78rem; cursor: pointer; transition: all 0.12s; }
     .example-link:hover { border-color: var(--brand); color: var(--brand); }
     .row-doppler { grid-template-columns: auto 1fr auto auto; }
-    .row-doppler.with-thumb { grid-template-columns: auto 1fr auto auto auto; }
     .row-doppler.snoozed-row { opacity: 0.55; }
     .row-doppler.snoozed-row .row-name::after {
       content: ' · snoozed'; color: var(--text-faint); font-weight: 400; font-size: 0.78rem;
     }
 
-    /* urlscan thumbnail column */
-    .row-thumb {
-      width: 100px; flex-shrink: 0;
-      display: flex; flex-direction: column; gap: 4px;
-      align-items: center; justify-content: flex-start;
-    }
-    .row-thumb .thumb-img {
-      width: 100px; height: 70px;
-      border: 1px solid var(--border); border-radius: 4px;
+    /* urlscan thumbnail - inline preview inside row body (always visible) */
+    .thumb-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 8px;
+      padding: 8px;
       background: var(--bg-sunken);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .thumb-block .thumb-img {
+      width: 160px; height: 100px;
+      border: 1px solid var(--border); border-radius: 4px;
+      background: white;
       object-fit: cover; object-position: top center;
       cursor: zoom-in; transition: border-color 0.12s;
       display: block;
+      flex-shrink: 0;
     }
-    .row-thumb .thumb-img:hover { border-color: var(--brand); }
-    .row-thumb .thumb-placeholder {
-      width: 100px; height: 70px;
+    .thumb-block .thumb-img:hover { border-color: var(--brand); }
+    .thumb-block .thumb-placeholder {
+      width: 160px; height: 100px;
       border: 1px dashed var(--border); border-radius: 4px;
-      background: var(--bg-sunken);
+      background: white;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.68rem; color: var(--text-faint); text-align: center;
-      padding: 4px; line-height: 1.2; box-sizing: border-box;
+      font-size: 0.75rem; color: var(--text-muted); text-align: center;
+      padding: 8px; line-height: 1.3; box-sizing: border-box;
+      flex-shrink: 0;
     }
-    .row-thumb .thumb-placeholder.loading { color: var(--text-muted); font-style: italic; }
-    .row-thumb .thumb-submit {
-      font-size: 0.68rem; color: var(--brand); text-decoration: none;
-      text-align: center; padding: 4px; line-height: 1.2;
+    .thumb-block .thumb-placeholder.loading { font-style: italic; }
+    .thumb-block .thumb-submit {
+      font-size: 0.75rem; color: var(--brand); text-decoration: none;
+      text-align: center; padding: 8px; line-height: 1.3;
       border: 1px dashed var(--border); border-radius: 4px;
-      width: 100px; height: 70px; cursor: pointer; background: var(--bg-sunken);
+      width: 160px; height: 100px; cursor: pointer; background: white;
       display: flex; align-items: center; justify-content: center;
-      box-sizing: border-box;
+      box-sizing: border-box; flex-shrink: 0;
     }
-    .row-thumb .thumb-submit:hover { border-color: var(--brand); }
-    .row-thumb .thumb-meta {
-      font-size: 0.65rem; color: var(--text-faint);
-      text-align: center; line-height: 1.2; width: 100px;
+    .thumb-block .thumb-submit:hover { border-color: var(--brand); }
+    .thumb-block .thumb-info {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding-top: 2px;
     }
+    .thumb-block .thumb-info strong { color: var(--text); font-size: 0.82rem; }
+    .thumb-block .thumb-info .thumb-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .thumb-block .thumb-zoom {
+      cursor: pointer; color: var(--brand);
+    }
+    .thumb-block .thumb-zoom:hover { text-decoration: underline; }
 
     /* Lightbox for full-size screenshot */
     .lightbox {
@@ -155,7 +176,7 @@
       border: 1px solid #a7f3d0;
     }
 
-    /* Topbar with export button (CertLens pattern) */
+    /* Topbar with export button */
     .topbar {
       display: flex; justify-content: space-between;
       align-items: flex-start; gap: 16px;
@@ -354,7 +375,7 @@
       color: var(--text-muted); padding: 6px 12px 2px; font-weight: 600;
     }
 
-    /* Print-only header / footer */
+    /* Print-only */
     .print-only { display: none; }
 
     @media print {
@@ -363,7 +384,7 @@
       .app { display: block; }
       .sidebar, #sidebar-slot, .mobile-toggle, .topbar-actions, .examples-row,
       .tabs, .filters, .input-row, #scanBtn, .row-actions,
-      .modal-backdrop, .lightbox, .row-thumb, .progress-card, #progressBox,
+      .modal-backdrop, .lightbox, .thumb-block, .progress-card, #progressBox,
       .dl-history .clear-all, .dl-history .x,
       .dl-history .chip:not(.active) {
         display: none !important;
@@ -386,7 +407,6 @@
         text-align: center;
       }
       .row { page-break-inside: avoid; }
-      .row-doppler.with-thumb { grid-template-columns: auto 1fr auto auto; }
       .signal-action { background: #f5f5f5 !important; }
       a { color: black !important; text-decoration: none; }
       .pill, .badge { border: 1px solid #999 !important; background: white !important; color: black !important; }
@@ -412,7 +432,6 @@
     <div class="main-inner">
       <button class="mobile-toggle" aria-label="Toggle menu"></button>
 
-      <!-- Print-only header -->
       <div class="print-only print-header">
         <h1>DopplerLens Report</h1>
         <div class="meta" id="printMeta">—</div>
@@ -828,25 +847,10 @@ function probeWebServer(domain) {
 // ----------------------------------------------------------
 // urlscan.io thumbnails (public search API — no key needed)
 // ----------------------------------------------------------
-// Uses urlscan's public search endpoint to find existing scans.
-// No submissions, no API key, free quota is generous.
-
-const urlscanCache = new Map(); // domain -> { status, screenshot, scanUrl, scanTs }
+const urlscanCache = new Map();
 const urlscanQueue = [];
 let urlscanInFlight = 0;
 const URLSCAN_CONCURRENCY = 3;
-const urlscanObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const slot = entry.target;
-      const domain = slot.getAttribute('data-thumb-domain');
-      if (domain) {
-        urlscanObserver.unobserve(slot);
-        enqueueUrlscan(domain, slot);
-      }
-    }
-  });
-}, { rootMargin: '200px' }) : null;
 
 async function fetchUrlscanForDomain(domain) {
   if (urlscanCache.has(domain) && urlscanCache.get(domain).status !== 'loading') {
@@ -906,25 +910,44 @@ function pumpUrlscanQueue() {
 
 function renderThumbSlot(slotEl, domain, result) {
   if (!result || result.status === 'loading') {
-    slotEl.innerHTML = '<div class="thumb-placeholder loading">Loading…</div>';
+    slotEl.innerHTML =
+      '<div class="thumb-placeholder loading">Checking urlscan.io…</div>' +
+      '<div class="thumb-info">' +
+        '<div class="thumb-label">Site preview</div>' +
+        'Looking for an existing public scan of <strong>' + escapeHtml(domain) + '</strong>…' +
+      '</div>';
     return;
   }
   if (result.status === 'found' && result.screenshot) {
     const ageStr = result.scanTs ? relativeTime(new Date(result.scanTs).getTime()) : '';
+    const tsStr = result.scanTs ? new Date(result.scanTs).toLocaleDateString() : 'unknown';
     slotEl.innerHTML =
-      '<img class="thumb-img" src="' + escapeAttr(result.screenshot) + '" alt="Screenshot of ' + escapeAttr(domain) + '" ' +
-        'data-domain="' + escapeAttr(domain) + '" ' +
-        'data-scan-url="' + escapeAttr(result.scanUrl || '') + '" ' +
-        'data-scan-ts="' + escapeAttr(result.scanTs || '') + '" ' +
-        'loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=&quot;thumb-placeholder&quot;>Image failed</div>\'">' +
-      (ageStr ? '<div class="thumb-meta">' + escapeHtml(ageStr) + '</div>' : '');
+      '<img class="thumb-img" src="' + escapeAttr(result.screenshot) + '" alt="Screenshot of ' + escapeAttr(domain) + '" loading="lazy">' +
+      '<div class="thumb-info">' +
+        '<div class="thumb-label">Site preview · urlscan.io</div>' +
+        '<strong>' + escapeHtml(domain) + '</strong><br>' +
+        'Scanned ' + escapeHtml(ageStr) + ' (' + escapeHtml(tsStr) + ').<br>' +
+        '<a href="' + escapeAttr(result.scanUrl || '#') + '" target="_blank" rel="noopener">View full scan →</a> · ' +
+        '<span class="thumb-zoom">Enlarge ⤢</span>' +
+      '</div>';
     const img = slotEl.querySelector('.thumb-img');
+    const zoom = slotEl.querySelector('.thumb-zoom');
     if (img) img.addEventListener('click', () => openLightbox(domain, result));
+    if (zoom) zoom.addEventListener('click', () => openLightbox(domain, result));
   } else if (result.status === 'none') {
     slotEl.innerHTML =
-      '<a class="thumb-submit" href="https://urlscan.io/search/#domain%3A' + encodeURIComponent(domain) + '" target="_blank" rel="noopener" title="No public scan yet — submit on urlscan.io">No preview<br>Submit →</a>';
+      '<a class="thumb-submit" href="https://urlscan.io/search/#domain%3A' + encodeURIComponent(domain) + '" target="_blank" rel="noopener">No public scan yet<br>Submit on urlscan.io →</a>' +
+      '<div class="thumb-info">' +
+        '<div class="thumb-label">Site preview</div>' +
+        'No one has scanned <strong>' + escapeHtml(domain) + '</strong> on urlscan.io yet. You can submit it manually to capture a sandboxed screenshot.' +
+      '</div>';
   } else {
-    slotEl.innerHTML = '<div class="thumb-placeholder">Unavailable</div>';
+    slotEl.innerHTML =
+      '<div class="thumb-placeholder">urlscan unreachable</div>' +
+      '<div class="thumb-info">' +
+        '<div class="thumb-label">Site preview</div>' +
+        'Could not reach urlscan.io. Network or CORS may be blocking the request.' +
+      '</div>';
   }
 }
 
@@ -1159,7 +1182,7 @@ async function scanDomain(rawInput) {
       snoozed: [...snoozedSet], results: classified
     };
     addScanToHistory(scanRecord);
-    try { history.replaceState(null, '', '#' + encodeURIComponent(original)); } catch {}
+    try { window.history.replaceState(null, '', '#' + encodeURIComponent(original)); } catch {}
 
     setProgress('Scan complete', 'Found ' + liveCandidates.length + ' registered lookalikes among ' + candidates.length + ' variations', 100, candidates.length + ' / ' + candidates.length);
     await new Promise(r => setTimeout(r, 400));
@@ -1475,7 +1498,7 @@ function renderExecSummary(active, counts, newCount, newFindings, ready) {
   let sinceHTML = '';
   if (!currentScanMeta.isFirstScan && currentScanMeta.priorBaselineTs) {
     if (newCount > 0) {
-      sinceHTML = '<div class="since"><strong>Since ' + relativeTime(currentScanMeta.priorBaselineTs) + ':</strong> ' + newCount + ' new high-priority ' + (newCount === 1 ? 'lookalike was' : 'lookalikes were') + ' registered. New registrations are the strongest signal of active threat activity.</div>';
+      sinceHTML = '<div class="since"><strong>Since ' + relativeTime(currentScanMeta.priorBaselineTs) + ':</strong> ' + newCount + ' new high-priority ' + (newCount === 1 ? 'lookalike was' : 'lookalikes were') + ' registered.</div>';
     } else {
       sinceHTML = '<div class="since"><strong>Since ' + relativeTime(currentScanMeta.priorBaselineTs) + ':</strong> baseline is stable — no new registrations.</div>';
     }
@@ -1671,7 +1694,7 @@ function renderBucket(elId, items) {
   if (items.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>None in this category.</div>'; return; }
   c.innerHTML = items.map((r, i) => renderRow(r, elId + '-' + i)).join('');
   attachRowButtons(c, items);
-  attachThumbObservers(c);
+  loadThumbsForContainer(c);
 }
 
 function renderAllList() {
@@ -1686,7 +1709,7 @@ function renderAllList() {
   if (filtered.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>No domains in this filter.</div>'; return; }
   c.innerHTML = filtered.map((r, i) => renderRow(r, 'all-' + i)).join('');
   attachRowButtons(c, filtered);
-  attachThumbObservers(c);
+  loadThumbsForContainer(c);
 }
 
 function attachRowButtons(container, items) {
@@ -1704,20 +1727,12 @@ function attachRowButtons(container, items) {
   });
 }
 
-function attachThumbObservers(container) {
-  container.querySelectorAll('.row-thumb[data-thumb-domain]').forEach(slot => {
+function loadThumbsForContainer(container) {
+  // Eagerly fetch thumbnails for all visible thumb-blocks in this container.
+  // Concurrency is capped at URLSCAN_CONCURRENCY in the queue.
+  container.querySelectorAll('.thumb-block[data-thumb-domain]').forEach(slot => {
     const domain = slot.getAttribute('data-thumb-domain');
-    const cached = urlscanCache.get(domain);
-    if (cached && cached.status !== 'loading') {
-      renderThumbSlot(slot, domain, cached);
-      return;
-    }
-    if (urlscanObserver) {
-      urlscanObserver.observe(slot);
-    } else {
-      // Fallback: no IntersectionObserver, just enqueue immediately
-      enqueueUrlscan(domain, slot);
-    }
+    enqueueUrlscan(domain, slot);
   });
 }
 
@@ -1766,11 +1781,17 @@ function renderRow(r, idPrefix) {
       '<button data-action="snooze" data-idx="' + idx + '" title="Mark as triaged">Snooze</button>'
     );
 
-  const thumbSlot = showThumb
-    ? '<div class="row-thumb" data-thumb-domain="' + escapeAttr(r.domain) + '"><div class="thumb-placeholder">…</div></div>'
+  const thumbBlock = showThumb
+    ? '<div class="thumb-block" data-thumb-domain="' + escapeAttr(r.domain) + '">' +
+        '<div class="thumb-placeholder loading">Checking urlscan.io…</div>' +
+        '<div class="thumb-info">' +
+          '<div class="thumb-label">Site preview</div>' +
+          'Looking for an existing public scan…' +
+        '</div>' +
+      '</div>'
     : '';
 
-  return '<div class="row row-doppler ' + flag + (showThumb ? ' with-thumb' : '') + (r.snoozed ? ' snoozed-row' : '') + '">' +
+  return '<div class="row row-doppler ' + flag + (r.snoozed ? ' snoozed-row' : '') + '">' +
     '<div>' + newBadge + '<span class="badge ' + v.sev + '">' + v.short + '</span></div>' +
     '<div>' +
       '<div class="row-name">' + escapeHtml(r.domain) + '</div>' +
@@ -1784,8 +1805,8 @@ function renderRow(r, idPrefix) {
       '</div>' : '') +
       (topAction && (r.verdict === 'crit' || r.verdict === 'high') ?
         '<div class="signal-action">' + topAction.action + '</div>' : '') +
+      thumbBlock +
     '</div>' +
-    thumbSlot +
     '<div class="row-confidence" title="Score: ' + (r.score > 0 ? '+' : '') + r.score + '">' +
       '<div class="conf-label" style="color:' + SEV_COLORS[v.sev] + ';">' + escapeHtml(r.confidence.label) + '</div>' +
       '<div class="conf-sub">' + escapeHtml(r.confidence.desc) + '</div>' +
@@ -2008,7 +2029,6 @@ document.querySelectorAll('.example-link').forEach(b => {
   });
 });
 
-// Export dropdown
 const exportBtn = document.getElementById('exportBtn');
 const exportMenu = document.getElementById('exportMenu');
 exportBtn.addEventListener('click', e => {
@@ -2031,7 +2051,6 @@ exportMenu.querySelectorAll('button').forEach(b => {
   });
 });
 
-// Modal events
 document.getElementById('reportClose').addEventListener('click', closeAbuseReport);
 document.getElementById('reportDoneBtn').addEventListener('click', closeAbuseReport);
 document.getElementById('reportModal').addEventListener('click', e => { if (e.target.id === 'reportModal') closeAbuseReport(); });
@@ -2064,7 +2083,6 @@ document.getElementById('mdCopyBtn').addEventListener('click', async () => {
   } catch { document.getElementById('mdText').select(); document.execCommand('copy'); }
 });
 
-// Lightbox events
 document.getElementById('lbClose').addEventListener('click', closeLightbox);
 document.getElementById('lightbox').addEventListener('click', e => {
   if (e.target.id === 'lightbox') closeLightbox();
@@ -2078,10 +2096,8 @@ document.addEventListener('keydown', e => {
   else if (document.getElementById('mdModal').classList.contains('show')) closeMarkdownReport();
 });
 
-// Initial render
 renderHistory();
 
-// URL hash deep-link
 const hashDomain = decodeURIComponent(window.location.hash.replace('#', ''));
 if (hashDomain && hashDomain.includes('.')) {
   const histArr = getHistory();

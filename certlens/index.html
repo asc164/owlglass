@@ -112,7 +112,7 @@
   #view-about { display: none !important; }
   .cl-exec { background: #fff !important; border: 1px solid #c4b5fd; page-break-inside: avoid; margin-bottom: 18px; }
   .cl-exec h2 .tag { background: #7c3aed !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .metric-strip { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; margin-bottom: 14px; }
+  .metric-strip { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; margin-bottom: 14px; }
   .metric { padding: 8px !important; }
   .metric .value { font-size: 14pt !important; }
   .metric .label { font-size: 7pt !important; }
@@ -304,6 +304,12 @@
           <p style="margin-bottom: 12px;">Every public SSL/TLS certificate is logged in <strong>Certificate Transparency</strong> — a public, append-only system designed to detect mis-issuance. Anyone can search this data.</p>
           <p style="margin-bottom: 16px;">CertLens uses the <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">SSLMate CertSpotter API</a> to retrieve certificates for a domain (and all of its subdomains), then runs DNS lookups via <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google's public DNS-over-HTTPS resolver</a> to see which hosts are actually responding.</p>
 
+          <h3 style="margin: 20px 0 8px;">Shared-certificate filtering</h3>
+          <p class="muted">A single TLS certificate can list dozens of unrelated hostnames in its Subject Alternative Names (SANs) — common with shared CDN, hosting, and marketing platforms (Cloudflare, Fastly, Q4, GlobeNewswire, etc.). CertLens only counts SANs that belong to the target apex domain you scanned. SANs for unrelated third-party domains are filtered out and reported in the status line as "filtered N unrelated SANs from shared certs." This prevents false hosts like <code>investors.upwork.com</code> from appearing under unrelated scans.</p>
+
+          <h3 style="margin: 20px 0 8px;">"New since last scan"</h3>
+          <p class="muted">After the first scan of a domain, CertLens stores the set of hosts and certificate IDs in your browser as a baseline. Each subsequent rescan compares against that baseline and counts how many hosts are newly discovered. The metric card shows the count; click it to jump to the Hosts tab filtered to just the new entries. The baseline updates after every scan, so "new" always means "since the last time you ran this domain."</p>
+
           <h3 style="margin: 20px 0 8px;">Scan history</h3>
           <p class="muted">Your last 10 completed scans are stored in your browser (localStorage only — nothing sent anywhere). Click any chip in the history strip to instantly revisit a past scan without re-fetching from the CertSpotter API. Most-recent scans are shown first.</p>
 
@@ -338,6 +344,8 @@ const STORAGE_PREFIX = 'owlglass_certlens_v1_';
 const WATCHLIST_KEY = 'owlglass_certlens_watchlist';
 const HISTORY_KEY = 'owlglass_certlens_history_v1';
 const HISTORY_LIMIT = 10;
+// Baseline: prior-scan host snapshot, used to compute "new since last scan"
+const BASELINE_PREFIX = 'owlglass_certlens_baseline_v1_';
 
 const SEV_COLORS = { crit:'#dc2626', high:'#ea580c', med:'#d97706', low:'#2563eb', ok:'#16a34a' };
 const DONUT_COLORS = ['#7c3aed','#a78bfa','#c4b5fd','#0891b2','#06b6d4','#67e8f9','#64748b','#94a3b8'];
@@ -354,10 +362,27 @@ let hostSortMode = 'latest-desc';
 let scanInProgress = false;
 let lastScanTime = null;
 let prevScanTime = null;
+let filteredSanCount = 0; // diagnostic: SANs dropped because they don't belong to target apex
+
+// "New since last scan" state — set of hostnames discovered for the first time in this scan
+let newHostsSet = new Set();
+let isFirstScan = false;
+
+// ---------- Apex / SAN ownership ----------
+function normalizeName(name) {
+  return String(name || '').toLowerCase().trim().replace(/^\*\./, '').replace(/\.$/, '');
+}
+
+function belongsToTarget(name, apex) {
+  const h = normalizeName(name);
+  const a = normalizeName(apex);
+  if (!h || !a) return false;
+  return h === a || h.endsWith('.' + a);
+}
 
 // ---------- Categorization & risks ----------
 function categorizeHost(name) {
-  const n = name.toLowerCase();
+  const n = normalizeName(name);
   if (/^(login|sso|auth|account|signin|verify|secure)[-.]/.test(n)) return { cat:'auth', label:'Auth / Login', risk:'high' };
   if (/(admin|panel|control|manage|console|dashboard|portal)[-.]/.test(n)) return { cat:'admin', label:'Admin', risk:'high' };
   if (/^(dev|test|staging|stage|qa|uat|preview|sandbox|demo|beta)[-.]/.test(n) || /\.(dev|staging|test)\./.test(n)) return { cat:'dev', label:'Dev / Staging', risk:'medium' };
@@ -398,6 +423,43 @@ function detectRisks(host, certs) {
   const issuers = new Set(certs.map(c => c.issuer).filter(Boolean));
   if (issuers.size >= 3 && certs.length >= 3) risks.push({ type:'multi-issuer', text: issuers.size + ' different CAs — inconsistent issuance', level:'low' });
   return risks;
+}
+
+// ---------- Baseline (for "new since last scan") ----------
+function loadBaseline(domain) {
+  try {
+    const raw = localStorage.getItem(BASELINE_PREFIX + domain);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function saveBaseline(domain, hosts) {
+  try {
+    const payload = {
+      ts: Date.now(),
+      hosts: hosts.map(h => h.name.toLowerCase())
+    };
+    localStorage.setItem(BASELINE_PREFIX + domain, JSON.stringify(payload));
+  } catch (e) {
+    console.warn('Baseline save failed:', e);
+  }
+}
+// Compute newHostsSet by comparing current allHosts against the saved baseline,
+// then update the baseline so the next scan sees today's snapshot.
+function computeNewSinceLastScan(domain) {
+  const prior = loadBaseline(domain);
+  if (!prior || !Array.isArray(prior.hosts)) {
+    isFirstScan = true;
+    newHostsSet = new Set();
+  } else {
+    isFirstScan = false;
+    const priorHosts = new Set(prior.hosts);
+    newHostsSet = new Set(
+      allHosts
+        .map(h => h.name.toLowerCase())
+        .filter(n => !priorHosts.has(n))
+    );
+  }
+  saveBaseline(domain, allHosts);
 }
 
 // ---------- Fetch ----------
@@ -444,32 +506,70 @@ async function checkAlive(hostname) {
   } catch { return { alive:false, ips:[] }; }
 }
 
-function processData(rawCerts) {
-  const certs = rawCerts.map(c => ({
-    id: c.id, sha256: c.cert_sha256,
-    dns_names: (c.dns_names || []).filter(n => !n.startsWith('*')),
-    wildcard_names: (c.dns_names || []).filter(n => n.startsWith('*')),
-    issuer: (c.issuer && (c.issuer.friendly_name || (c.issuer.name && (c.issuer.name.match(/CN=([^,]+)/) || [])[1]))) || 'Unknown',
-    not_before: c.not_before, not_after: c.not_after, revoked: c.revoked,
-    daysAgo: Math.floor((Date.now() - new Date(c.not_before)) / 86400000),
-    daysToExpiry: Math.floor((new Date(c.not_after) - Date.now()) / 86400000)
-  }));
+function processData(rawCerts, apex) {
+  let filteredSans = 0;
+
+  const certs = rawCerts.map(c => {
+    const owned = [];
+    const wildcardOwned = [];
+    let droppedHere = 0;
+
+    (c.dns_names || []).forEach(rawName => {
+      const isWildcard = String(rawName || '').startsWith('*.');
+      const normalized = normalizeName(rawName);
+      if (!normalized) return;
+      if (belongsToTarget(normalized, apex)) {
+        if (isWildcard) {
+          if (!wildcardOwned.includes(normalized)) wildcardOwned.push(normalized);
+        } else {
+          if (!owned.includes(normalized)) owned.push(normalized);
+        }
+      } else {
+        droppedHere++;
+      }
+    });
+
+    filteredSans += droppedHere;
+
+    return {
+      id: c.id,
+      sha256: c.cert_sha256,
+      dns_names: owned,
+      wildcard_names: wildcardOwned,
+      foreign_san_count: droppedHere,
+      issuer: (c.issuer && (c.issuer.friendly_name || (c.issuer.name && (c.issuer.name.match(/CN=([^,]+)/) || [])[1]))) || 'Unknown',
+      not_before: c.not_before,
+      not_after: c.not_after,
+      revoked: c.revoked,
+      daysAgo: Math.floor((Date.now() - new Date(c.not_before)) / 86400000),
+      daysToExpiry: Math.floor((new Date(c.not_after) - Date.now()) / 86400000)
+    };
+  })
+  .filter(c => c.dns_names.length > 0 || c.wildcard_names.length > 0);
+
   const hostMap = new Map();
   certs.forEach(c => {
     [...c.dns_names, ...c.wildcard_names].forEach(name => {
-      if (!hostMap.has(name)) hostMap.set(name, []);
-      hostMap.get(name).push(c);
+      if (!belongsToTarget(name, apex)) return;
+      const key = name.toLowerCase();
+      if (!hostMap.has(key)) hostMap.set(key, { displayName: name, certs: [] });
+      hostMap.get(key).certs.push(c);
     });
   });
-  const hosts = [...hostMap.entries()].map(([name, hostCerts]) => {
+
+  const hosts = [...hostMap.values()].map(({ displayName, certs: hostCerts }) => {
+    const name = displayName;
     const cat = categorizeHost(name);
     const risks = detectRisks(name, hostCerts);
     const sorted = [...hostCerts].sort((a,b) => new Date(b.not_before) - new Date(a.not_before));
     const latest = sorted[0];
     const active = sorted.filter(c => !c.revoked && new Date(c.not_after) > Date.now());
     return {
-      name, isWildcard: name.startsWith('*'), cat, risks,
-      certs: sorted, certCount: hostCerts.length,
+      name,
+      isWildcard: name.startsWith('*') || hostCerts.some(c => c.wildcard_names.includes(name)),
+      cat, risks,
+      certs: sorted,
+      certCount: hostCerts.length,
       latestIssue: latest && latest.not_before,
       latestExpiry: active[0] && active[0].not_after,
       revoked: hostCerts.some(c => c.revoked),
@@ -478,7 +578,8 @@ function processData(rawCerts) {
       alive: null, ips: []
     };
   }).sort((a,b) => new Date(b.latestIssue || 0) - new Date(a.latestIssue || 0));
-  return { certs, hosts };
+
+  return { certs, hosts, filteredSans };
 }
 
 // ---------- Scan history ----------
@@ -501,16 +602,17 @@ function saveCurrentScanToHistory() {
     certCount: allCerts.length,
     findingsCount: findings,
     newIdsCount: newIds.size,
-    // Full data
+    filteredSanCount: filteredSanCount,
+    isFirstScan: isFirstScan,
+    newHosts: [...newHostsSet],
     certs: allCerts,
-    hosts: allHosts.map(h => ({ ...h, certs: h.certs.map(c => c.id) })) // store cert ids in host.certs to save space
+    hosts: allHosts.map(h => ({ ...h, certs: h.certs.map(c => c.id) }))
   };
 
   let list = getHistory().filter(e => e.domain !== currentDomain);
   list.unshift(entry);
   if (list.length > HISTORY_LIMIT) list = list.slice(0, HISTORY_LIMIT);
 
-  // Try to save; if quota exceeded, drop oldest entries until it fits
   try {
     saveHistory(list);
   } catch (e) {
@@ -528,8 +630,10 @@ function restoreScanFromHistory(domain) {
   lastScanTime = entry.scannedAt;
   prevScanTime = entry.prevScannedAt;
   allCerts = entry.certs;
+  filteredSanCount = entry.filteredSanCount || 0;
+  isFirstScan = !!entry.isFirstScan;
+  newHostsSet = new Set(entry.newHosts || []);
 
-  // Rehydrate host.certs from cert ids
   const certById = new Map(allCerts.map(c => [c.id, c]));
   allHosts = entry.hosts.map(h => ({
     ...h,
@@ -537,7 +641,7 @@ function restoreScanFromHistory(domain) {
   }));
 
   knownIds = new Set(JSON.parse(localStorage.getItem(STORAGE_PREFIX + domain + '_ids') || '[]'));
-  newIds = new Set(); // Don't re-show diff on history switch
+  newIds = new Set();
 
   history.replaceState(null, '', '#' + encodeURIComponent(domain));
   document.getElementById('domainInput').value = domain;
@@ -546,10 +650,11 @@ function restoreScanFromHistory(domain) {
   document.getElementById('watchStar').style.display = '';
   document.getElementById('diffBanner').style.display = 'none';
 
-  setStatus('ok', 'Loaded from history — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts');
+  let statusMsg = 'Loaded from history — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts';
+  if (filteredSanCount > 0) statusMsg += ' · filtered ' + filteredSanCount.toLocaleString() + ' unrelated SANs from shared certs';
+  setStatus('ok', statusMsg);
   document.getElementById('lastScanText').textContent = 'Scanned: ' + new Date(lastScanTime).toLocaleString();
 
-  // Reset filter/sort/search
   activeHostFilter = 'all';
   hostSearchTerm = '';
   hostSortMode = 'latest-desc';
@@ -565,7 +670,6 @@ function restoreScanFromHistory(domain) {
 function removeFromHistory(domain) {
   const list = getHistory().filter(e => e.domain !== domain);
   saveHistory(list);
-  // If we removed the currently-viewed scan, switch to the next one or clear
   if (currentDomain === domain) {
     if (list.length > 0) restoreScanFromHistory(list[0].domain);
     else clearCurrentView();
@@ -583,6 +687,9 @@ function clearCurrentView() {
   allCerts = []; allHosts = [];
   knownIds = new Set(); newIds = new Set();
   lastScanTime = null; prevScanTime = null;
+  filteredSanCount = 0;
+  newHostsSet = new Set();
+  isFirstScan = false;
   document.getElementById('rescanBtn').disabled = true;
   document.getElementById('exportBtn').disabled = true;
   document.getElementById('watchStar').style.display = 'none';
@@ -663,22 +770,32 @@ async function scan(domain) {
     const rawCerts = await fetchCertsAllPages(domain, maxPages);
     if (!Array.isArray(rawCerts) || rawCerts.length === 0) throw new Error('No certificates found. Domain may be too new, private, or use only self-signed certs.');
     setStatus('busy', 'Processing ' + rawCerts.length + ' certificates…');
-    const r = processData(rawCerts);
-    allCerts = r.certs; allHosts = r.hosts;
+    const r = processData(rawCerts, domain);
+    allCerts = r.certs;
+    allHosts = r.hosts;
+    filteredSanCount = r.filteredSans;
+
+    if (allHosts.length === 0) {
+      throw new Error('No hosts belonging to ' + domain + ' found in returned certificates. All ' + rawCerts.length + ' certs were shared-tenant certs covering unrelated domains.');
+    }
+
+    // Compute "new since last scan" BEFORE updating the baseline. This sets
+    // newHostsSet and isFirstScan, then writes today's host list as the new baseline.
+    computeNewSinceLastScan(domain);
 
     const storageKey = STORAGE_PREFIX + domain;
     const known = JSON.parse(localStorage.getItem(storageKey + '_ids') || '[]');
     prevScanTime = localStorage.getItem(storageKey + '_lastScan');
     knownIds = new Set(known);
     newIds = new Set();
-    const isFirstScan = knownIds.size === 0;
-    if (isFirstScan) knownIds = new Set(allCerts.map(c => c.id));
+    const isFirstCertScan = knownIds.size === 0;
+    if (isFirstCertScan) knownIds = new Set(allCerts.map(c => c.id));
     else allCerts.forEach(c => { if (!knownIds.has(c.id)) { newIds.add(c.id); knownIds.add(c.id); } });
     lastScanTime = new Date().toISOString();
     localStorage.setItem(storageKey + '_ids', JSON.stringify([...knownIds]));
     localStorage.setItem(storageKey + '_lastScan', lastScanTime);
 
-    if (!isFirstScan && newIds.size > 0) showDiffBanner(newIds.size, prevScanTime);
+    if (!isFirstCertScan && newIds.size > 0) showDiffBanner(newIds.size, prevScanTime);
 
     setStatus('busy', 'Checking host liveness…');
     const toCheck = allHosts.filter(h => !h.isWildcard).slice(0, 30);
@@ -690,7 +807,9 @@ async function scan(domain) {
     saveCurrentScanToHistory();
     renderAll();
     renderHistoryBar();
-    setStatus('ok', 'Complete — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts');
+    let okMsg = 'Complete — ' + allCerts.length + ' certificates, ' + allHosts.length + ' unique hosts';
+    if (filteredSanCount > 0) okMsg += ' · filtered ' + filteredSanCount.toLocaleString() + ' unrelated SANs from shared certs';
+    setStatus('ok', okMsg);
     document.getElementById('lastScanText').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
     document.getElementById('exportBtn').disabled = false;
     document.getElementById('watchStar').style.display = '';
@@ -802,7 +921,9 @@ function renderExecSummary() {
   const actions = buildPriorityActions();
   let changedHtml = '';
   if (prevScanTime && newIds.size > 0) {
-    changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> ' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + ' detected.</div>';
+    changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> ' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + ' detected';
+    if (newHostsSet.size > 0) changedHtml += ' across ' + newHostsSet.size + ' new host' + (newHostsSet.size===1?'':'s');
+    changedHtml += '.</div>';
   } else if (prevScanTime) {
     changedHtml = '<div class="changed"><strong>Since last scan (' + formatAge(prevScanTime) + '):</strong> no new certificates.</div>';
   }
@@ -821,7 +942,7 @@ function renderExecSummary() {
     '<div class="summary-line">' + summary + '</div>' +
     '<div class="actions"><div class="actions-title">Top priority actions</div>' + actionsHtml + '</div>' +
     changedHtml +
-    '<div class="footer">Generated by CertLens · ' + new Date(lastScanTime || Date.now()).toLocaleString() + '</div>';
+    '<div class="footer">Generated by CertLens · ' + new Date(lastScanTime || Date.now()).toLocaleString() + (filteredSanCount > 0 ? ' · ' + filteredSanCount.toLocaleString() + ' shared-cert SANs filtered' : '') + '</div>';
 }
 
 function renderMetricStrip() {
@@ -834,9 +955,12 @@ function renderMetricStrip() {
   const recent7 = allCerts.filter(c => c.daysAgo <= 7).length;
   const devCount = allHosts.filter(h => h.cat.cat === 'dev').length;
   const adminCount = allHosts.filter(h => ['admin','auth','internal','devops'].includes(h.cat.cat)).length;
+  const newHostsCount = newHostsSet.size;
+
   const m = (label, value, meta, mod, action) =>
     '<div class="metric clickable ' + (mod||'') + '" data-action="' + (action||'') + '">' +
       '<div class="label">' + label + '</div><div class="value">' + value + '</div><div class="meta">' + meta + '</div></div>';
+
   const strip = document.getElementById('metricStrip');
   strip.style.display = 'grid';
   strip.innerHTML =
@@ -847,7 +971,13 @@ function renderMetricStrip() {
     m('Expired', expired, 'Past validity', expired > 0 ? 'crit' : 'ok', 'goto-hosts-expired') +
     m('Revoked', revoked, 'Need investigation', revoked > 0 ? 'crit' : 'ok', 'goto-hosts-revoked') +
     m('Dev / Staging', devCount, devCount > 5 ? 'High sprawl' : 'Non-production', devCount > 5 ? 'med' : '', 'goto-hosts-dev') +
-    m('Admin / Internal', adminCount, adminCount > 0 ? 'High-value targets' : 'None exposed', adminCount > 0 ? 'high' : 'ok', 'goto-hosts-admin');
+    m('Admin / Internal', adminCount, adminCount > 0 ? 'High-value targets' : 'None exposed', adminCount > 0 ? 'high' : 'ok', 'goto-hosts-admin') +
+    m('New since last scan',
+      isFirstScan ? '—' : newHostsCount,
+      isFirstScan ? 'First scan (baseline set)' : (newHostsCount === 0 ? 'No new hosts' : 'Newly discovered'),
+      isFirstScan ? '' : (newHostsCount > 0 ? 'high' : 'ok'),
+      'goto-hosts-new');
+
   strip.querySelectorAll('.metric.clickable').forEach(m => m.addEventListener('click', () => handleMetricClick(m.dataset.action)));
 }
 
@@ -870,6 +1000,7 @@ function handleMetricClick(action) {
   else if (action === 'goto-hosts-revoked') { go('hosts'); setFilter('revoked'); }
   else if (action === 'goto-hosts-dev') { go('hosts'); setFilter('dev'); }
   else if (action === 'goto-hosts-admin') { go('hosts'); setFilter('admin'); }
+  else if (action === 'goto-hosts-new') { go('hosts'); setFilter('new'); }
   else if (action === 'goto-expiring') { go('expiring'); }
   else if (action === 'goto-timeline') { go('timeline'); }
 }
@@ -960,6 +1091,7 @@ function renderRecommendations() {
   if (expired > 0) recs.push({ sev:'crit', title:'Renew ' + expired + ' expired certificate' + (expired===1?'':'s'), why:'Services using expired certificates show browser warnings and break traffic.' });
   if (revoked > 0) recs.push({ sev:'crit', title:'Investigate ' + revoked + ' revoked certificate' + (revoked===1?'':'s'), why:'Determine if revocation was due to compromise or routine replacement.' });
   if (expiringSoon > 0) recs.push({ sev:'high', title: expiringSoon + ' certificate' + (expiringSoon===1?'':'s') + ' expire within 30 days', why:'Schedule renewals. Verify automatic renewal is configured.' });
+  if (!isFirstScan && newHostsSet.size > 0) recs.push({ sev:'high', title: newHostsSet.size + ' new host' + (newHostsSet.size===1?'':'s') + ' since last scan', why:'Newly discovered hosts may indicate shadow IT or unauthorized issuance. Review and confirm ownership.' });
   if (adminHosts.length > 0) recs.push({ sev:'', title:'Review ' + adminHosts.length + ' admin / auth host' + (adminHosts.length===1?'':'s'), why:'Externally exposed admin pages are high-value targets. Verify WAF, MFA, and IP allowlists.' });
   if (devHosts.length > 5) recs.push({ sev:'', title: devHosts.length + ' dev / staging hosts exposed externally', why:"Non-production environments shouldn't be public." });
   if (recs.length === 0) recs.push({ sev:'', title:'No major risks detected', why:'No immediate action required.' });
@@ -977,7 +1109,9 @@ function renderHosts() {
   else if (activeHostFilter === 'dev') filtered = filtered.filter(h => h.cat.cat === 'dev');
   else if (activeHostFilter === 'admin') filtered = filtered.filter(h => ['admin','auth','internal','devops'].includes(h.cat.cat));
   else if (activeHostFilter === 'risky') filtered = filtered.filter(h => h.risks.length > 0);
-  else if (activeHostFilter === 'new') filtered = filtered.filter(h => h.certs.some(c => newIds.has(c.id)));
+  // "New since last scan" uses the host-level baseline diff (newHostsSet), not the cert-id newIds.
+  // newHostsSet contains hostnames that didn't exist in the previous scan's host snapshot.
+  else if (activeHostFilter === 'new') filtered = filtered.filter(h => newHostsSet.has(h.name.toLowerCase()));
   else if (activeHostFilter === 'revoked') filtered = filtered.filter(h => h.revoked);
   else if (activeHostFilter === 'expired') filtered = filtered.filter(h => !h.hasActive);
 
@@ -1000,9 +1134,21 @@ function renderHosts() {
   });
   const c = document.getElementById('hostList');
   document.getElementById('hostsTitle').textContent = 'Discovered hosts (' + filtered.length + ' / ' + allHosts.length + ')';
-  if (filtered.length === 0) { c.innerHTML = '<div class="empty"><div class="ico">—</div>No hosts match this filter.</div>'; return; }
+  if (filtered.length === 0) {
+    // Friendlier empty state for the "new" filter on first scan
+    if (activeHostFilter === 'new' && isFirstScan) {
+      c.innerHTML = '<div class="empty"><div class="ico">i</div>This is the first scan for ' + escapeHtml(currentDomain) + '. A baseline has been saved — rescan later to see newly discovered hosts here.</div>';
+    } else if (activeHostFilter === 'new') {
+      c.innerHTML = '<div class="empty"><div class="ico">✓</div>No new hosts since the last scan.</div>';
+    } else {
+      c.innerHTML = '<div class="empty"><div class="ico">—</div>No hosts match this filter.</div>';
+    }
+    return;
+  }
   c.innerHTML = filtered.slice(0,500).map(h => {
-    const isNew = h.certs.some(c => newIds.has(c.id));
+    const isNewHost = newHostsSet.has(h.name.toLowerCase());
+    const isNewCert = h.certs.some(c => newIds.has(c.id));
+    const isNew = isNewHost || isNewCert;
     const worstSev = h.risks.length === 0 ? '' :
       h.risks.some(r => r.level==='crit') ? 'crit' :
       h.risks.some(r => r.level==='high') ? 'high' :
@@ -1010,7 +1156,8 @@ function renderHosts() {
     const flag = h.revoked ? 'flag-crit' : worstSev ? 'flag-'+worstSev : isNew ? 'flag-new' : '';
     const expiryDays = h.latestExpiry ? Math.floor((new Date(h.latestExpiry) - Date.now()) / 86400000) : null;
     let badge = '';
-    if (isNew) badge = '<span class="badge new">New</span>';
+    if (isNewHost) badge = '<span class="badge new">New host</span>';
+    else if (isNewCert) badge = '<span class="badge new">New cert</span>';
     else if (!h.hasActive) badge = '<span class="badge muted">Expired</span>';
     else if (expiryDays !== null && expiryDays < 30) badge = '<span class="badge med">' + expiryDays + 'd left</span>';
     else if (h.revoked) badge = '<span class="badge crit">Revoked</span>';
@@ -1091,7 +1238,8 @@ function printReport(mode) {
   document.getElementById('printDomain').textContent = currentDomain;
   document.getElementById('printMeta').textContent =
     'Scan completed ' + new Date(lastScanTime || Date.now()).toLocaleString() +
-    ' · ' + allHosts.length.toLocaleString() + ' hosts · ' + allCerts.length.toLocaleString() + ' certificates';
+    ' · ' + allHosts.length.toLocaleString() + ' hosts · ' + allCerts.length.toLocaleString() + ' certificates' +
+    (filteredSanCount > 0 ? ' · ' + filteredSanCount.toLocaleString() + ' shared-cert SANs filtered' : '');
   document.getElementById('printFooterDomain').textContent = currentDomain;
   if (mode === 'summary') document.body.classList.add('print-summary');
   else document.body.classList.remove('print-summary');
@@ -1120,8 +1268,15 @@ function buildMarkdownReport() {
       md += (i+1) + '. **' + a.title + '** — ' + sev + '\n   ' + a.why + '\n\n';
     });
   }
-  if (prevScanTime && newIds.size > 0) {
-    md += '## Changes Since Last Scan\n\n_Last scan: ' + formatAge(prevScanTime) + '_\n\n**' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + '** detected.\n\n';
+  if (prevScanTime && (newIds.size > 0 || newHostsSet.size > 0)) {
+    md += '## Changes Since Last Scan\n\n_Last scan: ' + formatAge(prevScanTime) + '_\n\n';
+    if (newHostsSet.size > 0) md += '**' + newHostsSet.size + ' new host' + (newHostsSet.size===1?'':'s') + '** discovered.\n\n';
+    if (newIds.size > 0) md += '**' + newIds.size + ' new certificate' + (newIds.size===1?'':'s') + '** detected.\n\n';
+    if (newHostsSet.size > 0 && newHostsSet.size <= 25) {
+      md += 'New hosts:\n';
+      [...newHostsSet].sort().forEach(h => { md += '- `' + h + '`\n'; });
+      md += '\n';
+    }
   }
   md += '## Key Metrics\n\n';
   const expiringSoon = allCerts.filter(c => c.daysToExpiry > 0 && c.daysToExpiry <= 30 && !c.revoked).length;
@@ -1138,7 +1293,10 @@ function buildMarkdownReport() {
   md += '| Expired | ' + expired + ' |\n';
   md += '| Revoked | ' + revoked + ' |\n';
   md += '| Dev / Staging hosts | ' + devCount + ' |\n';
-  md += '| Admin / Internal hosts | ' + adminCount + ' |\n\n';
+  md += '| Admin / Internal hosts | ' + adminCount + ' |\n';
+  md += '| New since last scan | ' + (isFirstScan ? 'First scan (baseline set)' : (newHostsSet.size + ' new host' + (newHostsSet.size===1?'':'s'))) + ' |\n';
+  if (filteredSanCount > 0) md += '| Shared-cert SANs filtered | ' + filteredSanCount.toLocaleString() + ' (unrelated third-party domains) |\n';
+  md += '\n';
   const riskyHosts = allHosts.filter(h => h.risks.length > 0);
   if (riskyHosts.length > 0) {
     md += '## All Findings (' + riskyHosts.length + ')\n\n';
@@ -1212,7 +1370,7 @@ function downloadFile(filename, content, mime) {
 }
 function exportHostsCsv() {
   if (!allHosts.length) return;
-  const headers = ['hostname','category','cert_count','latest_issue','latest_expiry','days_to_expiry','has_active','revoked','alive','ips','issuers','findings_count','findings'];
+  const headers = ['hostname','category','cert_count','latest_issue','latest_expiry','days_to_expiry','has_active','revoked','alive','ips','issuers','new_since_last_scan','findings_count','findings'];
   const rows = allHosts.map(h => {
     const daysToExp = h.latestExpiry ? Math.floor((new Date(h.latestExpiry) - Date.now())/86400000) : '';
     return [h.name, h.cat.label, h.certCount,
@@ -1221,6 +1379,7 @@ function exportHostsCsv() {
       daysToExp, h.hasActive, h.revoked,
       h.alive === null ? 'not-checked' : h.alive,
       h.ips.join('; '), h.issuers.join('; '),
+      newHostsSet.has(h.name.toLowerCase()),
       h.risks.length, h.risks.map(r => '[' + r.level + '] ' + r.text).join(' | ')];
   });
   const csv = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
@@ -1228,9 +1387,9 @@ function exportHostsCsv() {
 }
 function exportCertsCsv() {
   if (!allCerts.length) return;
-  const headers = ['cert_id','sha256','dns_names','wildcard_names','issuer','not_before','not_after','revoked','days_to_expiry'];
+  const headers = ['cert_id','sha256','dns_names','wildcard_names','issuer','not_before','not_after','revoked','days_to_expiry','foreign_san_count'];
   const rows = allCerts.map(c => [c.id, c.sha256, c.dns_names.join('; '), c.wildcard_names.join('; '), c.issuer,
-    c.not_before ? c.not_before.slice(0,10) : '', c.not_after ? c.not_after.slice(0,10) : '', c.revoked, c.daysToExpiry]);
+    c.not_before ? c.not_before.slice(0,10) : '', c.not_after ? c.not_after.slice(0,10) : '', c.revoked, c.daysToExpiry, c.foreign_san_count || 0]);
   const csv = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
   downloadFile('certlens_' + currentDomain + '_certs.csv', csv, 'text/csv');
 }
@@ -1294,7 +1453,6 @@ function renderWatchlistBar() {
         saveWatchlist(list); renderWatchlistBar(); updateWatchStar();
         return;
       }
-      // Smart: if already in history, restore; else scan fresh
       if (getHistory().some(e => e.domain === d) && d !== currentDomain) {
         restoreScanFromHistory(d);
       } else {
@@ -1308,8 +1466,9 @@ function showDiffBanner(newCount, prevScanIso) {
   const banner = document.getElementById('diffBanner');
   const ago = prevScanIso ? formatAge(prevScanIso) : 'last scan';
   banner.style.display = 'flex';
+  const newHostsBit = newHostsSet.size > 0 ? ' across <strong>' + newHostsSet.size + ' new host' + (newHostsSet.size===1?'':'s') + '</strong>' : '';
   banner.innerHTML =
-    '<div><strong>' + newCount + ' new certificate' + (newCount===1?'':'s') + '</strong> since ' + ago + '.</div>' +
+    '<div><strong>' + newCount + ' new certificate' + (newCount===1?'':'s') + '</strong>' + newHostsBit + ' since ' + ago + '.</div>' +
     '<div style="display:flex;gap:6px"><button id="diffShow">Show only new</button><button class="x" id="diffClose">×</button></div>';
   document.getElementById('diffShow').addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -1431,7 +1590,6 @@ renderWatchlistBar();
 renderHistoryBar();
 const h = decodeURIComponent(window.location.hash.replace('#',''));
 if (h && h.includes('.')) {
-  // If domain is in history, restore from it; otherwise scan fresh
   if (getHistory().some(e => e.domain === h)) {
     restoreScanFromHistory(h);
   } else {

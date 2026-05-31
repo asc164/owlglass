@@ -2245,12 +2245,20 @@ function renderTable(){
       else if(act==='expand-all'){
         const entry = state.domains.find(x => x.domain === d);
         if(entry && entry.findings){
-          entry.findings.forEach((f, idx) => {
-            if(f.sev !== 'ok') expandedFindings.add(idx + ':' + (f.id||'unknown'));
+          const sevOrder = { crit:0, high:1, warn:2, info:3, ok:4 };
+          const nonOks = entry.findings
+            .filter(x => x.sev !== 'ok')
+            .sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
+          nonOks.forEach((f, idx) => {
+            const g = FINDING_GUIDANCE[f.id];
+            if(g && (g.whyMatters || g.howToFix)){
+              expandedFindings.add(idx + ':' + (f.id||'unknown'));
+            }
           });
           render();
         }
       }
+
       else if(act==='collapse-all'){ expandedFindings = new Set(); render(); }
       else if(act==='toggle-wins'){ winsCollapsed = !winsCollapsed; render(); }
     });

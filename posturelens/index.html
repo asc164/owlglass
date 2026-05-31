@@ -109,7 +109,6 @@
   .pl-detail{padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
   .pl-detail h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);font-weight:600}
 
-  /* Detail-level controls */
   .pl-detail-controls{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:-6px;flex-wrap:wrap}
   .pl-detail-controls .pl-btn-link{background:none;border:0;color:#374151;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:inherit}
   .pl-detail-controls .pl-btn-link:hover{color:#111827}
@@ -123,7 +122,7 @@
   .pl-wins-toggle{background:none;border:0;color:var(--ok);text-decoration:underline;text-underline-offset:2px;font-size:11.5px;cursor:pointer;padding:0;font-family:inherit;margin-left:6px}
   .pl-wins-toggle:hover{color:#064e3b}
 
-  /* Findings cards (replaces old .pl-finding) */
+  /* Finding cards */
   .pl-findings-list{display:flex;flex-direction:column;gap:8px;font-size:13px}
   .pl-finding{border:1px solid transparent;border-radius:6px;overflow:hidden;background:#fff}
   .pl-finding.crit{border-color:#fca5a5;background:#fff5f5}
@@ -193,6 +192,15 @@
   .pl-history-changes .pl-chg-add{color:var(--crit);font-weight:500}
   .pl-history-changes .pl-chg-rem{color:var(--ok);font-weight:500}
   .pl-history-empty{font-size:12px;color:var(--muted);padding:8px 0}
+  .pl-history-del{background:transparent;border:0;color:#9ca3af;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;font-family:inherit;line-height:1}
+  .pl-history-del:hover{color:#b91c1c;background:#fee2e2}
+  .pl-history-confirm{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#b91c1c}
+  .pl-history-confirm button{background:transparent;border:0;cursor:pointer;font-size:11px;font-family:inherit;padding:2px 6px;border-radius:3px}
+  .pl-history-confirm .yes{color:#b91c1c;font-weight:600}
+  .pl-history-confirm .yes:hover{background:#fee2e2}
+  .pl-history-confirm .no{color:#6b7280}
+  .pl-history-confirm .no:hover{background:var(--soft)}
+  .pl-history-warn{font-size:10.5px;color:#92400e;margin-left:4px}
 
   /* Empty state */
   .pl-empty{text-align:center;padding:64px 20px;color:var(--muted)}
@@ -233,6 +241,143 @@
   .pl-footer a{color:#374151;text-decoration:none}
   .pl-footer a:hover{text-decoration:underline}
   .pl-sep{opacity:0.5}
+
+  /* PDF export modal */
+  .pl-modal-bg{position:fixed;inset:0;background:rgba(17,24,39,0.5);display:flex;align-items:center;justify-content:center;z-index:100}
+  .pl-modal{background:#fff;border-radius:10px;padding:24px;max-width:480px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+  .pl-modal h3{margin:0 0 4px;font-size:18px;font-weight:600}
+  .pl-modal p{margin:0 0 16px;font-size:13px;color:var(--muted)}
+  .pl-modal fieldset{border:0;padding:0;margin:0 0 14px}
+  .pl-modal legend{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#374151;font-weight:600;margin-bottom:6px;padding:0}
+  .pl-modal .pl-opt{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;cursor:pointer;font-size:13px}
+  .pl-modal .pl-opt:hover{background:var(--soft)}
+  .pl-modal .pl-opt input{margin-top:3px;flex-shrink:0}
+  .pl-modal .pl-opt-body{flex:1}
+  .pl-modal .pl-opt-title{font-weight:500;color:#111827}
+  .pl-modal .pl-opt-desc{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .pl-modal .pl-modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+  /* =================================================
+     Print container — hidden on screen, shown only
+     when window.print() is invoked.
+     ================================================= */
+  #pl-print-root{display:none}
+
+  @media print {
+    /* Hide everything on the page during print, show only #pl-print-root */
+    body * { visibility: hidden !important; }
+    #pl-print-root, #pl-print-root * { visibility: visible !important; }
+    #pl-print-root { display: block !important; position: absolute; left:0; top:0; width:100%; }
+
+    @page { size: A4; margin: 18mm 16mm 22mm 16mm; }
+
+    /* Re-enable color rendering for severity chips and grade pills */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    .pdf-domain-page { page-break-before: always; padding-top: 4mm; }
+    .pdf-domain-page:first-of-type { page-break-before: auto; }
+    .pdf-finding-card { page-break-inside: avoid; }
+    .pdf-priorities-item { page-break-inside: avoid; }
+    .pdf-section { page-break-inside: avoid; }
+  }
+
+  /* =================================================
+     Print-container content styles
+     (used when printing; render mostly hidden on screen
+     via #pl-print-root display:none above)
+     ================================================= */
+  .pdf-body { font-family: Inter, system-ui, sans-serif; color: #111827; font-size: 11pt; line-height: 1.5; }
+  .pdf-cover { padding: 0 0 20mm 0; }
+  .pdf-cover h1 { font-size: 26pt; margin: 0 0 4mm; font-weight: 600; letter-spacing: -0.01em; }
+  .pdf-cover .pdf-cover-sub { color: #6b7280; font-size: 11pt; margin: 0 0 12mm; }
+  .pdf-cover-stats { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8mm; margin-bottom: 12mm; }
+  .pdf-cover-stat { border: 1px solid #e5e7eb; border-radius: 6px; padding: 5mm; }
+  .pdf-cover-stat .num { font-size: 22pt; font-weight: 600; margin: 0; line-height: 1; }
+  .pdf-cover-stat .lbl { font-size: 9pt; color: #6b7280; margin-top: 2mm; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pdf-cover-grade-strip { display: flex; gap: 4mm; margin: 4mm 0 10mm; }
+  .pdf-cover-grade-strip .gseg { flex: 1; text-align: center; padding: 3mm 0; border-radius: 4px; font-size: 10pt; font-weight: 600; }
+  .pdf-cover-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  .pdf-cover-table th, .pdf-cover-table td { text-align: left; padding: 3mm 4mm; border-bottom: 1px solid #e5e7eb; }
+  .pdf-cover-table th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; font-weight: 600; }
+
+  .pdf-domain-page h2 { font-size: 20pt; margin: 0 0 1mm; font-weight: 600; letter-spacing: -0.005em; }
+  .pdf-domain-page .pdf-sub-meta { color: #6b7280; font-size: 10pt; margin: 0 0 6mm; }
+
+  .pdf-header-band { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; padding-bottom: 4mm; border-bottom: 1px solid #e5e7eb; margin-bottom: 6mm; }
+  .pdf-header-band .pdf-grade-block { text-align: right; }
+  .pdf-header-band .pdf-grade-letter { font-size: 36pt; font-weight: 700; line-height: 1; padding: 2mm 6mm; border-radius: 8px; display: inline-block; }
+  .pdf-header-band .pdf-grade-letter.g-A { background:#d1fae5; color:#065f46; }
+  .pdf-header-band .pdf-grade-letter.g-B { background:#dbeafe; color:#1e40af; }
+  .pdf-header-band .pdf-grade-letter.g-C { background:#fef3c7; color:#92400e; }
+  .pdf-header-band .pdf-grade-letter.g-D { background:#fed7aa; color:#9a3412; }
+  .pdf-header-band .pdf-grade-letter.g-F { background:#fecaca; color:#991b1b; }
+  .pdf-header-band .pdf-score-line { font-size: 10pt; color: #6b7280; margin-top: 2mm; }
+
+  .pdf-section { margin-bottom: 7mm; }
+  .pdf-section-title { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; font-weight: 600; margin: 0 0 3mm; }
+  .pdf-summary-para { font-size: 11pt; line-height: 1.55; margin: 0; }
+
+  .pdf-subscores { display: grid; grid-template-columns: 1fr; gap: 4mm; }
+  .pdf-subscore-row { border: 1px solid #e5e7eb; border-radius: 5px; padding: 3mm 4mm; }
+  .pdf-subscore-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2mm; }
+  .pdf-subscore-name { font-weight: 600; font-size: 10.5pt; }
+  .pdf-subscore-num  { font-variant-numeric: tabular-nums; color: #374151; font-size: 11pt; font-weight: 500; }
+  .pdf-subscore-bar  { width: 100%; height: 5px; background: #f3f4f6; border-radius: 3px; overflow: hidden; margin-bottom: 2mm; }
+  .pdf-subscore-fill { height: 100%; background: #111827; }
+  .pdf-subscore-note { font-size: 9.5pt; color: #4b5563; line-height: 1.5; margin: 0; }
+
+  .pdf-priorities-list { display: flex; flex-direction: column; gap: 4mm; }
+  .pdf-priorities-item { border: 1px solid #e5e7eb; border-left-width: 4px; border-radius: 5px; padding: 3mm 4mm; }
+  .pdf-priorities-item.crit { border-left-color: #991b1b; }
+  .pdf-priorities-item.high { border-left-color: #9a3412; }
+  .pdf-priorities-item .pdf-pri-title { font-weight: 600; font-size: 11pt; margin: 0 0 1mm; }
+  .pdf-priorities-item .pdf-pri-sev { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 2mm; }
+  .pdf-priorities-item.crit .pdf-pri-sev { color: #991b1b; }
+  .pdf-priorities-item.high .pdf-pri-sev { color: #9a3412; }
+  .pdf-priorities-item .pdf-pri-line { font-size: 10pt; line-height: 1.5; margin: 0 0 2mm; color: #1f2937; }
+  .pdf-priorities-item .pdf-pri-meta { font-size: 9pt; color: #6b7280; }
+  .pdf-priorities-item .pdf-pri-meta strong { color: #374151; font-weight: 500; }
+
+  .pdf-wins { background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 5px; padding: 3mm 4mm; font-size: 10pt; color: #065f46; }
+  .pdf-wins strong { display: block; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 1mm; font-weight: 600; }
+
+  .pdf-trend-list { display: flex; gap: 3mm; flex-wrap: wrap; margin-bottom: 3mm; }
+  .pdf-trend-cell { border: 1px solid #e5e7eb; border-radius: 4px; padding: 2mm 3mm; font-size: 9pt; display: flex; gap: 2mm; align-items: center; }
+  .pdf-trend-cell .gp { font-size: 8.5pt; padding: 1px 5px; border-radius: 8px; font-weight: 600; }
+  .pdf-trend-cell .gp.g-A { background:#d1fae5; color:#065f46; }
+  .pdf-trend-cell .gp.g-B { background:#dbeafe; color:#1e40af; }
+  .pdf-trend-cell .gp.g-C { background:#fef3c7; color:#92400e; }
+  .pdf-trend-cell .gp.g-D { background:#fed7aa; color:#9a3412; }
+  .pdf-trend-cell .gp.g-F { background:#fecaca; color:#991b1b; }
+  .pdf-trend-summary { font-size: 10pt; color: #1f2937; margin: 0; }
+
+  .pdf-footer-line { font-size: 8.5pt; color: #9ca3af; margin-top: 8mm; padding-top: 3mm; border-top: 1px solid #e5e7eb; }
+
+  /* Technical-mode finding cards (printed) */
+  .pdf-finding-card { border: 1px solid #e5e7eb; border-left-width: 4px; border-radius: 5px; padding: 3mm 4mm; margin-bottom: 3mm; }
+  .pdf-finding-card.crit { border-left-color: #991b1b; }
+  .pdf-finding-card.high { border-left-color: #9a3412; }
+  .pdf-finding-card.warn { border-left-color: #92400e; }
+  .pdf-finding-card.info { border-left-color: #1e40af; }
+  .pdf-finding-card.ok   { border-left-color: #065f46; }
+  .pdf-finding-card .pdf-fc-title { font-weight: 600; font-size: 11pt; margin: 0 0 1mm; }
+  .pdf-finding-card .pdf-fc-sev { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 2mm; }
+  .pdf-finding-card.crit .pdf-fc-sev { color:#991b1b; }
+  .pdf-finding-card.high .pdf-fc-sev { color:#9a3412; }
+  .pdf-finding-card.warn .pdf-fc-sev { color:#92400e; }
+  .pdf-finding-card.info .pdf-fc-sev { color:#1e40af; }
+  .pdf-finding-card.ok   .pdf-fc-sev { color:#065f46; }
+  .pdf-finding-card .pdf-fc-obs { font-size: 10pt; color: #1f2937; margin: 0 0 3mm; line-height: 1.5; }
+  .pdf-finding-card h6 { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; font-weight: 600; margin: 2mm 0 1mm; }
+  .pdf-finding-card p { font-size: 10pt; line-height: 1.55; margin: 0 0 2mm; color: #1f2937; }
+  .pdf-finding-card ol { font-size: 10pt; line-height: 1.55; margin: 1mm 0 2mm 5mm; padding: 0; }
+  .pdf-finding-card code { background: #f3f4f6; padding: 0 4px; border-radius: 3px; font-size: 9pt; }
+  .pdf-finding-card .pdf-fc-meta { display: flex; gap: 6mm; flex-wrap: wrap; font-size: 9pt; color: #4b5563; margin-top: 2mm; }
+  .pdf-finding-card .pdf-fc-meta strong { display: block; color: #6b7280; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .pdf-raw { font-family: ui-monospace, Menlo, monospace; font-size: 8.5pt; color: #4b5563; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 3mm; white-space: pre-wrap; word-break: break-all; }
+  .pdf-history-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  .pdf-history-table th, .pdf-history-table td { text-align: left; padding: 2mm 3mm; border-bottom: 1px solid #e5e7eb; }
+  .pdf-history-table th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; font-weight: 600; }
 
   @media (max-width:780px){
     .pl-explain-grid{grid-template-columns:1fr}
@@ -288,7 +433,7 @@
           </label>
           <button id="pl-rescan-all" class="pl-btn-sm" type="button">Rescan all</button>
           <button id="pl-export" class="pl-btn-sm" type="button">Export JSON</button>
-          <button id="pl-export-md" class="pl-btn-sm" type="button">Export report (MD)</button>
+          <button id="pl-export-pdf" class="pl-btn-sm" type="button">Export PDF…</button>
         </div>
       </div>
 
@@ -393,6 +538,9 @@
   </main>
 </div>
 
+<!-- Hidden print container; populated by exportPdf() before window.print() -->
+<div id="pl-print-root" class="pdf-body"></div>
+
 <script src="/assets/shared.js"></script>
 <script>
   if (window.Owlglass && typeof window.Owlglass.mount === 'function') {
@@ -411,7 +559,7 @@ const STORAGE_KEY = 'owlglass_posturelens_v1';
 const PLAIN_LANG_KEY = 'postureLens:plainLanguage';
 const HSTS_PRELOAD_URL = 'https://chromium.googlesource.com/chromium/src/+/refs/heads/main/net/http/transport_security_state_static.json?format=TEXT';
 const HSTS_CACHE_KEY = 'owlglass_hsts_cache_v1';
-const HSTS_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const HSTS_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CERTSPOTTER_API = 'https://api.certspotter.com/v1/issuances';
 const DOH_URL = 'https://dns.google/resolve';
 const SOFT_CAP = 15;
@@ -451,15 +599,9 @@ const TAKEOVER_FINGERPRINTS = [
 ];
 
 /* =========================================================
-   Finding guidance library
-   Keyed by stable finding ID. Severity timeline labels and
-   prose follow the consulting-level-but-soft voice agreed
-   upstream. Where vendorQuestion is set, the field feeds
-   the vendor-questionnaire export for that finding ID.
+   Finding guidance library — unchanged from previous turn
 ========================================================= */
 const FINDING_GUIDANCE = {
-
-  /* ---------- Email authentication ---------- */
 
   dmarc_missing: {
     title: 'DMARC policy not published',
@@ -551,8 +693,7 @@ const FINDING_GUIDANCE = {
     severityLabel: 'OK — working correctly',
     whyMatters:
       "Mail from unauthorized sources will be refused or marked as suspicious by compliant receivers. The remaining task is to keep the sender list current as new platforms are introduced.",
-    howToFix:
-      "No action required. Review the record any time a new sending platform is adopted.",
+    howToFix: "No action required. Review the record any time a new sending platform is adopted.",
     whoFixes: 'Email administrator.',
     timeToFix: 'Ongoing monitoring only.'
   },
@@ -625,8 +766,6 @@ const FINDING_GUIDANCE = {
     timeToFix: 'Ongoing monitoring only.'
   },
 
-  /* ---------- DNS hygiene ---------- */
-
   dnssec_missing: {
     title: 'DNSSEC not validated',
     severityLabel: 'Warning — fix when convenient',
@@ -669,8 +808,7 @@ const FINDING_GUIDANCE = {
     severityLabel: 'OK — working correctly',
     whyMatters:
       "Mis-issuance by an unexpected CA will be refused, and (if `iodef` is configured) attempts will generate notifications. Review the record any time the certificate procurement process changes.",
-    howToFix:
-      "No action required. Revisit when changing CA vendors or adopting a new automation platform.",
+    howToFix: "No action required. Revisit when changing CA vendors or adopting a new automation platform.",
     whoFixes: 'DNS administrator.',
     timeToFix: 'Ongoing monitoring only.'
   },
@@ -696,8 +834,6 @@ const FINDING_GUIDANCE = {
     whoFixes: 'DNS administrator.',
     timeToFix: 'Rescan first, then minutes to investigate.'
   },
-
-  /* ---------- Web security ---------- */
 
   https_unreachable: {
     title: 'HTTPS unreachable on both apex and www',
@@ -746,8 +882,6 @@ const FINDING_GUIDANCE = {
     whoFixes: 'Web platform team.',
     timeToFix: 'Ongoing monitoring only.'
   },
-
-  /* ---------- Attack surface ---------- */
 
   surface_sensitive_subdomains: {
     title: 'Sensitive subdomain pattern detected',
@@ -808,8 +942,6 @@ const FINDING_GUIDANCE = {
     timeToFix: 'Rescan.'
   },
 
-  /* ---------- Cross-cutting ---------- */
-
   scan_partial_failure: {
     title: 'Scan was partially incomplete',
     severityLabel: 'Warning — rescan recommended',
@@ -831,9 +963,10 @@ let sortKey = 'score';
 let sortDir = 'asc';
 let expandedDomain = null;
 let scanning = false;
-let plainLanguage = true; // default on per design
-let expandedFindings = new Set(); // per-render set of finding IDs the user has manually expanded/collapsed
-let winsCollapsed = true;          // "What's working well" callout: details hidden by default
+let plainLanguage = true;
+let expandedFindings = new Set();
+let winsCollapsed = true;
+let historyDeleteConfirm = null; // {domain, idx}  — inline confirm state
 
 /* =========================================================
    Storage
@@ -911,7 +1044,8 @@ function isHstsPreloaded(domain){
 }
 
 /* =========================================================
-   DNS-over-HTTPS
+   DNS-over-HTTPS, parsers, HTTPS probe, CertSpotter, takeover
+   — all unchanged from previous version
 ========================================================= */
 async function dnsLookup(name, type){
   try{
@@ -931,9 +1065,6 @@ async function dnsLookup(name, type){
   }
 }
 
-/* =========================================================
-   Parsers
-========================================================= */
 function parseSPF(txt){
   if(!txt) return null;
   const lower = txt.toLowerCase();
@@ -972,9 +1103,6 @@ function extractTxt(answers){
     .map(a => (a.data || '').replace(/^"|"$/g,'').replace(/"\s+"/g,''));
 }
 
-/* =========================================================
-   HTTPS probe
-========================================================= */
 async function probeHTTPS(domain){
   const out = { httpsApexOk:false, httpsWwwOk:false, httpsOk:false };
   const tryOne = async (host) => {
@@ -992,9 +1120,6 @@ async function probeHTTPS(domain){
   return out;
 }
 
-/* =========================================================
-   Surface / CertSpotter
-========================================================= */
 async function getSurfaceData(domain){
   const out = { subdomains:[], certError:null, sensitive:[], total:0 };
   try{
@@ -1022,9 +1147,6 @@ async function getSurfaceData(domain){
   return out;
 }
 
-/* =========================================================
-   Subdomain takeover
-========================================================= */
 async function checkTakeoverCandidates(subdomains){
   const candidates = [];
   const sample = subdomains.slice(0, TAKEOVER_CHECK_CAP);
@@ -1043,9 +1165,6 @@ async function checkTakeoverCandidates(subdomains){
   return candidates;
 }
 
-/* =========================================================
-   Core scan
-========================================================= */
 async function scanDomain(domain){
   const facts = {
     domain, scannedAt: new Date().toISOString(),
@@ -1072,17 +1191,11 @@ async function scanDomain(domain){
   if(!nsRes.ok) facts.lookupFailures.push('NS');
 
   const txts = extractTxt(txtApex.answers);
-  facts.spf = (() => {
-    for(const t of txts){ const p = parseSPF(t); if(p) return p; }
-    return null;
-  })();
+  facts.spf = (() => { for(const t of txts){ const p = parseSPF(t); if(p) return p; } return null; })();
   facts.spfLookupOk = txtApex.ok;
 
   const dmarcTxts = extractTxt(dmarcRes.answers);
-  facts.dmarc = (() => {
-    for(const t of dmarcTxts){ const p = parseDMARC(t); if(p) return p; }
-    return null;
-  })();
+  facts.dmarc = (() => { for(const t of dmarcTxts){ const p = parseDMARC(t); if(p) return p; } return null; })();
   facts.dmarcLookupOk = dmarcRes.ok;
 
   facts.mtaSts = extractTxt(mtaStsRes.answers).some(t => /^v=STSv1/i.test(t));
@@ -1109,17 +1222,12 @@ async function scanDomain(domain){
 }
 
 /* =========================================================
-   Scoring
-   Each finding now carries a stable `id` (lookup into
-   FINDING_GUIDANCE) plus the human `text` (observation
-   line) and category/severity. The scoring math is
-   unchanged from the previous version.
+   Scoring — unchanged from previous version
 ========================================================= */
 function scoreDomain(facts){
   const findings = [];
   const push = (cat, sev, id, text) => findings.push({ cat, sev, id, text });
 
-  // Email auth
   let email = 50;
   if(facts.dmarcLookupOk === false){
     push('email','warn','dmarc_lookup_failed','DMARC lookup failed — temporary DNS error, cannot evaluate');
@@ -1161,7 +1269,6 @@ function scoreDomain(facts){
   if(facts.mtaSts){ email += 10; push('email','ok','mta_sts_present_ok','MTA-STS record present'); }
   else { push('email','info','mta_sts_missing','No MTA-STS record (transport security policy not advertised)'); }
 
-  // DNS hygiene
   let dns = 50;
   if(facts.dnssec){ dns += 25; push('dns','ok','dnssec_ok','DNSSEC validates (AD flag set)'); }
   else { push('dns','warn','dnssec_missing','DNSSEC not validated'); }
@@ -1173,7 +1280,6 @@ function scoreDomain(facts){
   else if(facts.nsCount === 1){ dns -= 10; push('dns','high','ns_single','Only one nameserver — no redundancy'); }
   else { push('dns','warn','ns_unknown','Could not enumerate nameservers'); }
 
-  // Web security
   let web = 50;
   if(facts.httpsOk){
     web += 30;
@@ -1192,7 +1298,6 @@ function scoreDomain(facts){
     push('web','info','hsts_preload_missing','Not on HSTS preload list (optional hardening)');
   }
 
-  // Attack surface
   let surface = 70;
   if(facts.certError === 'rate-limited'){
     push('surface','warn','surface_certspotter_ratelimited','CertSpotter rate-limited — subdomain enumeration incomplete');
@@ -1243,12 +1348,7 @@ function scoreDomain(facts){
     });
   }
 
-  return {
-    grade,
-    composite,
-    subscores: { email, dns, web, surface },
-    findings
-  };
+  return { grade, composite, subscores: { email, dns, web, surface }, findings };
 }
 
 /* =========================================================
@@ -1307,8 +1407,6 @@ async function scanOne(domain){
     entry.delta = (typeof previousScore === 'number') ? (result.composite - previousScore) : 0;
 
     entry.history = entry.history || [];
-    // New fingerprint shape: id|sev . Compatibility: the diff renderer
-    // also accepts the legacy sev|text shape from older history entries.
     const findingsFingerprint = (result.findings || [])
       .filter(f => f.sev === 'crit' || f.sev === 'high' || f.sev === 'warn')
       .map(f => (f.id || 'unknown') + '|' + f.sev);
@@ -1349,7 +1447,36 @@ function removeDomain(domain){
 }
 
 /* =========================================================
-   Exports
+   Per-scan history delete
+   `historyDeleteConfirm` holds {domain, idx} for inline
+   "Are you sure? [yes] [cancel]" replacement on the row.
+   `idx` is the index into the on-screen list, which is
+   `entry.history` reversed; we map back when committing.
+========================================================= */
+function requestHistoryDelete(domain, displayIdx){
+  historyDeleteConfirm = { domain, idx: displayIdx };
+  render();
+}
+function cancelHistoryDelete(){
+  historyDeleteConfirm = null;
+  render();
+}
+function commitHistoryDelete(){
+  if(!historyDeleteConfirm) return;
+  const { domain, idx } = historyDeleteConfirm;
+  const entry = state.domains.find(d => d.domain === domain);
+  if(!entry || !Array.isArray(entry.history)) { historyDeleteConfirm = null; render(); return; }
+  // display list is reversed; map back to actual index
+  const actualIdx = entry.history.length - 1 - idx;
+  if(actualIdx < 0 || actualIdx >= entry.history.length){ historyDeleteConfirm = null; render(); return; }
+  entry.history.splice(actualIdx, 1);
+  historyDeleteConfirm = null;
+  saveState();
+  render();
+}
+
+/* =========================================================
+   JSON export
 ========================================================= */
 function exportJSON(){
   const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
@@ -1361,68 +1488,488 @@ function exportJSON(){
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
 }
 
-function exportMarkdown(){
-  const includeExplanations = plainLanguage;
-  const lines = [];
-  lines.push(`# PostureLens report`);
-  lines.push(`Generated ${new Date().toISOString().slice(0,10)} · ${state.domains.length} domain${state.domains.length===1?'':'s'}`);
-  lines.push('');
-  lines.push(`Explanations included: ${includeExplanations ? 'yes (plain-language mode)' : 'no (compact mode)'}.`);
-  lines.push('');
+/* =========================================================
+   PDF export — modal + print-container builder
+========================================================= */
+function openPdfModal(){
+  const expandedScopeAvailable = !!expandedDomain;
+  const modal = document.createElement('div');
+  modal.className = 'pl-modal-bg';
+  modal.id = 'pl-pdf-modal';
+  modal.innerHTML = `
+    <div class="pl-modal" role="dialog" aria-label="Export PDF">
+      <h3>Export PDF report</h3>
+      <p>Your browser's print dialog will open. Choose "Save as PDF" as the destination.</p>
 
-  state.domains.forEach(entry => {
-    lines.push(`## ${entry.domain} — ${entry.grade || '—'} (${typeof entry.score==='number'?entry.score:'—'})`);
-    lines.push(`Type: ${entry.type==='vendor'?'Vendor':'Own org'} · Last scan: ${entry.lastScan ? new Date(entry.lastScan).toISOString().slice(0,19).replace('T',' ') : 'pending'}`);
-    if(entry.subscores){
-      lines.push(`Sub-scores: Email ${entry.subscores.email} · DNS ${entry.subscores.dns} · Web ${entry.subscores.web} · Surface ${entry.subscores.surface}`);
+      <fieldset>
+        <legend>Report level</legend>
+        <label class="pl-opt">
+          <input type="radio" name="pdfLevel" value="executive" checked>
+          <div class="pl-opt-body">
+            <div class="pl-opt-title">Executive</div>
+            <div class="pl-opt-desc">One page per domain. Grade, summary paragraph, sub-score panel with plain-language assessment, priorities (critical and high only), and a six-scan trend. Designed for board or vendor-risk packets.</div>
+          </div>
+        </label>
+        <label class="pl-opt">
+          <input type="radio" name="pdfLevel" value="technical">
+          <div class="pl-opt-body">
+            <div class="pl-opt-title">Technical</div>
+            <div class="pl-opt-desc">Full detail. Every finding with severity, observation, why-it-matters, how-to-fix, owner, effort. Raw observations and complete score history. For platform, security, and audit teams.</div>
+          </div>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Scope</legend>
+        <label class="pl-opt">
+          <input type="radio" name="pdfScope" value="all" checked>
+          <div class="pl-opt-body">
+            <div class="pl-opt-title">All domains (${state.domains.length})</div>
+            <div class="pl-opt-desc">Includes a cover page summarizing the portfolio.</div>
+          </div>
+        </label>
+        <label class="pl-opt" ${expandedScopeAvailable ? '' : 'style="opacity:0.5;cursor:not-allowed"'}>
+          <input type="radio" name="pdfScope" value="one" ${expandedScopeAvailable ? '' : 'disabled'}>
+          <div class="pl-opt-body">
+            <div class="pl-opt-title">Just the open domain${expandedScopeAvailable ? ` (${escapeHtml(expandedDomain)})` : ''}</div>
+            <div class="pl-opt-desc">${expandedScopeAvailable ? 'Single-domain report, no cover page.' : 'Expand a domain row first to enable this option.'}</div>
+          </div>
+        </label>
+      </fieldset>
+
+      <div class="pl-modal-actions">
+        <button class="pl-btn-ghost" id="pl-pdf-cancel" type="button">Cancel</button>
+        <button class="pl-btn-primary" id="pl-pdf-go" type="button">Generate PDF</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const cleanup = () => { modal.remove(); };
+  modal.addEventListener('click', (e) => { if(e.target === modal) cleanup(); });
+  modal.querySelector('#pl-pdf-cancel').addEventListener('click', cleanup);
+  modal.querySelector('#pl-pdf-go').addEventListener('click', () => {
+    const level = (modal.querySelector('input[name="pdfLevel"]:checked')||{}).value || 'executive';
+    const scope = (modal.querySelector('input[name="pdfScope"]:checked')||{}).value || 'all';
+    cleanup();
+    generatePdf({ level, scope });
+  });
+}
+
+function generatePdf(opts){
+  const level = opts.level || 'executive';
+  const scope = opts.scope || 'all';
+  const domains = scope === 'one' && expandedDomain
+    ? state.domains.filter(d => d.domain === expandedDomain)
+    : state.domains.slice();
+
+  if(domains.length === 0){
+    alert('No domains to include in the report.');
+    return;
+  }
+
+  const root = document.getElementById('pl-print-root');
+  if(!root){ alert('Print container missing.'); return; }
+
+  root.innerHTML = buildPdfHtml({ level, scope, domains });
+
+  // Print after a brief tick so the browser has time to apply styles
+  setTimeout(() => {
+    window.print();
+    // root content is left in place; it's display:none on screen
+  }, 50);
+}
+
+function buildPdfHtml({ level, scope, domains }){
+  const parts = [];
+
+  if(scope === 'all' && domains.length > 1){
+    parts.push(buildPdfCover(domains));
+  }
+
+  domains.forEach(entry => {
+    if(level === 'executive'){
+      parts.push(buildPdfExecutivePage(entry));
+    } else {
+      parts.push(buildPdfTechnicalPage(entry));
     }
-    lines.push('');
-
-    const findings = entry.findings || [];
-    if(findings.length === 0){
-      lines.push('_No findings recorded._');
-      lines.push('');
-      return;
-    }
-
-    // Group OK findings into a short callout
-    const oks = findings.filter(f => f.sev === 'ok');
-    const nonOks = findings.filter(f => f.sev !== 'ok');
-
-    if(oks.length){
-      const labels = oks.map(f => (FINDING_GUIDANCE[f.id] && FINDING_GUIDANCE[f.id].title) || f.text);
-      lines.push(`**What's working well:** ${labels.join(' · ')}.`);
-      lines.push('');
-    }
-
-    const sevOrder = { crit:0, high:1, warn:2, info:3, ok:4 };
-    nonOks.sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
-
-    nonOks.forEach(f => {
-      const g = FINDING_GUIDANCE[f.id];
-      const title = (g && g.title) || `[${f.sev.toUpperCase()}] ${f.text}`;
-      const sevLabel = (g && g.severityLabel) || sevLabelFallback(f.sev);
-      lines.push(`### ${title}`);
-      lines.push(`**Severity:** ${sevLabel}`);
-      lines.push(`**What we observed:** ${f.text}`);
-      if(includeExplanations && g){
-        if(g.whyMatters){ lines.push(''); lines.push(`**Why it matters:** ${g.whyMatters}`); }
-        if(g.howToFix){ lines.push(''); lines.push(`**How to fix:** ${g.howToFix}`); }
-        if(g.whoFixes){ lines.push(''); lines.push(`**Who owns it:** ${g.whoFixes}`); }
-        if(g.timeToFix){ lines.push(`**Typical effort:** ${g.timeToFix}`); }
-      }
-      lines.push('');
-    });
   });
 
-  const md = lines.join('\n');
-  const blob = new Blob([md], { type:'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `posturelens-report-${new Date().toISOString().slice(0,10)}.md`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  return parts.join('\n');
+}
+
+function buildPdfCover(domains){
+  const grades = { A:0, B:0, C:0, D:0, F:0 };
+  domains.forEach(d => { if(d.grade && grades.hasOwnProperty(d.grade)) grades[d.grade]++; });
+
+  const needAttention = domains.filter(d => d.grade === 'D' || d.grade === 'F').length;
+  const takeovers = domains.reduce((n,d) => n + ((d.facts && d.facts.takeoverCandidates) ? d.facts.takeoverCandidates.length : 0), 0);
+
+  const gradeStrip = ['A','B','C','D','F'].map(g => {
+    const count = grades[g];
+    const width = domains.length ? Math.max(8, Math.round((count / domains.length) * 100)) : 8;
+    return `<div class="gseg g-${g}" style="flex:${width}">${g} · ${count}</div>`;
+  }).join('');
+
+  const sorted = domains.slice().sort((a,b) => {
+    const ga = a.grade || 'Z', gb = b.grade || 'Z';
+    if(ga !== gb) return ga > gb ? 1 : -1;
+    return (a.score || 0) - (b.score || 0);
+  });
+
+  const rows = sorted.map(d => {
+    const topFinding = (d.findings || []).find(f => f.sev === 'crit' || f.sev === 'high');
+    const topLabel = topFinding
+      ? (FINDING_GUIDANCE[topFinding.id] && FINDING_GUIDANCE[topFinding.id].title) || topFinding.text
+      : '<span style="color:#9ca3af">—</span>';
+    return `<tr>
+      <td>${escapeHtml(d.domain)} <span style="color:#6b7280;font-size:8.5pt">(${d.type==='vendor'?'Vendor':'Own'})</span></td>
+      <td><span class="grade-pill g-${d.grade||'pending'}" style="font-size:9pt">${d.grade||'—'}</span></td>
+      <td style="font-variant-numeric:tabular-nums">${typeof d.score==='number' ? d.score : '—'}</td>
+      <td style="font-size:9.5pt">${topLabel}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="pdf-cover">
+      <h1>PostureLens portfolio report</h1>
+      <p class="pdf-cover-sub">Generated ${new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' })} · External observations only</p>
+
+      <div class="pdf-cover-stats">
+        <div class="pdf-cover-stat"><div class="num">${domains.length}</div><div class="lbl">Domains</div></div>
+        <div class="pdf-cover-stat"><div class="num">${needAttention}</div><div class="lbl">Need attention</div></div>
+        <div class="pdf-cover-stat"><div class="num">${takeovers}</div><div class="lbl">Takeover candidates</div></div>
+        <div class="pdf-cover-stat"><div class="num">${grades.A + grades.B}</div><div class="lbl">A or B grade</div></div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Grade distribution</div>
+        <div class="pdf-cover-grade-strip">${gradeStrip}</div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">All domains</div>
+        <table class="pdf-cover-table">
+          <thead><tr><th>Domain</th><th>Grade</th><th>Score</th><th>Top finding</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function buildPdfExecutivePage(entry){
+  const grade = entry.grade || '—';
+  const score = typeof entry.score === 'number' ? entry.score : '—';
+  const findings = entry.findings || [];
+
+  const crits = findings.filter(f => f.sev === 'crit');
+  const highs = findings.filter(f => f.sev === 'high');
+  const priorities = crits.concat(highs);
+  const oks = findings.filter(f => f.sev === 'ok');
+
+  // Executive summary paragraph
+  const summary = buildExecutiveSummary(entry, priorities, oks);
+
+  // Sub-score panel with assessments
+  const sub = entry.subscores || { email:0, dns:0, web:0, surface:0 };
+  const subAssessments = buildSubscoreAssessments(entry);
+  const subPanel = ['email','dns','web','surface'].map(k => {
+    const labels = { email:'Email authentication', dns:'DNS hygiene', web:'Web security', surface:'Attack surface' };
+    return `
+      <div class="pdf-subscore-row">
+        <div class="pdf-subscore-head">
+          <span class="pdf-subscore-name">${labels[k]}</span>
+          <span class="pdf-subscore-num">${sub[k]} / 100</span>
+        </div>
+        <div class="pdf-subscore-bar"><div class="pdf-subscore-fill" style="width:${sub[k]}%"></div></div>
+        <p class="pdf-subscore-note">${subAssessments[k]}</p>
+      </div>`;
+  }).join('');
+
+  // Priorities
+  const prioritiesHtml = priorities.length
+    ? priorities.map(f => {
+        const g = FINDING_GUIDANCE[f.id];
+        const title = (g && g.title) || f.text;
+        const sevLabel = (g && g.severityLabel) || sevLabelFallback(f.sev);
+        const firstSentence = g && g.whyMatters ? firstSentenceOf(g.whyMatters) : '';
+        const owner = (g && g.whoFixes) || '—';
+        const effort = (g && g.timeToFix) || '—';
+        return `
+          <div class="pdf-priorities-item ${f.sev}">
+            <div class="pdf-pri-sev">${escapeHtml(sevLabel)}</div>
+            <div class="pdf-pri-title">${escapeHtml(title)}</div>
+            <p class="pdf-pri-line">${escapeHtml(firstSentence)}</p>
+            <div class="pdf-pri-meta"><strong>Owner:</strong> ${escapeHtml(owner)} · <strong>Effort:</strong> ${escapeHtml(effort)}</div>
+          </div>`;
+      }).join('')
+    : '<p style="font-size:10pt;color:#6b7280;margin:0">No critical or high findings observed.</p>';
+
+  // Wins
+  const winsHtml = oks.length
+    ? `<div class="pdf-wins"><strong>Working well</strong>${oks.map(f => {
+        const g = FINDING_GUIDANCE[f.id];
+        return escapeHtml((g && g.title) || f.text);
+      }).join(' · ')}</div>`
+    : '';
+
+  // Trend
+  const trendHtml = buildPdfTrend(entry);
+
+  return `
+    <div class="pdf-domain-page">
+      <div class="pdf-header-band">
+        <div>
+          <h2>${escapeHtml(entry.domain)}</h2>
+          <div class="pdf-sub-meta">${entry.type==='vendor'?'Vendor':'Own organization'} · Last scan ${entry.lastScan ? new Date(entry.lastScan).toLocaleDateString() : 'pending'}</div>
+        </div>
+        <div class="pdf-grade-block">
+          <span class="pdf-grade-letter g-${grade}">${grade}</span>
+          <div class="pdf-score-line">${score} / 100</div>
+        </div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Executive summary</div>
+        <p class="pdf-summary-para">${escapeHtml(summary)}</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Sub-scores</div>
+        <div class="pdf-subscores">${subPanel}</div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Priorities</div>
+        <div class="pdf-priorities-list">${prioritiesHtml}</div>
+      </div>
+
+      ${oks.length ? `<div class="pdf-section">${winsHtml}</div>` : ''}
+
+      ${trendHtml ? `<div class="pdf-section">${trendHtml}</div>` : ''}
+
+      <p class="pdf-footer-line">Generated by PostureLens on ${new Date().toLocaleDateString()} · External observations only · Not a substitute for authenticated assessment.</p>
+    </div>
+  `;
+}
+
+function buildExecutiveSummary(entry, priorities, oks){
+  const grade = entry.grade || '—';
+  const lead = (() => {
+    if(grade === 'A') return `${entry.domain} presents a strong external security posture across email authentication, DNS hygiene, web security, and attack surface controls.`;
+    if(grade === 'B') return `${entry.domain} has a solid external security baseline with a small number of hardening opportunities.`;
+    if(grade === 'C') return `${entry.domain} has material gaps in its external security posture that warrant attention this quarter.`;
+    if(grade === 'D') return `${entry.domain} shows multiple weaknesses in its external security posture that are likely exploitable as currently configured.`;
+    if(grade === 'F') return `${entry.domain} has critical exposures that should be addressed in the coming days.`;
+    return `${entry.domain} has not yet been fully scanned.`;
+  })();
+
+  let middle = '';
+  if(priorities.length){
+    const top = priorities[0];
+    const g = FINDING_GUIDANCE[top.id];
+    const title = (g && g.title) || top.text;
+    middle = ` The most consequential observation is "${title}", which we recommend treating as the leading priority for remediation.`;
+  }
+
+  let close = '';
+  if(oks.length){
+    const topOk = oks[0];
+    const g = FINDING_GUIDANCE[topOk.id];
+    const title = (g && g.title) || topOk.text;
+    close = ` On the strengths side, the most material positive signal is "${title}".`;
+  }
+
+  return lead + middle + close;
+}
+
+function buildSubscoreAssessments(entry){
+  const out = { email:'', dns:'', web:'', surface:'' };
+  const sub = entry.subscores || { email:0, dns:0, web:0, surface:0 };
+  const findings = entry.findings || [];
+
+  const byCat = cat => findings.filter(f => f.cat === cat);
+  const tone = score => {
+    if(score >= 85) return 'Strong.';
+    if(score >= 70) return 'Solid baseline with minor hardening opportunities.';
+    if(score >= 55) return 'Material gaps worth addressing.';
+    if(score >= 40) return 'Several weaknesses present.';
+    return 'Critical weaknesses present.';
+  };
+
+  ['email','dns','web','surface'].forEach(cat => {
+    const t = tone(sub[cat]);
+    const top = byCat(cat).find(f => f.sev === 'crit') || byCat(cat).find(f => f.sev === 'high');
+    const ok = byCat(cat).find(f => f.sev === 'ok');
+    let note = t;
+    if(top){
+      const g = FINDING_GUIDANCE[top.id];
+      note += ' ' + ((g && g.title) || top.text) + '.';
+    } else if(ok){
+      const g = FINDING_GUIDANCE[ok.id];
+      note += ' ' + ((g && g.title) || ok.text) + '.';
+    }
+    out[cat] = note;
+  });
+  return out;
+}
+
+function buildPdfTrend(entry){
+  const hist = (entry.history || []).slice().reverse().slice(0, 6);
+  if(hist.length < 2) return '';
+
+  const cells = hist.map(h => {
+    const when = new Date(h.at).toLocaleDateString(undefined, { month:'short', day:'numeric' });
+    return `<div class="pdf-trend-cell">
+      <span style="color:#6b7280">${escapeHtml(when)}</span>
+      <span class="gp g-${h.grade}">${h.grade}</span>
+      <span style="font-variant-numeric:tabular-nums">${h.score}</span>
+    </div>`;
+  }).join('');
+
+  const newest = hist[0].score;
+  const oldest = hist[hist.length - 1].score;
+  const diff = newest - oldest;
+  let summary = '';
+  if(diff > 5) summary = `Score improved by ${diff} points across the last ${hist.length} scans.`;
+  else if(diff < -5) summary = `Score declined by ${Math.abs(diff)} points across the last ${hist.length} scans.`;
+  else summary = `Score has been stable across the last ${hist.length} scans (${diff>=0?'+':''}${diff}).`;
+
+  return `
+    <div class="pdf-section-title">Trend</div>
+    <div class="pdf-trend-list">${cells}</div>
+    <p class="pdf-trend-summary">${escapeHtml(summary)}</p>
+  `;
+}
+
+function buildPdfTechnicalPage(entry){
+  const grade = entry.grade || '—';
+  const score = typeof entry.score === 'number' ? entry.score : '—';
+  const findings = entry.findings || [];
+  const sevOrder = { crit:0, high:1, warn:2, info:3, ok:4 };
+  const sorted = findings.slice().sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
+
+  const sub = entry.subscores || { email:0, dns:0, web:0, surface:0 };
+  const subAssessments = buildSubscoreAssessments(entry);
+  const subPanel = ['email','dns','web','surface'].map(k => {
+    const labels = { email:'Email authentication', dns:'DNS hygiene', web:'Web security', surface:'Attack surface' };
+    return `
+      <div class="pdf-subscore-row">
+        <div class="pdf-subscore-head">
+          <span class="pdf-subscore-name">${labels[k]}</span>
+          <span class="pdf-subscore-num">${sub[k]} / 100</span>
+        </div>
+        <div class="pdf-subscore-bar"><div class="pdf-subscore-fill" style="width:${sub[k]}%"></div></div>
+        <p class="pdf-subscore-note">${subAssessments[k]}</p>
+      </div>`;
+  }).join('');
+
+  const findingsHtml = sorted.map(f => {
+    const g = FINDING_GUIDANCE[f.id];
+    const title = (g && g.title) || ('[' + f.sev.toUpperCase() + '] ' + f.text);
+    const sevLabel = (g && g.severityLabel) || sevLabelFallback(f.sev);
+    const why = g && g.whyMatters ? renderProse(g.whyMatters) : '';
+    const how = g && g.howToFix ? renderProse(g.howToFix) : '';
+    const owner = (g && g.whoFixes) || '—';
+    const effort = (g && g.timeToFix) || '—';
+    return `
+      <div class="pdf-finding-card ${f.sev}">
+        <div class="pdf-fc-sev">${escapeHtml(sevLabel)}</div>
+        <div class="pdf-fc-title">${escapeHtml(title)}</div>
+        <p class="pdf-fc-obs"><strong>What we observed:</strong> ${escapeHtml(f.text)}</p>
+        ${why ? `<h6>Why it matters</h6>${why}` : ''}
+        ${how ? `<h6>How to fix</h6>${how}` : ''}
+        <div class="pdf-fc-meta">
+          <div><strong>Who owns it</strong>${escapeHtml(owner)}</div>
+          <div><strong>Typical effort</strong>${escapeHtml(effort)}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Raw observations
+  const facts = entry.facts || {};
+  const rawLines = [];
+  if(facts.spf) rawLines.push('SPF: '+facts.spf.raw);
+  if(facts.dmarc) rawLines.push('DMARC: '+facts.dmarc.raw);
+  rawLines.push('DNSSEC: '+(facts.dnssec?'validated':'not validated'));
+  rawLines.push('CAA: '+(facts.caa?'present':'absent'));
+  rawLines.push('NS count: '+(facts.nsCount||0));
+  rawLines.push('MTA-STS: '+(facts.mtaSts?'present':'absent'));
+  rawLines.push('HTTPS apex/www: '+(facts.httpsApexOk?'ok':'fail')+' / '+(facts.httpsWwwOk?'ok':'fail'));
+  rawLines.push('HSTS preload: '+(facts.hstsPreload===true?'yes':facts.hstsPreload===false?'no':'unknown'));
+  rawLines.push('Subdomains seen (CT): '+(facts.subdomainTotal||0));
+  if(facts.takeoverCandidates && facts.takeoverCandidates.length){
+    rawLines.push('Takeover candidates: '+facts.takeoverCandidates.map(c=>c.subdomain+'→'+c.target+' ['+c.service+']').join('; '));
+  }
+  if(facts.certError) rawLines.push('CertSpotter: '+facts.certError);
+
+  // Full history
+  const hist = (entry.history || []).slice().reverse();
+  const histRows = hist.map((h, idx) => {
+    const prev = hist[idx+1];
+    const when = new Date(h.at).toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    let delta = '—';
+    if(prev){
+      const d = h.score - prev.score;
+      delta = d > 0 ? '↑ +'+d : (d < 0 ? '↓ '+d : 'no change');
+    } else {
+      delta = 'first scan';
+    }
+    return `<tr>
+      <td>${escapeHtml(when)}</td>
+      <td><span class="grade-pill g-${h.grade}" style="font-size:9pt">${h.grade}</span></td>
+      <td style="font-variant-numeric:tabular-nums">${h.score}</td>
+      <td>${escapeHtml(delta)}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="pdf-domain-page">
+      <div class="pdf-header-band">
+        <div>
+          <h2>${escapeHtml(entry.domain)}</h2>
+          <div class="pdf-sub-meta">${entry.type==='vendor'?'Vendor':'Own organization'} · Last scan ${entry.lastScan ? new Date(entry.lastScan).toLocaleString() : 'pending'} · Technical report</div>
+        </div>
+        <div class="pdf-grade-block">
+          <span class="pdf-grade-letter g-${grade}">${grade}</span>
+          <div class="pdf-score-line">${score} / 100</div>
+        </div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Sub-scores</div>
+        <div class="pdf-subscores">${subPanel}</div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Findings (${sorted.length})</div>
+        ${findingsHtml || '<p style="font-size:10pt;color:#6b7280">No findings recorded.</p>'}
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Raw observations</div>
+        <div class="pdf-raw">${escapeHtml(rawLines.join('\n'))}</div>
+      </div>
+
+      ${hist.length ? `
+        <div class="pdf-section">
+          <div class="pdf-section-title">Score history (${hist.length} scan${hist.length===1?'':'s'})</div>
+          <table class="pdf-history-table">
+            <thead><tr><th>When</th><th>Grade</th><th>Score</th><th>Delta</th></tr></thead>
+            <tbody>${histRows}</tbody>
+          </table>
+        </div>` : ''}
+
+      <p class="pdf-footer-line">Generated by PostureLens on ${new Date().toLocaleDateString()} · External observations only · Not a substitute for authenticated assessment.</p>
+    </div>
+  `;
+}
+
+function firstSentenceOf(text){
+  if(!text) return '';
+  const m = String(text).match(/^[\s\S]*?[.!?](?=\s|$)/);
+  return m ? m[0].trim() : String(text).split('\n')[0].trim();
 }
 
 function sevLabelFallback(sev){
@@ -1437,8 +1984,7 @@ function sevLabelFallback(sev){
 }
 
 /* =========================================================
-   Vendor questionnaire — uses FINDING_GUIDANCE.vendorQuestion
-   where available, otherwise falls back to a generic prompt.
+   Vendor questionnaire
 ========================================================= */
 function generateQuestionnaire(entry){
   const lines = [
@@ -1507,9 +2053,6 @@ function escapeHtml(s){
   return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* Render prose with paragraph breaks (\n\n) and simple
-   numbered-list detection (lines that start with "1." etc.).
-   `code` spans inside backticks are wrapped in <code>. */
 function renderProse(text){
   if(!text) return '';
   const blocks = String(text).split(/\n\n+/);
@@ -1525,7 +2068,6 @@ function renderProse(text){
 }
 
 function inlineFormat(text){
-  // escape, then re-apply `code` spans
   let out = escapeHtml(text);
   out = out.replace(/`([^`]+)`/g, (m, code) => '<code>' + code + '</code>');
   return out;
@@ -1599,10 +2141,7 @@ function renderTable(){
         </div>
       </div>`;
     c.querySelectorAll('a[data-example]').forEach(a => {
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        addAndScan(a.dataset.example, 'vendor');
-      });
+      a.addEventListener('click', e => { e.preventDefault(); addAndScan(a.dataset.example, 'vendor'); });
     });
     return;
   }
@@ -1677,8 +2216,7 @@ function renderTable(){
       if(e.target.closest('button')) return;
       const d = tr.dataset.domain;
       expandedDomain = expandedDomain === d ? null : d;
-      // reset per-domain finding-expansion state on collapse
-      if(!expandedDomain) expandedFindings = new Set();
+      if(!expandedDomain){ expandedFindings = new Set(); historyDeleteConfirm = null; }
       render();
     });
   });
@@ -1691,7 +2229,7 @@ function renderTable(){
       else if(act==='remove'){ if(confirm(`Remove ${d} from watchlist?`)) removeDomain(d); }
       else if(act==='expand'){
         expandedDomain = expandedDomain === d ? null : d;
-        if(!expandedDomain) expandedFindings = new Set();
+        if(!expandedDomain){ expandedFindings = new Set(); historyDeleteConfirm = null; }
         render();
       }
     });
@@ -1713,14 +2251,8 @@ function renderTable(){
           render();
         }
       }
-      else if(act==='collapse-all'){
-        expandedFindings = new Set();
-        render();
-      }
-      else if(act==='toggle-wins'){
-        winsCollapsed = !winsCollapsed;
-        render();
-      }
+      else if(act==='collapse-all'){ expandedFindings = new Set(); render(); }
+      else if(act==='toggle-wins'){ winsCollapsed = !winsCollapsed; render(); }
     });
   });
   c.querySelectorAll('button[data-finding-toggle]').forEach(btn => {
@@ -1732,24 +2264,34 @@ function renderTable(){
       render();
     });
   });
+  // Inline history delete buttons
+  c.querySelectorAll('button[data-hist-del]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const d = btn.dataset.domain;
+      const idx = parseInt(btn.dataset.histDel, 10);
+      requestHistoryDelete(d, idx);
+    });
+  });
+  c.querySelectorAll('button[data-hist-confirm]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(btn.dataset.histConfirm === 'yes') commitHistoryDelete();
+      else cancelHistoryDelete();
+    });
+  });
 }
 
 /* =========================================================
-   Render — findings list (cards with expand affordance)
+   Render — findings list
 ========================================================= */
-function findingKey(f, idx){
-  return idx + ':' + (f.id || 'unknown');
-}
+function findingKey(f, idx){ return idx + ':' + (f.id || 'unknown'); }
 
-function shouldAutoExpand(f){
-  return plainLanguage && (f.sev === 'crit' || f.sev === 'high');
-}
+function shouldAutoExpand(f){ return false; } // explicit: never auto-expand
 
 function isExpanded(f, idx){
   const key = findingKey(f, idx);
-  if(expandedFindings.has('__off__:' + key)) return false; // explicit user collapse override
-  if(expandedFindings.has(key)) return true;
-  return shouldAutoExpand(f);
+  return expandedFindings.has(key);
 }
 
 function renderFindingCard(f, idx){
@@ -1817,11 +2359,9 @@ function renderWinsCallout(oks){
 }
 
 /* =========================================================
-   Render — history (handles both old and new fingerprint shapes)
+   Render — history
 ========================================================= */
 function fingerprintLabel(fp){
-  // New shape: "id|sev"  → look up title from FINDING_GUIDANCE
-  // Old shape: "sev|text" → use the text directly
   const parts = fp.split('|');
   if(parts.length !== 2) return fp;
   const a = parts[0], b = parts[1];
@@ -1886,6 +2426,23 @@ function renderHistory(entry){
 
     const when = new Date(h.at).toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
 
+    // Delete control (inline confirm)
+    const isConfirming = historyDeleteConfirm
+      && historyDeleteConfirm.domain === entry.domain
+      && historyDeleteConfirm.idx === idx;
+
+    const isMostRecent = (idx === 0);
+    const recentWarning = (isConfirming && isMostRecent)
+      ? `<span class="pl-history-warn">Note: this is the most recent scan. The current grade in the table won't change — rescan to refresh.</span>`
+      : '';
+
+    const deleteControl = isConfirming
+      ? `<span class="pl-history-confirm">Delete this scan?
+           <button class="yes" type="button" data-hist-confirm="yes">Delete</button>
+           <button class="no" type="button" data-hist-confirm="no">Cancel</button>
+         </span>${recentWarning}`
+      : `<button class="pl-history-del" type="button" data-hist-del="${idx}" data-domain="${escapeHtml(entry.domain)}" title="Delete this scan from history" aria-label="Delete this scan">×</button>`;
+
     return `
       <div class="pl-history-item ${idx===0?'current':''}">
         <span class="pl-history-when">${escapeHtml(when)}</span>
@@ -1893,6 +2450,7 @@ function renderHistory(entry){
         <span class="pl-history-score">${h.score}</span>
         ${deltaHtml}
         <span class="pl-history-changes">${changesHtml}</span>
+        ${deleteControl}
       </div>`;
   }).join('');
 
@@ -2030,18 +2588,17 @@ function wireUI(){
 
   const rescanBtn = document.getElementById('pl-rescan-all');
   const exportBtn = document.getElementById('pl-export');
-  const exportMdBtn = document.getElementById('pl-export-md');
+  const exportPdfBtn = document.getElementById('pl-export-pdf');
   const plainToggle = document.getElementById('pl-plain-toggle');
 
   if(rescanBtn) rescanBtn.addEventListener('click', rescanAll);
   if(exportBtn) exportBtn.addEventListener('click', exportJSON);
-  if(exportMdBtn) exportMdBtn.addEventListener('click', exportMarkdown);
+  if(exportPdfBtn) exportPdfBtn.addEventListener('click', openPdfModal);
   if(plainToggle){
     plainToggle.checked = plainLanguage;
     plainToggle.addEventListener('change', () => {
       plainLanguage = plainToggle.checked;
       savePlainPref();
-      // reset per-finding overrides so auto-expand respects new mode
       expandedFindings = new Set();
       render();
     });

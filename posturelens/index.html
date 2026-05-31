@@ -52,11 +52,14 @@
 
   /* Toolbar */
   .pl-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-  .pl-toolbar-left{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
-  .pl-toolbar-right{display:flex;gap:8px}
+  .pl-toolbar-left{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted)}
+  .pl-toolbar-right{display:flex;gap:8px;align-items:center}
   .pl-btn-sm{background:#fff;border:1px solid #d1d5db;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;color:#374151;font-family:inherit}
   .pl-btn-sm:hover{background:var(--soft)}
   .pl-btn-sm:disabled{opacity:0.5;cursor:not-allowed}
+  .pl-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#374151;cursor:pointer;user-select:none;padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff}
+  .pl-toggle:hover{background:var(--soft)}
+  .pl-toggle input{margin:0;cursor:pointer}
 
   /* Table */
   .pl-table-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff}
@@ -105,14 +108,63 @@
   .pl-detail-row td{background:#fbfbfc;padding:0!important;border-bottom:1px solid var(--border)}
   .pl-detail{padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
   .pl-detail h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);font-weight:600}
-  .pl-detail .findings{font-size:13px}
-  .pl-finding{padding:8px 10px;border-radius:5px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start}
-  .pl-finding.crit{background:var(--crit-bg);color:var(--crit)}
-  .pl-finding.high{background:var(--high-bg);color:var(--high)}
-  .pl-finding.warn{background:var(--warn-bg);color:var(--warn)}
-  .pl-finding.info{background:var(--info-bg);color:var(--info)}
-  .pl-finding.ok{background:var(--ok-bg);color:var(--ok)}
-  .pl-sev{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;flex-shrink:0;padding-top:1px}
+
+  /* Detail-level controls */
+  .pl-detail-controls{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:-6px;flex-wrap:wrap}
+  .pl-detail-controls .pl-btn-link{background:none;border:0;color:#374151;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;font-family:inherit}
+  .pl-detail-controls .pl-btn-link:hover{color:#111827}
+
+  /* What's working well callout */
+  .pl-wins{grid-column:1/-1;background:var(--ok-bg);border:1px solid #a7f3d0;border-radius:6px;padding:10px 14px;font-size:12.5px;color:var(--ok);display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .pl-wins-label{font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:11px;flex-shrink:0;padding-top:2px}
+  .pl-wins-list{flex:1;color:#065f46}
+  .pl-wins-list .pl-win-item{display:inline}
+  .pl-wins-list .pl-win-item + .pl-win-item::before{content:" · ";color:#6ee7b7;margin:0 2px}
+  .pl-wins-toggle{background:none;border:0;color:var(--ok);text-decoration:underline;text-underline-offset:2px;font-size:11.5px;cursor:pointer;padding:0;font-family:inherit;margin-left:6px}
+  .pl-wins-toggle:hover{color:#064e3b}
+
+  /* Findings cards (replaces old .pl-finding) */
+  .pl-findings-list{display:flex;flex-direction:column;gap:8px;font-size:13px}
+  .pl-finding{border:1px solid transparent;border-radius:6px;overflow:hidden;background:#fff}
+  .pl-finding.crit{border-color:#fca5a5;background:#fff5f5}
+  .pl-finding.high{border-color:#fdba74;background:#fff7ed}
+  .pl-finding.warn{border-color:#fcd34d;background:#fffbeb}
+  .pl-finding.info{border-color:#93c5fd;background:#eff6ff}
+  .pl-finding.ok{border-color:#86efac;background:#f0fdf4}
+
+  .pl-fhead{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;cursor:default}
+  .pl-fhead.expandable{cursor:pointer}
+  .pl-fhead.expandable:hover{background:rgba(0,0,0,0.02)}
+  .pl-fchip{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 7px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+  .pl-finding.crit .pl-fchip{background:var(--crit-bg);color:var(--crit)}
+  .pl-finding.high .pl-fchip{background:var(--high-bg);color:var(--high)}
+  .pl-finding.warn .pl-fchip{background:var(--warn-bg);color:var(--warn)}
+  .pl-finding.info .pl-fchip{background:var(--info-bg);color:var(--info)}
+  .pl-finding.ok   .pl-fchip{background:var(--ok-bg);color:var(--ok)}
+  .pl-fbody{flex:1;min-width:0}
+  .pl-fsevlabel{font-size:10.5px;color:#6b7280;text-transform:none;letter-spacing:0;margin-bottom:2px;font-weight:500}
+  .pl-finding.crit .pl-fsevlabel{color:#991b1b}
+  .pl-finding.high .pl-fsevlabel{color:#9a3412}
+  .pl-finding.warn .pl-fsevlabel{color:#92400e}
+  .pl-finding.info .pl-fsevlabel{color:#1e40af}
+  .pl-finding.ok   .pl-fsevlabel{color:#065f46}
+  .pl-fobserved{color:#1f2937;font-size:13px;line-height:1.45}
+  .pl-fexpander{flex-shrink:0;font-size:11.5px;color:#374151;background:transparent;border:0;cursor:pointer;padding:2px 6px;border-radius:4px;font-family:inherit;white-space:nowrap;align-self:flex-start}
+  .pl-fexpander:hover{background:rgba(0,0,0,0.05)}
+  .pl-fexpander .chev{display:inline-block;margin-left:3px;font-size:9px;transition:transform 0.15s}
+  .pl-finding.expanded .pl-fexpander .chev{transform:rotate(180deg)}
+
+  .pl-fexplain{padding:0 11px 12px 11px;border-top:1px dashed rgba(0,0,0,0.08);margin-top:0;display:none}
+  .pl-finding.expanded .pl-fexplain{display:block}
+  .pl-fexplain h5{margin:10px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:600}
+  .pl-fexplain p{margin:0 0 8px;font-size:12.5px;line-height:1.55;color:#1f2937}
+  .pl-fexplain p:last-child{margin-bottom:0}
+  .pl-fexplain ol{margin:4px 0 8px 18px;padding:0;font-size:12.5px;line-height:1.55;color:#1f2937}
+  .pl-fexplain ol li{margin-bottom:4px}
+  .pl-fexplain code{background:rgba(0,0,0,0.06);padding:0 5px;border-radius:3px;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+  .pl-fmeta{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:#4b5563}
+  .pl-fmeta div{display:flex;flex-direction:column;gap:1px}
+  .pl-fmeta strong{font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:#6b7280;font-weight:600}
 
   .pl-subscores{display:grid;grid-template-columns:1fr;gap:8px}
   .pl-subscore{display:flex;align-items:center;gap:10px;font-size:13px}
@@ -226,10 +278,17 @@
       </section>
 
       <div class="pl-toolbar">
-        <div class="pl-toolbar-left"><span id="pl-status" class="pl-status"></span></div>
+        <div class="pl-toolbar-left">
+          <span id="pl-status" class="pl-status"></span>
+        </div>
         <div class="pl-toolbar-right">
+          <label class="pl-toggle" title="Show plain-language explanations alongside each finding.">
+            <input type="checkbox" id="pl-plain-toggle">
+            Plain-language mode
+          </label>
           <button id="pl-rescan-all" class="pl-btn-sm" type="button">Rescan all</button>
           <button id="pl-export" class="pl-btn-sm" type="button">Export JSON</button>
+          <button id="pl-export-md" class="pl-btn-sm" type="button">Export report (MD)</button>
         </div>
       </div>
 
@@ -349,6 +408,7 @@
    Constants
 ========================================================= */
 const STORAGE_KEY = 'owlglass_posturelens_v1';
+const PLAIN_LANG_KEY = 'postureLens:plainLanguage';
 const HSTS_PRELOAD_URL = 'https://chromium.googlesource.com/chromium/src/+/refs/heads/main/net/http/transport_security_state_static.json?format=TEXT';
 const HSTS_CACHE_KEY = 'owlglass_hsts_cache_v1';
 const HSTS_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -391,6 +451,378 @@ const TAKEOVER_FINGERPRINTS = [
 ];
 
 /* =========================================================
+   Finding guidance library
+   Keyed by stable finding ID. Severity timeline labels and
+   prose follow the consulting-level-but-soft voice agreed
+   upstream. Where vendorQuestion is set, the field feeds
+   the vendor-questionnaire export for that finding ID.
+========================================================= */
+const FINDING_GUIDANCE = {
+
+  /* ---------- Email authentication ---------- */
+
+  dmarc_missing: {
+    title: 'DMARC policy not published',
+    severityLabel: 'Critical — active risk',
+    whyMatters:
+      "Without DMARC, anyone on the internet can send email that appears to come from your domain, and receiving mail servers have no instruction on what to do about it. This is the mechanism behind most business email compromise (BEC) attacks, where an attacker impersonates an executive or finance contact to redirect a payment or extract sensitive information. The FBI's Internet Crime Complaint Center attributed roughly $2.9 billion in reported losses to BEC in 2023, and impersonation of trusted sending domains is the most common technique.\n\nA published DMARC policy is the single most effective control against this category of fraud, and it is generally regarded as a baseline expectation by enterprise customers, cyber insurers, and regulators.",
+    howToFix:
+      "Plan a phased rollout rather than a single change.\n\n1. Publish a monitoring-only policy (`p=none`) with an `rua` address that collects aggregate reports. This is non-disruptive and starts producing visibility within 24 hours.\n2. Use the reports to identify every legitimate sender (marketing platforms, ticketing systems, HR tools, finance applications) and align each one with SPF and DKIM. Two to four weeks is a reasonable window for most organizations.\n3. Move the policy to `p=quarantine` for a defined evaluation period, then to `p=reject` once the report stream is clean.\n\nA starting record looks like: `v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com`. DMARC report processing is tedious to do by hand; tools such as Dmarcian, Valimail, EasyDMARC, or Postmark's DMARC Digests will materially shorten the discovery phase.",
+    whoFixes: 'Email administrator or messaging team, in coordination with whoever maintains DNS.',
+    timeToFix: '15 minutes for the initial DNS record. Six to twelve weeks to reach a confident p=reject.',
+    vendorQuestion:
+      'We observed no DMARC record at _dmarc.<domain>. Please describe your DMARC rollout plan, current policy, and the timeline to reach p=quarantine or p=reject.'
+  },
+
+  dmarc_p_none: {
+    title: 'DMARC policy set to monitor only (p=none)',
+    severityLabel: 'High — fix this quarter',
+    whyMatters:
+      "`p=none` is the correct starting point for a DMARC rollout, but it does not prevent impersonation. Reports flow in, yet a recipient receiving a spoofed message from your domain will still see it land in the inbox. Domains that remain at `p=none` indefinitely tend to do so because no one has been assigned to work through the report data. The intent of DMARC is to reach an enforcing policy.",
+    howToFix:
+      "Treat the current state as the discovery phase rather than the destination. Review the aggregate reports, confirm that all legitimate senders are aligned, and move the policy to `p=quarantine` once failures from known sources are at or near zero. After a stable period at `quarantine`, advance to `p=reject`. If reports have not been reviewed in several months, the practical first step is to assign an owner.",
+    whoFixes: 'Email administrator, with a defined point of contact for report review.',
+    timeToFix: 'A few days of analysis spread over four to eight weeks, then minutes to change the policy.',
+    vendorQuestion:
+      'Your DMARC policy is currently p=none (monitoring only). What is your timeline to reach an enforcing policy (p=quarantine or p=reject)?'
+  },
+
+  dmarc_p_quarantine: {
+    title: 'DMARC policy set to p=quarantine',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "Quarantine is meaningful protection and reflects a mature rollout. The remaining gap is that a recipient who looks in their spam folder can still see and act on a spoofed message, and some receivers handle quarantine inconsistently. Moving to `p=reject` closes that gap and is the policy recommended by NIST SP 800-177 and most sector-specific guidance.",
+    howToFix:
+      "Confirm that reports show no legitimate sources failing alignment, then advance the policy to `p=reject`. If a few low-volume senders are still misaligned, it is usually faster to fix them than to remain at `quarantine` indefinitely.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Minutes for the policy change once reports are clean.'
+  },
+
+  dmarc_p_reject_ok: {
+    title: 'DMARC policy at p=reject',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "This is the strongest DMARC posture and the configuration most enterprise customers, insurers, and security questionnaires expect. Impersonation of your domain is now actively refused by compliant receivers. Continue to monitor the aggregate reports, because new sending services introduced by marketing or HR teams can quietly fall out of alignment.",
+    howToFix:
+      "No action required. Keep the report stream under review and ensure new senders are aligned before they go live.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  dmarc_rua_missing: {
+    title: 'DMARC has no rua= reporting address',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "Without an `rua` tag, the receivers that would otherwise send daily aggregate XML reports have nowhere to deliver them. The DMARC policy still functions, but the visibility that makes the policy safely adjustable disappears, and the organization loses its main source of evidence about who is sending mail as the domain.",
+    howToFix:
+      "Add an `rua=mailto:` tag to the DMARC record pointing at an address (or distribution list) that can receive the aggregate reports. Most organizations route this to a DMARC analysis service rather than reading the raw XML directly.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Minutes.'
+  },
+
+  spf_missing: {
+    title: 'SPF record missing',
+    severityLabel: 'High — fix this quarter',
+    whyMatters:
+      "SPF tells receiving mail servers which IP addresses are authorized to send mail for your domain. Without it, DMARC has nothing to align against on the SPF path, and receiving systems lose one of the two signals they use to judge whether a message is legitimate. The absence is frequently flagged on vendor security questionnaires and by mail providers when deliverability problems arise.",
+    howToFix:
+      "Inventory every system that sends email on your behalf — corporate mail platform, marketing tools, support desks, billing platforms, transactional senders — and publish a single SPF record at the apex that authorizes them. Keep the record under the ten DNS lookup limit; `include:` statements from large vendors can quickly exhaust it, and flattening tools (Scrutinizer, EasyDMARC, Valimail) exist specifically to address this.",
+    whoFixes: 'Email administrator, with input from marketing and any team running its own sending platform.',
+    timeToFix: 'Half a day to inventory senders, minutes to publish the record.',
+    vendorQuestion:
+      'We observed no SPF record on the apex domain. Please share your SPF record (or planned timeline to publish one) and confirm how authorized senders are managed.'
+  },
+
+  spf_all_plus: {
+    title: 'SPF record ends in +all',
+    severityLabel: 'Critical — active risk',
+    whyMatters:
+      "This is functionally equivalent to having no SPF record at all, and in some respects worse, because tooling will report SPF as \"present\" and pass the check. Attackers can send mail from any IP and receive an SPF pass. This configuration is almost always the result of a copy-paste error or a misunderstanding of the qualifier syntax, and it should be corrected immediately.",
+    howToFix:
+      "Replace `+all` with `-all` (hard fail) or `~all` (soft fail). `-all` is the recommended terminator once you are confident the list of authorized senders is complete. If there is any uncertainty about that list, start with `~all`, review DMARC reports for a week or two, then move to `-all`.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Minutes, after a brief review of the sender list.',
+    vendorQuestion:
+      'Your SPF record terminates in +all, which authorizes any sender to use the domain. Please describe the timeline to replace +all with -all or ~all.'
+  },
+
+  spf_terminator_ok: {
+    title: 'SPF record ends in -all or ~all',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "Mail from unauthorized sources will be refused or marked as suspicious by compliant receivers. The remaining task is to keep the sender list current as new platforms are introduced.",
+    howToFix:
+      "No action required. Review the record any time a new sending platform is adopted.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  spf_no_terminator: {
+    title: 'SPF record has no terminator',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "An SPF record without an explicit `-all` or `~all` terminator leaves the result undefined for unauthorized senders. Some receivers will treat this as neutral and others will be more permissive, weakening the protection that SPF is supposed to provide.",
+    howToFix:
+      "Add `-all` if the list of authorized senders is well understood, or `~all` as a softer first step while DMARC reports confirm coverage.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Minutes.'
+  },
+
+  spf_lookup_limit: {
+    title: 'SPF exceeds the ten-lookup limit',
+    severityLabel: 'High — fix this quarter',
+    whyMatters:
+      "When a receiver hits the lookup limit, the SPF evaluation returns `permerror`, and most receivers treat this as a failure. The practical effect is the same as having a broken SPF record: legitimate mail may be marked as suspicious, and DMARC alignment on the SPF path will not work. The condition usually develops quietly as new vendors are added with their own `include:` chains.",
+    howToFix:
+      "The standard remedy is SPF flattening, which resolves all the nested `include:` records into a single record of IP ranges. This must be maintained over time, because the underlying vendor IP ranges change. Several services automate this (Scrutinizer, EasyDMARC, Valimail, Skysnag); the alternative is a quarterly manual review.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'A few hours for a one-time flatten, or minutes once a flattening service is in place.'
+  },
+
+  spf_lookup_failed: {
+    title: 'SPF lookup failed',
+    severityLabel: 'Info — no action required',
+    whyMatters:
+      "A temporary DNS error prevented evaluation of the SPF record. This does not indicate a configuration problem on its own; rescanning shortly is usually sufficient.",
+    howToFix:
+      "Rescan in a few minutes. If the failure persists across multiple scans, check that the authoritative nameservers are responding.",
+    whoFixes: 'No owner assignment needed for a transient failure.',
+    timeToFix: 'Rescan.'
+  },
+
+  dmarc_lookup_failed: {
+    title: 'DMARC lookup failed',
+    severityLabel: 'Info — no action required',
+    whyMatters:
+      "A temporary DNS error prevented evaluation of the DMARC record. This does not indicate a configuration problem on its own; rescanning shortly is usually sufficient.",
+    howToFix:
+      "Rescan in a few minutes. If the failure persists across multiple scans, verify the authoritative nameservers are healthy and that `_dmarc.<domain>` resolves.",
+    whoFixes: 'No owner assignment needed for a transient failure.',
+    timeToFix: 'Rescan.'
+  },
+
+  mta_sts_missing: {
+    title: 'MTA-STS policy not published',
+    severityLabel: 'Info — optional hardening',
+    whyMatters:
+      "MTA-STS instructs other mail servers to require TLS when delivering to you, which prevents an active network attacker from downgrading the connection to plaintext and reading or modifying messages in transit. Without it, mail-server-to-mail-server TLS is opportunistic and can be stripped. The risk is meaningful but narrower than DMARC or SPF, which is why most organizations address MTA-STS after the SPF and DMARC story is settled.",
+    howToFix:
+      "Publish a policy file at `https://mta-sts.<yourdomain>/.well-known/mta-sts.txt`, add a `_mta-sts` TXT record, and start in `testing` mode for a few weeks before moving to `enforce`. Hosting the policy file is the only piece that involves more than DNS; a small static site or a CDN bucket is sufficient.",
+    whoFixes: 'Email administrator, with help from whoever publishes static content.',
+    timeToFix: 'Two to four hours, plus a two-week observation period.',
+    vendorQuestion:
+      'No MTA-STS policy was observed. Is MTA-STS on your hardening roadmap, and if so, what is the planned timeline?'
+  },
+
+  mta_sts_present_ok: {
+    title: 'MTA-STS policy published',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "Inbound mail-server-to-mail-server connections are protected against TLS downgrade and interception. The certificate on the policy host and the MX hosts must remain valid; expirations here will cause mail to defer.",
+    howToFix:
+      "No action required. Keep the certificate on the MTA-STS policy host monitored alongside other production certificates.",
+    whoFixes: 'Email administrator.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  /* ---------- DNS hygiene ---------- */
+
+  dnssec_missing: {
+    title: 'DNSSEC not validated',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "DNSSEC protects against DNS spoofing and cache poisoning by cryptographically signing the responses your domain returns. Without it, an attacker in a position to influence DNS resolution can direct your users to systems they control without any visible warning. The realistic threat scenarios are narrower than for, say, missing DMARC, but the consequences when DNSSEC matters are severe — most notably, MTA-STS and DANE depend on it to be meaningful, and several national-scale DNS hijacking incidents in the last several years would have been blocked by signed zones.",
+    howToFix:
+      "Most modern DNS providers (Cloudflare, Route 53, Google Cloud DNS, NS1) can sign a zone with a single setting; the remaining step is publishing the DS record at the registrar, which is the part that occasionally causes outages if mishandled. Plan the change for a low-traffic window and confirm with an external validator before considering it complete.",
+    whoFixes: 'DNS administrator, in coordination with the domain registrar.',
+    timeToFix: 'An hour or two, with a longer window allowed for the registrar-side DS record to propagate.',
+    vendorQuestion:
+      'DNSSEC was not observed as validating for the domain. Is DNSSEC signing planned, and if so, what is the expected timeline?'
+  },
+
+  dnssec_ok: {
+    title: 'DNSSEC validated',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "DNS responses for your domain cannot be spoofed without detection by validating resolvers. The control to maintain here is operational: DNSSEC failures during key rollover are the most common cause of self-inflicted outages, so the rollover process should be documented and tested.",
+    howToFix:
+      "No action required. Confirm that key rollover is automated or that the manual process is documented.",
+    whoFixes: 'DNS administrator.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  caa_missing: {
+    title: 'CAA record missing',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "CAA records tell certificate authorities which of them are permitted to issue certificates for your domain. Without one, any publicly trusted CA may issue, which broadens the surface for mis-issuance — whether through a compromised CA, a social-engineering attack on a CA's validation process, or an internal account with credentials at an unexpected provider. The control is inexpensive and is widely treated as a baseline.",
+    howToFix:
+      "Publish a CAA record that lists the CAs you actually use. A typical record permits Let's Encrypt and one commercial CA, and includes an `iodef` mailto for notifications of attempted unauthorized issuance. Inventory current issuance via certificate transparency before publishing, so legitimate CAs are not accidentally excluded.",
+    whoFixes: 'DNS administrator, with input from whoever procures certificates.',
+    timeToFix: 'An hour to inventory current issuers, minutes to publish the record.',
+    vendorQuestion:
+      'No CAA record was observed on the apex domain. Is publication of a CAA record planned, and how is certificate issuance currently governed?'
+  },
+
+  caa_ok: {
+    title: 'CAA record present',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "Mis-issuance by an unexpected CA will be refused, and (if `iodef` is configured) attempts will generate notifications. Review the record any time the certificate procurement process changes.",
+    howToFix:
+      "No action required. Revisit when changing CA vendors or adopting a new automation platform.",
+    whoFixes: 'DNS administrator.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  ns_single: {
+    title: 'Single nameserver',
+    severityLabel: 'High — fix this quarter',
+    whyMatters:
+      "A single nameserver is a single point of failure for the most foundational service your domain depends on. If it is unreachable — for any reason, from a routine maintenance window to a denial-of-service attack — the domain effectively disappears from the internet. RFC 1034 specifies a minimum of two authoritative nameservers, and every major DNS provider supplies several by default; finding only one is almost always a misconfiguration rather than an intentional choice.",
+    howToFix:
+      "Add the additional nameservers supplied by your DNS provider at the registrar. If the domain is hosted on a self-operated DNS platform, add a second instance in a different network location.",
+    whoFixes: 'DNS administrator.',
+    timeToFix: 'An hour, including propagation time.'
+  },
+
+  ns_unknown: {
+    title: 'Nameservers could not be enumerated',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "The scan was unable to retrieve the authoritative nameserver set for the domain. This is usually a transient DNS issue but can occasionally indicate a misconfiguration at the registrar or zone level.",
+    howToFix:
+      "Rescan in a few minutes. If the result persists, verify the NS records at the registrar and confirm the authoritative nameservers respond on UDP/TCP 53.",
+    whoFixes: 'DNS administrator.',
+    timeToFix: 'Rescan first, then minutes to investigate.'
+  },
+
+  /* ---------- Web security ---------- */
+
+  https_unreachable: {
+    title: 'HTTPS unreachable on both apex and www',
+    severityLabel: 'Critical — fix this week',
+    whyMatters:
+      "From the perspective of a customer, partner, or search engine, the domain has no working web presence on the standard secure protocol. The practical effects are immediate: search rankings degrade, browsers display security warnings, links from email and documents fail, and any user who arrives via HTTP cannot be safely upgraded. If the domain is genuinely not intended to host a website — which is sometimes the case for email-only or infrastructure domains — the finding can be acknowledged and suppressed. Otherwise, this is one of the more visible problems on the report.",
+    howToFix:
+      "Confirm first whether the domain is supposed to serve web traffic. If it is, the most common causes are an expired certificate, a misconfigured load balancer, or DNS pointing at a host that no longer exists. If it is not, configure a simple HTTPS redirect or holding page so the domain returns a valid response, which also forestalls some classes of impersonation.",
+    whoFixes: 'Web platform or hosting team.',
+    timeToFix: 'Minutes to hours, depending on the underlying cause.',
+    vendorQuestion:
+      'HTTPS did not complete a handshake on either the apex or www hostname. Is this domain intended to serve web traffic, and if so, what is the remediation plan?'
+  },
+
+  https_ok: {
+    title: 'HTTPS reachable',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "The basic web availability check passes. Deeper TLS analysis — cipher suites, protocol versions, certificate chain quality — is outside the scope of this report; SSL Labs (`https://www.ssllabs.com/ssltest/`) is the standard tool for that level of detail and is linked from the detail panel.",
+    howToFix:
+      "No action required. Periodic SSL Labs review is a good habit, particularly after infrastructure changes.",
+    whoFixes: 'Web platform team.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  hsts_preload_missing: {
+    title: 'HSTS not on the preload list',
+    severityLabel: 'Info — optional hardening',
+    whyMatters:
+      "HSTS preloading ensures that browsers refuse to connect to your domain over plain HTTP, even on the very first visit, before any HSTS header has been seen. Without preloading, a first-time visitor on a hostile network can be intercepted between typing the domain and the HTTPS redirect taking effect. The window is narrow but the consequences — credential theft, session injection — are well documented. Preloading is the recommended end state for any domain that exclusively serves HTTPS; it is reported as optional rather than required because the gap it closes is genuinely small for most users most of the time.",
+    howToFix:
+      "Confirm that every host under the domain is fully HTTPS-only and that no internal service is still being reached over HTTP. Publish an HSTS header with `max-age=63072000; includeSubDomains; preload`, run for a few weeks to confirm nothing breaks, then submit to `hstspreload.org`. The submission is reviewed and added in a subsequent Chromium release. Removal is slow, so the readiness check is the part that deserves care.",
+    whoFixes: 'Web platform team.',
+    timeToFix: 'A few hours of readiness review, minutes to publish the header, weeks for the preload list to incorporate the submission.',
+    vendorQuestion:
+      'The domain is not on the Chromium HSTS preload list. Is preload submission planned, and is the domain fully HTTPS-only across all hosts?'
+  },
+
+  hsts_preload_ok: {
+    title: 'HSTS preloaded',
+    severityLabel: 'OK — working correctly',
+    whyMatters:
+      "Browsers will refuse HTTP connections to the domain from the first visit, closing the first-request interception gap. The control to maintain is operational: every host under the domain must remain HTTPS-capable, because the preload entry is difficult to remove once published.",
+    howToFix:
+      "No action required. Treat the preload status as a constraint on future infrastructure choices — anything new under this domain must support HTTPS from day one.",
+    whoFixes: 'Web platform team.',
+    timeToFix: 'Ongoing monitoring only.'
+  },
+
+  /* ---------- Attack surface ---------- */
+
+  surface_sensitive_subdomains: {
+    title: 'Sensitive subdomain pattern detected',
+    severityLabel: 'Warning — fix when convenient',
+    whyMatters:
+      "These hosts are not inherently vulnerable, but they are disproportionately represented in breach reports because they tend to receive less attention than production systems. Administrative interfaces exposed to the public internet are routinely scanned and probed; non-production environments often run older software, weaker authentication, or sample data that is uncomfortably close to real customer data. Verizon's 2024 Data Breach Investigations Report identified exploitation of vulnerable internet-facing applications as the leading initial-access vector, and shadow or forgotten environments are a significant contributor.",
+    howToFix:
+      "For each flagged host, confirm three things: that it is owned, that exposure to the public internet is intentional, and that access is restricted appropriately. Common remediations are placing the host behind a VPN or identity-aware proxy, restricting source IPs to known office or vendor ranges, enforcing single sign-on with MFA, and decommissioning anything that is no longer in use.",
+    whoFixes: 'Infrastructure or platform team, with input from the application owners.',
+    timeToFix: 'Minutes per host to triage, hours to days to remediate depending on the chosen control.',
+    vendorQuestion:
+      'Public certificate transparency logs show subdomains matching administrative or non-production naming patterns. Please confirm whether these are intentionally internet-exposed and describe the access controls in place.'
+  },
+
+  surface_takeover_candidate: {
+    title: 'Subdomain takeover candidate',
+    severityLabel: 'Critical — fix this week',
+    whyMatters:
+      "A subdomain points to a third-party service whose target does not currently resolve, which is the signature of a dangling DNS record. If the underlying resource is genuinely unclaimed, anyone who registers it can serve content from your domain, with a valid TLS certificate, indistinguishable from your real site to a visitor. The practical consequences are credential phishing against your own users, malware delivery under your brand, abuse of any cookies scoped to the parent domain, and reputational damage that persists after remediation. External signals cannot always distinguish a confirmed takeover from a temporary outage at the provider, so this is reported as a candidate that warrants prompt verification.",
+    howToFix:
+      "Verify the status of the underlying resource at the provider console. If the resource is unclaimed, the fastest remediation is to remove the dangling DNS record; if the service is still wanted, reclaim the resource at the provider before re-pointing DNS. After remediation, review how the dangling record was created — typically a service was decommissioned without removing its DNS — and tighten the offboarding process so the pattern does not recur.",
+    whoFixes: 'DNS administrator together with the application or vendor owner who originally created the record.',
+    timeToFix: 'Minutes to remove the record. Hours to reclaim the resource if the service is still needed. A day or two to review and adjust the offboarding process.',
+    vendorQuestion:
+      'A subdomain CNAME points to a third-party service whose target does not resolve, which is consistent with a possible subdomain takeover condition. Please verify the status of the underlying resource and describe the remediation.'
+  },
+
+  surface_total_info: {
+    title: 'Subdomain footprint observed',
+    severityLabel: 'Info — no action required',
+    whyMatters:
+      "Footprint size is not a finding in itself; large organizations legitimately operate hundreds or thousands of subdomains. It becomes relevant when the inventory exceeds what the organization can confidently account for, which is the working definition of shadow IT. A footprint that is materially larger than the asset management system suggests warrants a reconciliation exercise.",
+    howToFix:
+      "No action required from this finding alone. If the count is surprising, the CertLens host inventory is the natural next step; comparing it to the CMDB or asset inventory will surface what is unaccounted for.",
+    whoFixes: 'No owner — informational.',
+    timeToFix: 'N/A.'
+  },
+
+  surface_certspotter_ratelimited: {
+    title: 'CertSpotter rate-limited',
+    severityLabel: 'Warning — temporary',
+    whyMatters:
+      "The CertSpotter API returned a rate-limit response, which means the subdomain enumeration step is incomplete. The score reflects only the signals that were retrievable. This is a transient condition rather than a security finding.",
+    howToFix:
+      "Rescan in a few minutes. If the rate-limit recurs frequently, consider spacing scans further apart or using a CertSpotter account with a higher quota.",
+    whoFixes: 'No owner assignment needed.',
+    timeToFix: 'Rescan.'
+  },
+
+  surface_certspotter_error: {
+    title: 'Certificate transparency lookup error',
+    severityLabel: 'Warning — temporary',
+    whyMatters:
+      "The CertSpotter API returned an unexpected error, which means the subdomain enumeration step is incomplete. The score reflects only the signals that were retrievable.",
+    howToFix:
+      "Rescan in a few minutes. If the error persists, the CertSpotter service may be temporarily unavailable.",
+    whoFixes: 'No owner assignment needed.',
+    timeToFix: 'Rescan.'
+  },
+
+  /* ---------- Cross-cutting ---------- */
+
+  scan_partial_failure: {
+    title: 'Scan was partially incomplete',
+    severityLabel: 'Warning — rescan recommended',
+    whyMatters:
+      "Several DNS lookups failed during this scan, which means the score reflects an incomplete picture of the domain. Treat the current grade as provisional until a clean rescan is available.",
+    howToFix:
+      "Rescan the domain. If failures persist across multiple attempts, the authoritative nameservers may be unstable and worth investigating directly.",
+    whoFixes: 'DNS administrator if the issue is persistent.',
+    timeToFix: 'Rescan.'
+  }
+};
+
+/* =========================================================
    State
 ========================================================= */
 let state = { domains: [] };
@@ -399,6 +831,9 @@ let sortKey = 'score';
 let sortDir = 'asc';
 let expandedDomain = null;
 let scanning = false;
+let plainLanguage = true; // default on per design
+let expandedFindings = new Set(); // per-render set of finding IDs the user has manually expanded/collapsed
+let winsCollapsed = true;          // "What's working well" callout: details hidden by default
 
 /* =========================================================
    Storage
@@ -414,6 +849,16 @@ function loadState(){
 }
 function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadPlainPref(){
+  try{
+    const v = localStorage.getItem(PLAIN_LANG_KEY);
+    if(v === null) return true;
+    return v === '1';
+  }catch(e){ return true; }
+}
+function savePlainPref(){
+  try{ localStorage.setItem(PLAIN_LANG_KEY, plainLanguage ? '1' : '0'); }catch(e){}
 }
 
 /* =========================================================
@@ -665,63 +1110,68 @@ async function scanDomain(domain){
 
 /* =========================================================
    Scoring
+   Each finding now carries a stable `id` (lookup into
+   FINDING_GUIDANCE) plus the human `text` (observation
+   line) and category/severity. The scoring math is
+   unchanged from the previous version.
 ========================================================= */
 function scoreDomain(facts){
   const findings = [];
+  const push = (cat, sev, id, text) => findings.push({ cat, sev, id, text });
 
   // Email auth
   let email = 50;
   if(facts.dmarcLookupOk === false){
-    findings.push({ cat:'email', sev:'warn', text:'DMARC lookup failed — temporary DNS error, cannot evaluate' });
+    push('email','warn','dmarc_lookup_failed','DMARC lookup failed — temporary DNS error, cannot evaluate');
   }else if(!facts.dmarc){
     email -= 30;
-    findings.push({ cat:'email', sev:'crit', text:'No DMARC record at _dmarc.'+facts.domain });
+    push('email','crit','dmarc_missing','No DMARC record at _dmarc.'+facts.domain);
   }else{
     const p = facts.dmarc.policy;
-    if(p === 'reject'){ email += 25; findings.push({ cat:'email', sev:'ok', text:'DMARC policy: reject' }); }
-    else if(p === 'quarantine'){ email += 15; findings.push({ cat:'email', sev:'ok', text:'DMARC policy: quarantine' }); }
-    else { email += 5; findings.push({ cat:'email', sev:'high', text:'DMARC policy: none (monitoring only — does not block spoofing)' }); }
-    if(!facts.dmarc.rua){ findings.push({ cat:'email', sev:'warn', text:'DMARC has no rua= (aggregate reporting) tag' }); }
+    if(p === 'reject'){ email += 25; push('email','ok','dmarc_p_reject_ok','DMARC policy: reject'); }
+    else if(p === 'quarantine'){ email += 15; push('email','warn','dmarc_p_quarantine','DMARC policy: quarantine'); }
+    else { email += 5; push('email','high','dmarc_p_none','DMARC policy: none (monitoring only — does not block spoofing)'); }
+    if(!facts.dmarc.rua){ push('email','warn','dmarc_rua_missing','DMARC has no rua= (aggregate reporting) tag'); }
   }
 
   if(facts.spfLookupOk === false){
-    findings.push({ cat:'email', sev:'warn', text:'SPF (TXT) lookup failed' });
+    push('email','warn','spf_lookup_failed','SPF (TXT) lookup failed');
   }else if(!facts.spf){
     email -= 15;
-    findings.push({ cat:'email', sev:'high', text:'No SPF record' });
+    push('email','high','spf_missing','No SPF record');
   }else{
     if(facts.spf.qualifier === 'pass-all'){
       email -= 25;
-      findings.push({ cat:'email', sev:'crit', text:'SPF ends in +all — anyone can send as this domain' });
+      push('email','crit','spf_all_plus','SPF ends in +all — anyone can send as this domain');
     }else if(facts.spf.qualifier === 'fail'){
       email += 15;
-      findings.push({ cat:'email', sev:'ok', text:'SPF ends in -all (strict fail)' });
+      push('email','ok','spf_terminator_ok','SPF ends in -all (strict fail)');
     }else if(facts.spf.qualifier === 'softfail'){
       email += 8;
-      findings.push({ cat:'email', sev:'info', text:'SPF ends in ~all (softfail) — consider hardening to -all' });
+      push('email','ok','spf_terminator_ok','SPF ends in ~all (softfail) — consider hardening to -all');
     }else{
-      findings.push({ cat:'email', sev:'warn', text:'SPF has no proper terminator (-all / ~all)' });
+      push('email','warn','spf_no_terminator','SPF has no proper terminator (-all / ~all)');
     }
     if(facts.spf.dnsLookupCount > 10){
       email -= 10;
-      findings.push({ cat:'email', sev:'high', text:`SPF exceeds 10 DNS lookups (${facts.spf.dnsLookupCount}) — will permerror per RFC 7208` });
+      push('email','high','spf_lookup_limit',`SPF exceeds 10 DNS lookups (${facts.spf.dnsLookupCount}) — will permerror per RFC 7208`);
     }
   }
 
-  if(facts.mtaSts){ email += 10; findings.push({ cat:'email', sev:'ok', text:'MTA-STS record present' }); }
-  else { findings.push({ cat:'email', sev:'info', text:'No MTA-STS record (transport security policy not advertised)' }); }
+  if(facts.mtaSts){ email += 10; push('email','ok','mta_sts_present_ok','MTA-STS record present'); }
+  else { push('email','info','mta_sts_missing','No MTA-STS record (transport security policy not advertised)'); }
 
   // DNS hygiene
   let dns = 50;
-  if(facts.dnssec){ dns += 25; findings.push({ cat:'dns', sev:'ok', text:'DNSSEC validates (AD flag set)' }); }
-  else { findings.push({ cat:'dns', sev:'high', text:'DNSSEC not validated' }); }
+  if(facts.dnssec){ dns += 25; push('dns','ok','dnssec_ok','DNSSEC validates (AD flag set)'); }
+  else { push('dns','warn','dnssec_missing','DNSSEC not validated'); }
 
-  if(facts.caa){ dns += 15; findings.push({ cat:'dns', sev:'ok', text:'CAA record present' }); }
-  else { findings.push({ cat:'dns', sev:'warn', text:'No CAA record — any CA may issue certificates' }); }
+  if(facts.caa){ dns += 15; push('dns','ok','caa_ok','CAA record present'); }
+  else { push('dns','warn','caa_missing','No CAA record — any CA may issue certificates'); }
 
   if(facts.nsCount >= 2){ dns += 10; }
-  else if(facts.nsCount === 1){ dns -= 10; findings.push({ cat:'dns', sev:'high', text:'Only one nameserver — no redundancy' }); }
-  else { findings.push({ cat:'dns', sev:'warn', text:'Could not enumerate nameservers' }); }
+  else if(facts.nsCount === 1){ dns -= 10; push('dns','high','ns_single','Only one nameserver — no redundancy'); }
+  else { push('dns','warn','ns_unknown','Could not enumerate nameservers'); }
 
   // Web security
   let web = 50;
@@ -730,42 +1180,41 @@ function scoreDomain(facts){
     const which = [];
     if(facts.httpsApexOk) which.push('apex');
     if(facts.httpsWwwOk) which.push('www');
-    findings.push({ cat:'web', sev:'ok', text:`HTTPS reachable on ${which.join(' and ')} (TLS handshake completed)` });
+    push('web','ok','https_ok',`HTTPS reachable on ${which.join(' and ')} (TLS handshake completed)`);
   }else{
     web -= 25;
-    findings.push({ cat:'web', sev:'high', text:'HTTPS unreachable on both apex and www — could not complete TLS handshake' });
+    push('web','crit','https_unreachable','HTTPS unreachable on both apex and www — could not complete TLS handshake');
   }
   if(facts.hstsPreload === true){
     web += 15;
-    findings.push({ cat:'web', sev:'ok', text:'On the Chromium HSTS preload list' });
+    push('web','ok','hsts_preload_ok','On the Chromium HSTS preload list');
   }else if(facts.hstsPreload === false){
-    findings.push({ cat:'web', sev:'info', text:'Not on HSTS preload list (optional hardening)' });
+    push('web','info','hsts_preload_missing','Not on HSTS preload list (optional hardening)');
   }
 
   // Attack surface
   let surface = 70;
   if(facts.certError === 'rate-limited'){
-    findings.push({ cat:'surface', sev:'warn', text:'CertSpotter rate-limited — subdomain enumeration incomplete' });
+    push('surface','warn','surface_certspotter_ratelimited','CertSpotter rate-limited — subdomain enumeration incomplete');
   }else if(facts.certError){
-    findings.push({ cat:'surface', sev:'warn', text:'CertSpotter error: '+facts.certError });
+    push('surface','warn','surface_certspotter_error','CertSpotter error: '+facts.certError);
   }else{
-    findings.push({ cat:'surface', sev:'info', text:`${facts.subdomainTotal} subdomain${facts.subdomainTotal===1?'':'s'} found in Certificate Transparency` });
+    push('surface','info','surface_total_info',`${facts.subdomainTotal} subdomain${facts.subdomainTotal===1?'':'s'} found in Certificate Transparency`);
   }
 
   if(facts.sensitive.length > 0){
     const penalty = Math.min(facts.sensitive.length * 4, 24);
     surface -= penalty;
-    findings.push({
-      cat:'surface', sev:'high',
-      text:`${facts.sensitive.length} sensitive-pattern subdomain${facts.sensitive.length===1?'':'s'} publicly listed: ${facts.sensitive.slice(0,5).join(', ')}${facts.sensitive.length>5?'…':''}`
-    });
+    push('surface','warn','surface_sensitive_subdomains',
+      `${facts.sensitive.length} sensitive-pattern subdomain${facts.sensitive.length===1?'':'s'} publicly listed: ${facts.sensitive.slice(0,5).join(', ')}${facts.sensitive.length>5?'…':''}`);
   }
 
   if(facts.takeoverCandidates.length > 0){
     const penalty = Math.min(facts.takeoverCandidates.length * 12, 40);
     surface -= penalty;
     facts.takeoverCandidates.forEach(c => {
-      findings.push({ cat:'surface', sev:'crit', text:`Takeover candidate: ${c.subdomain} → ${c.target} (${c.service}, target does not resolve)` });
+      push('surface','crit','surface_takeover_candidate',
+        `Takeover candidate: ${c.subdomain} → ${c.target} (${c.service}, target does not resolve)`);
     });
   }
 
@@ -788,7 +1237,10 @@ function scoreDomain(facts){
   else if(composite >= 40) grade = 'D';
 
   if(facts.lookupFailures.length >= 3){
-    findings.unshift({ cat:'dns', sev:'warn', text:`Multiple DNS lookups failed (${facts.lookupFailures.join(', ')}) — results may be incomplete; rescan recommended` });
+    findings.unshift({
+      cat:'dns', sev:'warn', id:'scan_partial_failure',
+      text:`Multiple DNS lookups failed (${facts.lookupFailures.join(', ')}) — results may be incomplete; rescan recommended`
+    });
   }
 
   return {
@@ -855,9 +1307,11 @@ async function scanOne(domain){
     entry.delta = (typeof previousScore === 'number') ? (result.composite - previousScore) : 0;
 
     entry.history = entry.history || [];
+    // New fingerprint shape: id|sev . Compatibility: the diff renderer
+    // also accepts the legacy sev|text shape from older history entries.
     const findingsFingerprint = (result.findings || [])
       .filter(f => f.sev === 'crit' || f.sev === 'high' || f.sev === 'warn')
-      .map(f => f.sev + '|' + f.text);
+      .map(f => (f.id || 'unknown') + '|' + f.sev);
     entry.history.push({
       at: entry.lastScan,
       score: result.composite,
@@ -895,7 +1349,7 @@ function removeDomain(domain){
 }
 
 /* =========================================================
-   Export
+   Exports
 ========================================================= */
 function exportJSON(){
   const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
@@ -907,25 +1361,111 @@ function exportJSON(){
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
 }
 
+function exportMarkdown(){
+  const includeExplanations = plainLanguage;
+  const lines = [];
+  lines.push(`# PostureLens report`);
+  lines.push(`Generated ${new Date().toISOString().slice(0,10)} · ${state.domains.length} domain${state.domains.length===1?'':'s'}`);
+  lines.push('');
+  lines.push(`Explanations included: ${includeExplanations ? 'yes (plain-language mode)' : 'no (compact mode)'}.`);
+  lines.push('');
+
+  state.domains.forEach(entry => {
+    lines.push(`## ${entry.domain} — ${entry.grade || '—'} (${typeof entry.score==='number'?entry.score:'—'})`);
+    lines.push(`Type: ${entry.type==='vendor'?'Vendor':'Own org'} · Last scan: ${entry.lastScan ? new Date(entry.lastScan).toISOString().slice(0,19).replace('T',' ') : 'pending'}`);
+    if(entry.subscores){
+      lines.push(`Sub-scores: Email ${entry.subscores.email} · DNS ${entry.subscores.dns} · Web ${entry.subscores.web} · Surface ${entry.subscores.surface}`);
+    }
+    lines.push('');
+
+    const findings = entry.findings || [];
+    if(findings.length === 0){
+      lines.push('_No findings recorded._');
+      lines.push('');
+      return;
+    }
+
+    // Group OK findings into a short callout
+    const oks = findings.filter(f => f.sev === 'ok');
+    const nonOks = findings.filter(f => f.sev !== 'ok');
+
+    if(oks.length){
+      const labels = oks.map(f => (FINDING_GUIDANCE[f.id] && FINDING_GUIDANCE[f.id].title) || f.text);
+      lines.push(`**What's working well:** ${labels.join(' · ')}.`);
+      lines.push('');
+    }
+
+    const sevOrder = { crit:0, high:1, warn:2, info:3, ok:4 };
+    nonOks.sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
+
+    nonOks.forEach(f => {
+      const g = FINDING_GUIDANCE[f.id];
+      const title = (g && g.title) || `[${f.sev.toUpperCase()}] ${f.text}`;
+      const sevLabel = (g && g.severityLabel) || sevLabelFallback(f.sev);
+      lines.push(`### ${title}`);
+      lines.push(`**Severity:** ${sevLabel}`);
+      lines.push(`**What we observed:** ${f.text}`);
+      if(includeExplanations && g){
+        if(g.whyMatters){ lines.push(''); lines.push(`**Why it matters:** ${g.whyMatters}`); }
+        if(g.howToFix){ lines.push(''); lines.push(`**How to fix:** ${g.howToFix}`); }
+        if(g.whoFixes){ lines.push(''); lines.push(`**Who owns it:** ${g.whoFixes}`); }
+        if(g.timeToFix){ lines.push(`**Typical effort:** ${g.timeToFix}`); }
+      }
+      lines.push('');
+    });
+  });
+
+  const md = lines.join('\n');
+  const blob = new Blob([md], { type:'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `posturelens-report-${new Date().toISOString().slice(0,10)}.md`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+function sevLabelFallback(sev){
+  switch(sev){
+    case 'crit': return 'Critical';
+    case 'high': return 'High';
+    case 'warn': return 'Warning';
+    case 'info': return 'Info';
+    case 'ok':   return 'OK — working correctly';
+    default:     return sev;
+  }
+}
+
 /* =========================================================
-   Vendor questionnaire
+   Vendor questionnaire — uses FINDING_GUIDANCE.vendorQuestion
+   where available, otherwise falls back to a generic prompt.
 ========================================================= */
 function generateQuestionnaire(entry){
-  const f = entry.findings || [];
   const lines = [
     `# Security questionnaire — ${entry.domain}`,
     `Generated by PostureLens on ${new Date().toISOString().slice(0,10)}`,
     `Composite score: ${entry.score} (${entry.grade})`,
     '',
-    '## Questions derived from external posture observations',
+    'Questions derived from external posture observations. Items marked critical or high warrant a written response with timeline.',
     ''
   ];
+
+  const relevant = (entry.findings || []).filter(f => f.sev === 'crit' || f.sev === 'high');
+  if(relevant.length === 0){
+    lines.push('1. No critical or high external findings were observed at the time of this scan. Please confirm the cadence and scope of your internal security review.');
+    return lines.join('\n');
+  }
+
   let i = 1;
-  f.filter(x => x.sev === 'crit' || x.sev === 'high').forEach(finding => {
-    lines.push(`${i}. We observed: "${finding.text}". Please describe your remediation plan and timeline.`);
+  relevant.forEach(f => {
+    const g = FINDING_GUIDANCE[f.id];
+    if(g && g.vendorQuestion){
+      lines.push(`${i}. ${g.vendorQuestion.replace('<domain>', entry.domain)}`);
+    } else {
+      lines.push(`${i}. We observed: "${f.text}". Please describe your remediation plan and timeline.`);
+    }
     i++;
   });
-  if(i === 1) lines.push('1. No critical/high external findings observed. Please confirm internal security review cadence.');
   return lines.join('\n');
 }
 
@@ -967,8 +1507,32 @@ function escapeHtml(s){
   return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* Render prose with paragraph breaks (\n\n) and simple
+   numbered-list detection (lines that start with "1." etc.).
+   `code` spans inside backticks are wrapped in <code>. */
+function renderProse(text){
+  if(!text) return '';
+  const blocks = String(text).split(/\n\n+/);
+  return blocks.map(block => {
+    const lines = block.split(/\n/);
+    const isOl = lines.every(l => /^\s*\d+\.\s+/.test(l));
+    if(isOl && lines.length > 1){
+      const items = lines.map(l => l.replace(/^\s*\d+\.\s+/, ''));
+      return '<ol>' + items.map(it => '<li>' + inlineFormat(it) + '</li>').join('') + '</ol>';
+    }
+    return '<p>' + inlineFormat(block.replace(/\n/g, ' ')) + '</p>';
+  }).join('');
+}
+
+function inlineFormat(text){
+  // escape, then re-apply `code` spans
+  let out = escapeHtml(text);
+  out = out.replace(/`([^`]+)`/g, (m, code) => '<code>' + code + '</code>');
+  return out;
+}
+
 /* =========================================================
-   Render
+   Render — header meta + table
 ========================================================= */
 function renderHeaderMeta(){
   const meta = document.getElementById('pl-meta-summary');
@@ -1113,6 +1677,8 @@ function renderTable(){
       if(e.target.closest('button')) return;
       const d = tr.dataset.domain;
       expandedDomain = expandedDomain === d ? null : d;
+      // reset per-domain finding-expansion state on collapse
+      if(!expandedDomain) expandedFindings = new Set();
       render();
     });
   });
@@ -1123,7 +1689,11 @@ function renderTable(){
       const d = btn.dataset.domain;
       if(act==='rescan') scanOne(d);
       else if(act==='remove'){ if(confirm(`Remove ${d} from watchlist?`)) removeDomain(d); }
-      else if(act==='expand'){ expandedDomain = expandedDomain === d ? null : d; render(); }
+      else if(act==='expand'){
+        expandedDomain = expandedDomain === d ? null : d;
+        if(!expandedDomain) expandedFindings = new Set();
+        render();
+      }
     });
   });
   c.querySelectorAll('button[data-detail-act]').forEach(btn => {
@@ -1134,8 +1704,133 @@ function renderTable(){
       if(act==='ssllabs') window.open('https://www.ssllabs.com/ssltest/analyze.html?d='+encodeURIComponent(d), '_blank');
       else if(act==='questionnaire') copyQuestionnaire(d);
       else if(act==='rescan') scanOne(d);
+      else if(act==='expand-all'){
+        const entry = state.domains.find(x => x.domain === d);
+        if(entry && entry.findings){
+          entry.findings.forEach((f, idx) => {
+            if(f.sev !== 'ok') expandedFindings.add(idx + ':' + (f.id||'unknown'));
+          });
+          render();
+        }
+      }
+      else if(act==='collapse-all'){
+        expandedFindings = new Set();
+        render();
+      }
+      else if(act==='toggle-wins'){
+        winsCollapsed = !winsCollapsed;
+        render();
+      }
     });
   });
+  c.querySelectorAll('button[data-finding-toggle]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.findingToggle;
+      if(expandedFindings.has(key)) expandedFindings.delete(key);
+      else expandedFindings.add(key);
+      render();
+    });
+  });
+}
+
+/* =========================================================
+   Render — findings list (cards with expand affordance)
+========================================================= */
+function findingKey(f, idx){
+  return idx + ':' + (f.id || 'unknown');
+}
+
+function shouldAutoExpand(f){
+  return plainLanguage && (f.sev === 'crit' || f.sev === 'high');
+}
+
+function isExpanded(f, idx){
+  const key = findingKey(f, idx);
+  if(expandedFindings.has('__off__:' + key)) return false; // explicit user collapse override
+  if(expandedFindings.has(key)) return true;
+  return shouldAutoExpand(f);
+}
+
+function renderFindingCard(f, idx){
+  const g = FINDING_GUIDANCE[f.id] || null;
+  const sev = f.sev;
+  const sevLabel = (g && g.severityLabel) || sevLabelFallback(sev);
+  const hasGuidance = !!(g && (g.whyMatters || g.howToFix));
+  const expanded = isExpanded(f, idx);
+  const key = findingKey(f, idx);
+
+  const expander = (plainLanguage && hasGuidance)
+    ? `<button class="pl-fexpander" type="button" data-finding-toggle="${escapeHtml(key)}">${expanded ? 'Hide explanation' : 'Why this matters / How to fix'} <span class="chev">▾</span></button>`
+    : '';
+
+  const explainBody = (plainLanguage && hasGuidance && expanded) ? `
+    <div class="pl-fexplain">
+      ${g.whyMatters ? `<h5>Why it matters</h5>${renderProse(g.whyMatters)}` : ''}
+      ${g.howToFix ? `<h5>How to fix</h5>${renderProse(g.howToFix)}` : ''}
+      <div class="pl-fmeta">
+        ${g.whoFixes ? `<div><strong>Who owns it</strong><span>${escapeHtml(g.whoFixes)}</span></div>` : ''}
+        ${g.timeToFix ? `<div><strong>Typical effort</strong><span>${escapeHtml(g.timeToFix)}</span></div>` : ''}
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="pl-finding ${sev}${expanded?' expanded':''}">
+      <div class="pl-fhead${(plainLanguage && hasGuidance) ? ' expandable' : ''}" ${(plainLanguage && hasGuidance) ? `data-finding-toggle="${escapeHtml(key)}"` : ''}>
+        <span class="pl-fchip">${escapeHtml(sev)}</span>
+        <div class="pl-fbody">
+          <div class="pl-fsevlabel">${escapeHtml(sevLabel)}</div>
+          <div class="pl-fobserved">${escapeHtml(f.text)}</div>
+        </div>
+        ${expander}
+      </div>
+      ${explainBody}
+    </div>`;
+}
+
+function renderWinsCallout(oks){
+  if(oks.length === 0) return '';
+  const labels = oks.map(f => {
+    const g = FINDING_GUIDANCE[f.id];
+    return escapeHtml((g && g.title) || f.text);
+  });
+  const summary = labels.map(l => `<span class="pl-win-item">${l}</span>`).join('');
+  const detailsBtn = plainLanguage
+    ? `<button class="pl-wins-toggle" type="button" data-detail-act="toggle-wins" data-domain="">${winsCollapsed ? 'View details' : 'Hide details'}</button>`
+    : '';
+
+  let details = '';
+  if(plainLanguage && !winsCollapsed){
+    details = '<div style="grid-column:1/-1;display:flex;flex-direction:column;gap:8px;margin-top:6px">' +
+      oks.map((f, idx) => renderFindingCard(f, 'ok:' + idx)).join('') +
+      '</div>';
+  }
+
+  return `
+    <div class="pl-wins">
+      <span class="pl-wins-label">Working well</span>
+      <div class="pl-wins-list">${summary}</div>
+      ${detailsBtn}
+    </div>
+    ${details}
+  `;
+}
+
+/* =========================================================
+   Render — history (handles both old and new fingerprint shapes)
+========================================================= */
+function fingerprintLabel(fp){
+  // New shape: "id|sev"  → look up title from FINDING_GUIDANCE
+  // Old shape: "sev|text" → use the text directly
+  const parts = fp.split('|');
+  if(parts.length !== 2) return fp;
+  const a = parts[0], b = parts[1];
+  const sevs = new Set(['crit','high','warn','info','ok']);
+  if(sevs.has(b)){
+    const g = FINDING_GUIDANCE[a];
+    return (g && g.title) || a;
+  }
+  return b;
 }
 
 function renderHistory(entry){
@@ -1164,10 +1859,10 @@ function renderHistory(entry){
       const removed = prev.findings.filter(f => !currSet.has(f));
       const parts = [];
       if(added.length){
-        parts.push(`<span class="pl-chg-add">+${added.length} new</span> (${escapeHtml(added.slice(0,2).map(f=>f.split('|')[1]).join('; '))}${added.length>2?'…':''})`);
+        parts.push(`<span class="pl-chg-add">+${added.length} new</span> (${escapeHtml(added.slice(0,2).map(fingerprintLabel).join('; '))}${added.length>2?'…':''})`);
       }
       if(removed.length){
-        parts.push(`<span class="pl-chg-rem">−${removed.length} resolved</span> (${escapeHtml(removed.slice(0,2).map(f=>f.split('|')[1]).join('; '))}${removed.length>2?'…':''})`);
+        parts.push(`<span class="pl-chg-rem">−${removed.length} resolved</span> (${escapeHtml(removed.slice(0,2).map(fingerprintLabel).join('; '))}${removed.length>2?'…':''})`);
       }
       if(!added.length && !removed.length && h.score !== prev.score){
         parts.push('<span style="color:var(--muted)">sub-score weights shifted; no new/resolved findings</span>');
@@ -1177,7 +1872,11 @@ function renderHistory(entry){
       }
       changesHtml = parts.join(' · ');
     } else if(!prev){
-      const critHigh = (h.findings||[]).filter(f => f.startsWith('crit|') || f.startsWith('high|')).length;
+      const critHigh = (h.findings||[]).filter(f => {
+        const parts = f.split('|');
+        const sev = (parts.length===2 && new Set(['crit','high','warn','info','ok']).has(parts[1])) ? parts[1] : parts[0];
+        return sev === 'crit' || sev === 'high';
+      }).length;
       changesHtml = critHigh > 0
         ? `<span style="color:var(--muted)">baseline: ${critHigh} crit/high finding${critHigh===1?'':'s'}</span>`
         : '<span style="color:var(--muted)">baseline scan</span>';
@@ -1204,16 +1903,19 @@ function renderHistory(entry){
     </div>`;
 }
 
+/* =========================================================
+   Render — detail panel
+========================================================= */
 function renderDetail(entry){
   const f = entry.findings || [];
   const sevOrder = { crit:0, high:1, warn:2, info:3, ok:4 };
-  const sorted = f.slice().sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
-  const findingsHtml = sorted.map(x => `
-    <div class="pl-finding ${x.sev}">
-      <span class="pl-sev">${x.sev}</span>
-      <span>${escapeHtml(x.text)}</span>
-    </div>
-  `).join('') || '<div style="color:var(--muted);font-size:13px">No findings yet — scan pending.</div>';
+
+  const oks = f.filter(x => x.sev === 'ok');
+  const nonOks = f.slice().filter(x => x.sev !== 'ok').sort((a,b) => (sevOrder[a.sev]||9) - (sevOrder[b.sev]||9));
+
+  const findingsHtml = nonOks.length
+    ? nonOks.map((x, idx) => renderFindingCard(x, idx)).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px">No active issues — see the "Working well" callout above.</div>';
 
   const sub = entry.subscores || { email:0, dns:0, web:0, surface:0 };
   const subHtml = ['email','dns','web','surface'].map(k => {
@@ -1242,13 +1944,32 @@ function renderDetail(entry){
   }
   if(facts.certError) rawLines.push('CertSpotter: '+facts.certError);
 
+  const hasGuidanceItems = nonOks.some(x => {
+    const g = FINDING_GUIDANCE[x.id];
+    return g && (g.whyMatters || g.howToFix);
+  });
+
   return `
     <tr class="pl-detail-row">
       <td colspan="6">
         <div class="pl-detail">
+          ${renderWinsCallout(oks)}
+
+          <div class="pl-detail-controls">
+            <div style="font-size:11.5px;color:var(--muted)">
+              ${nonOks.length} active finding${nonOks.length===1?'':'s'} · ${oks.length} working well
+            </div>
+            <div style="display:flex;gap:14px;align-items:center">
+              ${(plainLanguage && hasGuidanceItems) ? `
+                <button class="pl-btn-link" type="button" data-detail-act="expand-all" data-domain="${escapeHtml(entry.domain)}">Expand all explanations</button>
+                <button class="pl-btn-link" type="button" data-detail-act="collapse-all" data-domain="${escapeHtml(entry.domain)}">Collapse all</button>
+              ` : ''}
+            </div>
+          </div>
+
           <div>
-            <h4>Findings (${sorted.length})</h4>
-            <div class="findings">${findingsHtml}</div>
+            <h4>Findings (${nonOks.length})</h4>
+            <div class="pl-findings-list">${findingsHtml}</div>
           </div>
           <div>
             <h4>Sub-scores</h4>
@@ -1273,6 +1994,8 @@ function renderDetail(entry){
 function render(){
   renderHeaderMeta();
   renderTable();
+  const toggle = document.getElementById('pl-plain-toggle');
+  if(toggle) toggle.checked = plainLanguage;
 }
 
 /* =========================================================
@@ -1307,8 +2030,22 @@ function wireUI(){
 
   const rescanBtn = document.getElementById('pl-rescan-all');
   const exportBtn = document.getElementById('pl-export');
+  const exportMdBtn = document.getElementById('pl-export-md');
+  const plainToggle = document.getElementById('pl-plain-toggle');
+
   if(rescanBtn) rescanBtn.addEventListener('click', rescanAll);
   if(exportBtn) exportBtn.addEventListener('click', exportJSON);
+  if(exportMdBtn) exportMdBtn.addEventListener('click', exportMarkdown);
+  if(plainToggle){
+    plainToggle.checked = plainLanguage;
+    plainToggle.addEventListener('change', () => {
+      plainLanguage = plainToggle.checked;
+      savePlainPref();
+      // reset per-finding overrides so auto-expand respects new mode
+      expandedFindings = new Set();
+      render();
+    });
+  }
 }
 
 /* =========================================================
@@ -1316,6 +2053,7 @@ function wireUI(){
 ========================================================= */
 async function boot(){
   state = loadState();
+  plainLanguage = loadPlainPref();
   wireUI();
   render();
   await loadHstsPreload();

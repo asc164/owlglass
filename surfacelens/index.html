@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
 <style>
   :root{
     --sl-accent:#7c3aed;
@@ -82,11 +84,13 @@
   .sl-scope-meta{font-size:12px;color:var(--sl-muted);margin-top:3px}
   .sl-match-note{font-size:11px;color:var(--sl-muted);font-weight:500;margin-left:4px}
   .sl-match-note.zero{color:var(--sl-bad)}
-  .sl-scope-actions{display:flex;gap:6px}
+  .sl-scope-actions{display:flex;gap:6px;flex-wrap:wrap}
   .sl-scope-actions button{background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);font:inherit;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer}
   .sl-scope-actions button:hover{border-color:var(--sl-border-strong);background:var(--sl-bg-soft)}
   .sl-scope-actions button.danger{color:var(--sl-bad)}
   .sl-scope-actions button.danger:hover{border-color:var(--sl-bad);background:#fef2f2}
+  .sl-scope-actions button.primary{background:var(--sl-accent);color:#fff;border-color:var(--sl-accent);font-weight:600}
+  .sl-scope-actions button.primary:hover{background:var(--sl-accent-hover);border-color:var(--sl-accent-hover)}
 
   /* Summary cells */
   .sl-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));background:var(--sl-bg-soft);border-bottom:1px solid var(--sl-border)}
@@ -96,6 +100,19 @@
   .sl-summary-cell .val{font-size:20px;font-weight:600;margin-top:3px;color:var(--sl-text)}
   .sl-summary-cell .val.warn{color:var(--sl-warn)}
   .sl-summary-cell .val.bad{color:var(--sl-bad)}
+  .sl-summary-cell .val.good{color:var(--sl-good)}
+
+  /* What's working panel */
+  .sl-wins{padding:16px 18px;border-bottom:1px solid var(--sl-border);background:#f0fdf4}
+  .sl-wins-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .sl-wins-head h3{margin:0;font-size:13px;font-weight:600;color:#065f46;text-transform:uppercase;letter-spacing:0.04em}
+  .sl-wins-count{font-size:11px;color:#065f46;background:#d1fae5;border:1px solid #a7f3d0;padding:2px 8px;border-radius:6px;font-weight:600}
+  .sl-wins-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}
+  .sl-win{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:8px}
+  .sl-win-check{flex-shrink:0;width:18px;height:18px;border-radius:50%;background:#059669;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+  .sl-win-body{flex:1;min-width:0}
+  .sl-win-title{font-size:13px;font-weight:600;color:#065f46;line-height:1.4}
+  .sl-win-detail{font-size:12px;color:#047857;line-height:1.5;margin-top:2px}
 
   /* Top risks / action items */
   .sl-risks{padding:16px 18px;border-bottom:1px solid var(--sl-border);background:var(--sl-bg)}
@@ -135,6 +152,18 @@
   .sl-empty{padding:40px 24px;text-align:center;color:var(--sl-muted);font-size:14px;background:var(--sl-bg)}
   .sl-empty code{background:var(--sl-chip-bg);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--sl-text)}
   .sl-no-match-row td{padding:24px;text-align:center;color:var(--sl-muted);font-size:13px}
+
+  /* PDF modal */
+  .sl-modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .sl-modal-backdrop.show{display:flex}
+  .sl-modal{background:#fff;border-radius:12px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.2)}
+  .sl-modal h2{margin:0 0 4px;font-size:18px;font-weight:600;color:var(--sl-text)}
+  .sl-modal .sub{margin:0 0 18px;font-size:13px;color:var(--sl-muted);line-height:1.5}
+  .sl-modal label{display:block;font-size:12px;font-weight:600;color:var(--sl-text);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;margin-top:14px}
+  .sl-modal label:first-of-type{margin-top:0}
+  .sl-modal input[type=text]{width:100%;padding:9px 12px;border:1px solid var(--sl-border);border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box}
+  .sl-modal input[type=text]:focus{outline:none;border-color:var(--sl-accent);box-shadow:0 0 0 3px rgba(124,58,237,0.12)}
+  .sl-modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
 
   /* Explainer */
   .sl-explain{margin-top:36px;background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:24px}
@@ -214,6 +243,24 @@
 
         <div class="sl-scopes" id="sl-scopes"></div>
 
+        <!-- PDF Branding Modal -->
+        <div class="sl-modal-backdrop" id="sl-pdf-modal">
+          <div class="sl-modal">
+            <h2>Export PDF report</h2>
+            <p class="sub">Optional branding fields. Leave blank for an unbranded report. Values are remembered locally.</p>
+            <label for="sl-pdf-prepared-for">Prepared for (client name)</label>
+            <input type="text" id="sl-pdf-prepared-for" placeholder="Acme Corporation">
+            <label for="sl-pdf-prepared-by">Prepared by (your firm)</label>
+            <input type="text" id="sl-pdf-prepared-by" placeholder="Your Security Team">
+            <label for="sl-pdf-contact">Contact (email or phone)</label>
+            <input type="text" id="sl-pdf-contact" placeholder="security@yourfirm.com">
+            <div class="sl-modal-actions">
+              <button class="sl-btn ghost" id="sl-pdf-cancel">Cancel</button>
+              <button class="sl-btn" id="sl-pdf-generate">Generate PDF</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Explainer -->
         <section class="sl-explain">
           <h2>What SurfaceLens checks</h2>
@@ -236,8 +283,8 @@
               <p>Each asset is scored on known CVEs (+10 each), sensitive-named hosts (+15), exposed database ports (+12 each), remote-access ports (+8 each), risky Shodan tags (+8 each), and unresolvable hosts (+5). The Top Risks section ranks the highest-scoring assets per scope.</p>
             </div>
             <div class="sl-explain-card">
-              <h3>Sensitive hostnames</h3>
-              <p>Hostnames containing tokens like <code>admin</code>, <code>staging</code>, <code>dev</code>, <code>internal</code>, <code>vpn</code>, <code>jenkins</code>, <code>git</code> are flagged. These are often non-production assets that leaked into Certificate Transparency and warrant a closer look.</p>
+              <h3>What's working</h3>
+              <p>We also highlight controls that passed: full CT enumeration, complete DNS resolution, zero CVEs, no exposed databases, no risky Shodan tags, and clean sensitive-name hygiene. These appear in both the dashboard and the PDF report.</p>
             </div>
             <div class="sl-explain-card">
               <h3>Limitations</h3>
@@ -266,7 +313,8 @@
 
   // ---- Constants ----
   const STORAGE_KEY       = 'owlglass_surfacelens_v1';
-  const UI_KEY            = 'owlglass_surfacelens_ui_v1'; // collapsed state per scope id
+  const UI_KEY            = 'owlglass_surfacelens_ui_v1';
+  const BRAND_KEY         = 'owlglass_surfacelens_brand_v1';
   const DOH_URL           = 'https://dns.google/resolve';
   const CERTSPOTTER_API   = 'https://api.certspotter.com/v1/issuances';
   const SHODAN_IDB        = 'https://internetdb.shodan.io';
@@ -275,8 +323,8 @@
   const IP_CAP            = 100;
   const SCAN_CONCURRENCY  = 6;
   const HISTORY_CAP       = 8;
-  const TOP_RISKS_LIMIT   = 5;     // max action items per scope
-  const HOSTS_PER_ACTION  = 6;     // max example hosts shown per action item
+  const TOP_RISKS_LIMIT   = 5;
+  const HOSTS_PER_ACTION  = 6;
 
   const SENSITIVE_PATTERNS = [
     'admin','staging','stage','dev','test','qa','uat','internal','intranet',
@@ -285,41 +333,42 @@
     'prometheus','sonar','phpmyadmin','wp-admin','api-internal','secret'
   ];
 
-  // Risk port groups
   const DB_PORTS         = new Set([3306, 5432, 6379, 27017, 9200, 1433, 5984, 9300, 11211]);
   const REMOTE_PORTS     = new Set([22, 23, 3389, 5900, 5985, 5986]);
   const DB_PORT_NAMES    = {3306:'MySQL',5432:'PostgreSQL',6379:'Redis',27017:'MongoDB',9200:'Elasticsearch',1433:'MS SQL',5984:'CouchDB',9300:'Elasticsearch',11211:'Memcached'};
   const REMOTE_PORT_NAMES= {22:'SSH',23:'Telnet',3389:'RDP',5900:'VNC',5985:'WinRM',5986:'WinRM/TLS'};
   const RISKY_TAGS       = new Set(['compromised','honeypot','malware','self-signed','phishing','c2','botnet']);
 
+  // PDF colors
+  const PDF_ACCENT  = '#7c3aed';
+  const PDF_TEXT    = '#111827';
+  const PDF_MUTED   = '#6b7280';
+  const PDF_GOOD    = '#059669';
+  const PDF_BAD     = '#dc2626';
+  const PDF_WARN    = '#d97706';
+  const PDF_CRIT    = '#b91c1c';
+
   // ---- State ----
   let state = { scopes: [] };
-  let uiState = { collapsed: {}, preSearchCollapsed: null }; // map scope.id -> bool
+  let uiState = { collapsed: {}, preSearchCollapsed: null };
   let searchQuery = '';
+  let pendingPdfScopeIdx = null;
 
   function loadState(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) state = JSON.parse(raw);
-    } catch(e){ console.warn('Load state failed', e); }
+    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) state = JSON.parse(raw); }
+    catch(e){ console.warn('Load state failed', e); }
     if (!state.scopes) state.scopes = [];
-
-    try {
-      const rawUi = localStorage.getItem(UI_KEY);
-      if (rawUi) uiState = { ...uiState, ...JSON.parse(rawUi) };
-    } catch(e){ console.warn('Load UI failed', e); }
+    try { const rawUi = localStorage.getItem(UI_KEY); if (rawUi) uiState = { ...uiState, ...JSON.parse(rawUi) }; }
+    catch(e){ console.warn('Load UI failed', e); }
     if (!uiState.collapsed) uiState.collapsed = {};
   }
-
-  function saveState(){
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch(e){ console.warn('Save state failed', e); }
+  function saveState(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+  function saveUiState(){ try { localStorage.setItem(UI_KEY, JSON.stringify({collapsed: uiState.collapsed})); } catch(e){} }
+  function loadBrand(){
+    try { const raw = localStorage.getItem(BRAND_KEY); if (raw) return JSON.parse(raw); } catch(e){}
+    return { preparedFor:'', preparedBy:'', contact:'' };
   }
-
-  function saveUiState(){
-    try { localStorage.setItem(UI_KEY, JSON.stringify({collapsed: uiState.collapsed})); }
-    catch(e){ console.warn('Save UI failed', e); }
-  }
+  function saveBrand(b){ try { localStorage.setItem(BRAND_KEY, JSON.stringify(b)); } catch(e){} }
 
   // ---- Utilities ----
   const $ = id => document.getElementById(id);
@@ -330,9 +379,7 @@
     el.classList.add('show');
     el.classList.toggle('error', !!isErr);
   };
-  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   function normalizeDomain(input){
     if (!input) return null;
@@ -349,6 +396,12 @@
     if (s < 3600) return `${Math.floor(s/60)}m ago`;
     if (s < 86400) return `${Math.floor(s/3600)}h ago`;
     return `${Math.floor(s/86400)}d ago`;
+  }
+
+  function formatDate(ts){
+    if (!ts) return '—';
+    const d = new Date(ts);
+    return d.toLocaleString('en-US', {year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
   }
 
   function isSensitive(host){
@@ -408,17 +461,11 @@
     const out = { host, a: [], aaaa: [] };
     try {
       const r = await withTimeout(fetch(`${DOH_URL}?name=${encodeURIComponent(host)}&type=A`), 8000, 'DoH A');
-      if (r.ok){
-        const j = await r.json();
-        if (j.Answer) out.a = j.Answer.filter(x => x.type === 1).map(x => x.data);
-      }
+      if (r.ok){ const j = await r.json(); if (j.Answer) out.a = j.Answer.filter(x => x.type === 1).map(x => x.data); }
     } catch(e){}
     try {
       const r = await withTimeout(fetch(`${DOH_URL}?name=${encodeURIComponent(host)}&type=AAAA`), 8000, 'DoH AAAA');
-      if (r.ok){
-        const j = await r.json();
-        if (j.Answer) out.aaaa = j.Answer.filter(x => x.type === 28).map(x => x.data);
-      }
+      if (r.ok){ const j = await r.json(); if (j.Answer) out.aaaa = j.Answer.filter(x => x.type === 28).map(x => x.data); }
     } catch(e){}
     return out;
   }
@@ -429,18 +476,9 @@
       if (res.status === 404) return { ip, ports: [], cves: [], tags: [], hostnames: [], notFound: true };
       if (!res.ok) return { ip, error: `HTTP ${res.status}` };
       const j = await res.json();
-      return {
-        ip,
-        ports: j.ports || [],
-        cves: j.vulns || [],
-        tags: j.tags || [],
-        hostnames: j.hostnames || []
-      };
-    } catch(e){
-      return { ip, error: e.message };
-    }
+      return { ip, ports: j.ports || [], cves: j.vulns || [], tags: j.tags || [], hostnames: j.hostnames || [] };
+    } catch(e){ return { ip, error: e.message }; }
   }
-
   // ---- Scan engine ----
 
   async function scanScope(scope, onProgress){
@@ -450,14 +488,11 @@
     onProgress && onProgress('Fetching certificate transparency data…');
     const cs = await fetchCertSpotter(rootDomain);
     let subdomains = cs.subdomains;
-    if (subdomains.length > SUBDOMAIN_CAP){
-      subdomains = subdomains.slice(0, SUBDOMAIN_CAP);
-    }
+    const subdomainsTruncated = subdomains.length > SUBDOMAIN_CAP;
+    if (subdomainsTruncated) subdomains = subdomains.slice(0, SUBDOMAIN_CAP);
 
     onProgress && onProgress(`Resolving ${subdomains.length} subdomains via DNS…`);
-    const resolved = await pool(subdomains, SCAN_CONCURRENCY, async (host) => {
-      return await resolveDoH(host);
-    });
+    const resolved = await pool(subdomains, SCAN_CONCURRENCY, async (host) => resolveDoH(host));
 
     const ipSet = new Set();
     for (const r of resolved){
@@ -467,7 +502,8 @@
       }
     }
     let ips = Array.from(ipSet);
-    if (ips.length > IP_CAP) ips = ips.slice(0, IP_CAP);
+    const ipsTruncated = ips.length > IP_CAP;
+    if (ipsTruncated) ips = ips.slice(0, IP_CAP);
 
     onProgress && onProgress(`Querying Shodan InternetDB for ${ips.length} IPs…`);
     const idbResults = await pool(ips, SCAN_CONCURRENCY, async (ip) => fetchShodanIDB(ip));
@@ -507,21 +543,16 @@
       openPorts: assets.reduce((acc,a) => acc + a.ports.length, 0),
       cves: new Set(assets.flatMap(a => a.cves)).size,
       sensitive: assets.filter(a => a.sensitive).length,
-      certificates: cs.certificates.length
+      certificates: cs.certificates.length,
+      subdomainsTruncated,
+      ipsTruncated
     };
 
     const history = scope.history || [];
     history.unshift({ at: startedAt, summary, assetCount: assets.length });
     if (history.length > HISTORY_CAP) history.length = HISTORY_CAP;
 
-    return {
-      ...scope,
-      lastScan: startedAt,
-      assets,
-      certificates: cs.certificates,
-      summary,
-      history
-    };
+    return { ...scope, lastScan: startedAt, assets, certificates: cs.certificates, summary, history };
   }
 
   // ---- Risk scoring & action items ----
@@ -529,40 +560,21 @@
   function scoreAsset(a){
     let score = 0;
     const reasons = [];
-    if (a.cves.length){
-      score += a.cves.length * 10;
-      reasons.push(`${a.cves.length} CVE${a.cves.length===1?'':'s'}`);
-    }
-    if (a.sensitive){
-      score += 15;
-      reasons.push('sensitive-named host');
-    }
+    if (a.cves.length){ score += a.cves.length * 10; reasons.push(`${a.cves.length} CVE${a.cves.length===1?'':'s'}`); }
+    if (a.sensitive){ score += 15; reasons.push('sensitive-named host'); }
     const dbPorts = a.ports.filter(p => DB_PORTS.has(p));
-    if (dbPorts.length){
-      score += dbPorts.length * 12;
-      reasons.push(`db port${dbPorts.length===1?'':'s'} ${dbPorts.join(', ')}`);
-    }
+    if (dbPorts.length){ score += dbPorts.length * 12; reasons.push(`db port${dbPorts.length===1?'':'s'} ${dbPorts.join(', ')}`); }
     const remPorts = a.ports.filter(p => REMOTE_PORTS.has(p));
-    if (remPorts.length){
-      score += remPorts.length * 8;
-      reasons.push(`remote-access port${remPorts.length===1?'':'s'} ${remPorts.join(', ')}`);
-    }
+    if (remPorts.length){ score += remPorts.length * 8; reasons.push(`remote-access port${remPorts.length===1?'':'s'} ${remPorts.join(', ')}`); }
     const riskyTags = a.tags.filter(t => RISKY_TAGS.has(t.toLowerCase()));
-    if (riskyTags.length){
-      score += riskyTags.length * 8;
-      reasons.push(`risky tags: ${riskyTags.join(', ')}`);
-    }
-    if (!a.active){
-      score += 5;
-      reasons.push('unresolvable (CT-only)');
-    }
+    if (riskyTags.length){ score += riskyTags.length * 8; reasons.push(`risky tags: ${riskyTags.join(', ')}`); }
+    if (!a.active){ score += 5; reasons.push('unresolvable (CT-only)'); }
     return { score, reasons };
   }
 
   function buildActionItems(assets){
     const items = [];
 
-    // Critical — CVEs
     const cveAssets = assets.filter(a => a.cves.length > 0);
     if (cveAssets.length){
       const uniqueCves = new Set(cveAssets.flatMap(a => a.cves));
@@ -575,7 +587,6 @@
       });
     }
 
-    // Critical — database ports exposed
     const dbExposed = assets.filter(a => a.ports.some(p => DB_PORTS.has(p)));
     if (dbExposed.length){
       const portsList = [...new Set(dbExposed.flatMap(a => a.ports.filter(p => DB_PORTS.has(p))))].sort((x,y)=>x-y);
@@ -589,7 +600,6 @@
       });
     }
 
-    // High — remote-access ports
     const remoteExposed = assets.filter(a => a.ports.some(p => REMOTE_PORTS.has(p)));
     if (remoteExposed.length){
       const portsList = [...new Set(remoteExposed.flatMap(a => a.ports.filter(p => REMOTE_PORTS.has(p))))].sort((x,y)=>x-y);
@@ -603,7 +613,6 @@
       });
     }
 
-    // High — sensitive-named hosts that are reachable
     const sensitiveReachable = assets.filter(a => a.sensitive && a.active);
     if (sensitiveReachable.length){
       items.push({
@@ -615,7 +624,6 @@
       });
     }
 
-    // Medium — Shodan risky tags
     const riskyTagged = assets.filter(a => a.tags.some(t => RISKY_TAGS.has(t.toLowerCase())));
     if (riskyTagged.length){
       const tagList = [...new Set(riskyTagged.flatMap(a => a.tags.filter(t => RISKY_TAGS.has(t.toLowerCase()))))];
@@ -628,7 +636,6 @@
       });
     }
 
-    // Medium — unresolvable subdomains (decommissioned / takeover candidates)
     const unresolvable = assets.filter(a => !a.active);
     if (unresolvable.length){
       items.push({
@@ -640,31 +647,90 @@
       });
     }
 
-    // Sort by severity, cap to TOP_RISKS_LIMIT
     const sevOrder = { critical: 0, high: 1, medium: 2, info: 3 };
     items.sort((a,b) => sevOrder[a.severity] - sevOrder[b.severity]);
     return items.slice(0, TOP_RISKS_LIMIT);
+  }
+
+  // ---- What's working ----
+
+  function buildPassedChecks(scope, assets){
+    const checks = [];
+    const sum = scope.summary || {};
+    const total = assets.length;
+    const active = assets.filter(a => a.active).length;
+    const allCves = new Set(assets.flatMap(a => a.cves));
+    const dbExposed = assets.filter(a => a.ports.some(p => DB_PORTS.has(p)));
+    const remoteExposed = assets.filter(a => a.ports.some(p => REMOTE_PORTS.has(p)));
+    const sensitiveReachable = assets.filter(a => a.sensitive && a.active);
+    const riskyTagged = assets.filter(a => a.tags.some(t => RISKY_TAGS.has(t.toLowerCase())));
+
+    if (sum.certificates > 0){
+      checks.push({
+        title: 'Certificate Transparency enumeration complete',
+        detail: `Discovered ${total} subdomain${total===1?'':'s'} from ${sum.certificates} certificate${sum.certificates===1?'':'s'} — full external footprint visibility.`
+      });
+    }
+
+    if (total > 0 && active === total){
+      checks.push({
+        title: 'All enumerated hosts resolve to live IPs',
+        detail: `All ${total} discovered subdomains have current DNS records — no dangling CT artifacts suggesting decommissioned services.`
+      });
+    } else if (total > 0 && active / total >= 0.9){
+      const pct = Math.round((active/total)*100);
+      checks.push({
+        title: 'Strong DNS hygiene',
+        detail: `${active} of ${total} hosts resolve (${pct}%) — most subdomains in CT are still active.`
+      });
+    }
+
+    if (sum.uniqueIps > 0 && allCves.size === 0){
+      checks.push({
+        title: 'No known CVEs across exposed infrastructure',
+        detail: `Shodan InternetDB reports zero known vulnerabilities across ${sum.uniqueIps} unique IP${sum.uniqueIps===1?'':'s'}.`
+      });
+    }
+
+    if (sum.uniqueIps > 0 && dbExposed.length === 0){
+      checks.push({
+        title: 'No database ports exposed to the internet',
+        detail: `No MySQL, PostgreSQL, Redis, MongoDB, Elasticsearch or similar database services observed on public IPs — proper network segmentation.`
+      });
+    }
+
+    if (sum.uniqueIps > 0 && remoteExposed.length === 0){
+      checks.push({
+        title: 'No exposed remote-access ports',
+        detail: `No SSH, RDP, Telnet, VNC or WinRM detected on public IPs — administrative access appears properly gated.`
+      });
+    }
+
+    if (total > 0 && sensitiveReachable.length === 0){
+      checks.push({
+        title: 'Clean sensitive-name hygiene',
+        detail: `No reachable hosts with admin/staging/dev/internal naming patterns — non-production assets are not leaking into public Certificate Transparency.`
+      });
+    }
+
+    if (sum.uniqueIps > 0 && riskyTagged.length === 0){
+      checks.push({
+        title: 'No risky Shodan tags observed',
+        detail: `No hosts flagged as compromised, honeypot, malware, phishing, C2 or botnet by Shodan's passive analysis.`
+      });
+    }
+
+    return checks;
   }
 
   // ---- Search filtering ----
 
   function assetMatches(a, q){
     if (!q) return true;
-    const haystack = [
-      a.subdomain,
-      a.rootDomain,
-      ...a.ips,
-      ...a.ports.map(String),
-      ...a.cves,
-      ...a.tags
-    ].join(' ').toLowerCase();
+    const haystack = [a.subdomain, a.rootDomain, ...a.ips, ...a.ports.map(String), ...a.cves, ...a.tags].join(' ').toLowerCase();
     return haystack.includes(q);
   }
-
-  function filterAssets(assets, q){
-    if (!q) return assets;
-    return assets.filter(a => assetMatches(a, q));
-  }
+  function filterAssets(assets, q){ return q ? assets.filter(a => assetMatches(a, q)) : assets; }
 
   // ---- UI rendering ----
 
@@ -696,9 +762,7 @@
     const isSearching = !!searchQuery;
     const hasNoMatches = isSearching && matchCount === 0 && allAssets.length > 0;
 
-    // Determine collapsed state
     let isCollapsed = !!uiState.collapsed[scope.id];
-    // If actively searching and this scope has zero matches, force-collapse it
     if (hasNoMatches) isCollapsed = true;
 
     const rows = filtered.length
@@ -706,27 +770,41 @@
           const sa = scoreAsset(a).score, sb = scoreAsset(b).score;
           if (sa !== sb) return sb - sa;
           return a.subdomain.localeCompare(b.subdomain);
-        }).map(a => renderAssetRow(a, searchQuery)).join('')
+        }).map(a => renderAssetRow(a)).join('')
       : (allAssets.length === 0
           ? `<tr><td colspan="5" class="sl-empty">No assets discovered yet. Click Rescan.</td></tr>`
           : `<tr class="sl-no-match-row"><td colspan="5">No assets match "${escapeHtml(searchQuery)}".</td></tr>`);
 
-    // Top risks — only consider assets that pass the search filter (so search affects risk view too)
     const actionItems = buildActionItems(filtered);
+    const passedChecks = buildPassedChecks(scope, filtered);
     const cleanState = filtered.length > 0 && actionItems.length === 0;
 
     let risksHtml = '';
     if (cleanState){
-      risksHtml = `
-        <div class="sl-risks">
-          <div class="sl-risks-clean"><strong>No high-risk findings.</strong> All matched assets resolve, no known CVEs, no sensitive ports exposed.</div>
-        </div>
-      `;
+      risksHtml = `<div class="sl-risks"><div class="sl-risks-clean"><strong>No high-risk findings.</strong> All matched assets resolve, no known CVEs, no sensitive ports exposed.</div></div>`;
     } else if (actionItems.length){
-      risksHtml = `
-        <div class="sl-risks">
-          <div class="sl-risks-head"><h3>Top risks &amp; action items</h3></div>
-          ${actionItems.map(it => renderAction(it)).join('')}
+      risksHtml = `<div class="sl-risks"><div class="sl-risks-head"><h3>Top risks &amp; action items</h3></div>${actionItems.map(it => renderAction(it)).join('')}</div>`;
+    }
+
+    let winsHtml = '';
+    if (passedChecks.length){
+      winsHtml = `
+        <div class="sl-wins">
+          <div class="sl-wins-head">
+            <h3>What's working</h3>
+            <span class="sl-wins-count">${passedChecks.length} control${passedChecks.length===1?'':'s'} in good shape</span>
+          </div>
+          <div class="sl-wins-grid">
+            ${passedChecks.map(c => `
+              <div class="sl-win">
+                <div class="sl-win-check">✓</div>
+                <div class="sl-win-body">
+                  <div class="sl-win-title">${escapeHtml(c.title)}</div>
+                  <div class="sl-win-detail">${escapeHtml(c.detail)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       `;
     }
@@ -748,8 +826,9 @@
             <div class="sl-scope-meta">Last scan: ${timeAgo(scope.lastScan)}</div>
           </div>
           <div class="sl-scope-actions">
+            <button data-act="pdf" data-idx="${idx}" class="primary">Export PDF</button>
             <button data-act="rescan" data-idx="${idx}">Rescan</button>
-            <button data-act="export" data-idx="${idx}">Export</button>
+            <button data-act="export" data-idx="${idx}">JSON</button>
             <button data-act="remove" data-idx="${idx}" class="danger">Remove</button>
           </div>
         </div>
@@ -759,20 +838,17 @@
             <div class="sl-summary-cell"><div class="lbl">Active</div><div class="val">${sum.active}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Unique IPs</div><div class="val">${sum.uniqueIps}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Open ports</div><div class="val">${sum.openPorts}</div></div>
-            <div class="sl-summary-cell"><div class="lbl">Known CVEs</div><div class="val ${sum.cves>0?'bad':''}">${sum.cves}</div></div>
-            <div class="sl-summary-cell"><div class="lbl">Sensitive</div><div class="val ${sum.sensitive>0?'warn':''}">${sum.sensitive}</div></div>
+            <div class="sl-summary-cell"><div class="lbl">Known CVEs</div><div class="val ${sum.cves>0?'bad':'good'}">${sum.cves}</div></div>
+            <div class="sl-summary-cell"><div class="lbl">Sensitive</div><div class="val ${sum.sensitive>0?'warn':'good'}">${sum.sensitive}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Certificates</div><div class="val">${sum.certificates}</div></div>
           </div>
+          ${winsHtml}
           ${risksHtml}
           <div class="sl-assets-wrap">
             <table class="sl-assets">
               <thead>
                 <tr>
-                  <th>Host</th>
-                  <th>IPs</th>
-                  <th>Ports</th>
-                  <th>CVEs / Tags</th>
-                  <th>Notes</th>
+                  <th>Host</th><th>IPs</th><th>Ports</th><th>CVEs / Tags</th><th>Notes</th>
                 </tr>
               </thead>
               <tbody>${rows}</tbody>
@@ -798,19 +874,16 @@
     `;
   }
 
-  function renderAssetRow(a, q){
+  function renderAssetRow(a){
     const isDbPort = p => DB_PORTS.has(p);
     const isRemPort = p => REMOTE_PORTS.has(p);
     const portChips = a.ports.length
-      ? a.ports.map(p => {
-          const risky = isDbPort(p) || isRemPort(p);
-          return `<span class="sl-chip ${risky?'port-risk':''}">${p}</span>`;
-        }).join('')
+      ? a.ports.map(p => `<span class="sl-chip ${(isDbPort(p)||isRemPort(p))?'port-risk':''}">${p}</span>`).join('')
       : '<span class="sl-dash">—</span>';
     const cveChips  = a.cves.slice(0,6).map(c => `<span class="sl-chip cve">${escapeHtml(c)}</span>`).join('');
     const moreCves  = a.cves.length > 6 ? `<span class="sl-chip cve">+${a.cves.length-6}</span>` : '';
     const tagChips  = a.tags.map(t => `<span class="sl-chip tag">${escapeHtml(t)}</span>`).join('');
-    const notes     = [];
+    const notes = [];
     if (a.sensitive) notes.push('<span class="sl-chip sensitive">sensitive name</span>');
     if (!a.active)   notes.push('<span class="sl-chip">unresolvable</span>');
     return `
@@ -825,7 +898,6 @@
   }
 
   function wireScopeEvents(){
-    // Action buttons
     document.querySelectorAll('.sl-scope-actions button').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -835,44 +907,34 @@
         if (!scope) return;
         if (act === 'remove'){
           if (!confirm(`Remove ${scope.rootDomains[0]}?`)) return;
-          delete uiState.collapsed[scope.id];
-          saveUiState();
+          delete uiState.collapsed[scope.id]; saveUiState();
           state.scopes.splice(idx, 1);
           saveState(); renderAll();
         } else if (act === 'rescan'){
           await runScanForScope(idx);
         } else if (act === 'export'){
           downloadJson(scope, `surfacelens-${scope.rootDomains[0]}.json`);
+        } else if (act === 'pdf'){
+          openPdfModal(idx);
         }
       });
     });
 
-    // Header click → toggle collapse
     document.querySelectorAll('.sl-scope-head[data-toggle="1"]').forEach(head => {
       head.addEventListener('click', (e) => {
-        // Ignore clicks that originated on buttons (handled above with stopPropagation)
         if (e.target.closest('.sl-scope-actions')) return;
         const card = head.closest('.sl-scope');
         const id = card && card.dataset.id;
         if (!id) return;
-        // If currently in a search and this scope has zero matches, allow user to expand anyway by clearing the auto-collapse for this id
         const currently = card.classList.contains('collapsed');
-        if (currently){
-          card.classList.remove('collapsed');
-          uiState.collapsed[id] = false;
-        } else {
-          card.classList.add('collapsed');
-          uiState.collapsed[id] = true;
-        }
+        if (currently){ card.classList.remove('collapsed'); uiState.collapsed[id] = false; }
+        else { card.classList.add('collapsed'); uiState.collapsed[id] = true; }
         saveUiState();
       });
     });
   }
 
-  function renderAll(){
-    renderHeaderMeta();
-    renderScopes();
-  }
+  function renderAll(){ renderHeaderMeta(); renderScopes(); }
 
   // ---- Search ----
 
@@ -880,19 +942,14 @@
     const newQ = value.trim().toLowerCase();
     const wasEmpty = searchQuery === '';
     const becomingEmpty = newQ === '';
-
-    // When entering a search from a clean state, snapshot the current collapse map
     if (wasEmpty && !becomingEmpty){
       uiState.preSearchCollapsed = JSON.parse(JSON.stringify(uiState.collapsed));
     }
-
-    // When clearing search, restore previous collapse map
     if (!wasEmpty && becomingEmpty && uiState.preSearchCollapsed){
       uiState.collapsed = uiState.preSearchCollapsed;
       uiState.preSearchCollapsed = null;
       saveUiState();
     }
-
     searchQuery = newQ;
     $('sl-search-clear').classList.toggle('show', !!newQ);
     renderScopes();
@@ -908,8 +965,7 @@
     try {
       const updated = await scanScope(scope, msg => status(`[${scope.rootDomains[0]}] ${msg}`));
       state.scopes[idx] = updated;
-      saveState();
-      renderAll();
+      saveState(); renderAll();
       status(`Scan complete for ${scope.rootDomains[0]} — ${updated.summary.subdomains} assets, ${updated.summary.cves} CVEs.`);
     } catch(e){
       status(`Scan failed: ${e.message}`, true);
@@ -936,20 +992,15 @@
       mode: 'single',
       rootDomains: [norm],
       addedAt: new Date().toISOString(),
-      lastScan: null,
-      assets: [],
-      summary: null,
-      history: []
+      lastScan: null, assets: [], summary: null, history: []
     };
     state.scopes.unshift(newScope);
-    // Newly added scopes start expanded
     uiState.collapsed[newScope.id] = false;
-    saveUiState();
-    saveState(); renderAll();
+    saveUiState(); saveState(); renderAll();
     await runScanForScope(0);
   }
 
-  // ---- Export ----
+  // ---- Export JSON ----
 
   function downloadJson(data, filename){
     const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
@@ -958,6 +1009,348 @@
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  // ---- PDF Modal ----
+
+  function openPdfModal(idx){
+    pendingPdfScopeIdx = idx;
+    const brand = loadBrand();
+    $('sl-pdf-prepared-for').value = brand.preparedFor || '';
+    $('sl-pdf-prepared-by').value  = brand.preparedBy  || '';
+    $('sl-pdf-contact').value      = brand.contact     || '';
+    $('sl-pdf-modal').classList.add('show');
+    setTimeout(() => $('sl-pdf-prepared-for').focus(), 50);
+  }
+  function closePdfModal(){
+    $('sl-pdf-modal').classList.remove('show');
+    pendingPdfScopeIdx = null;
+  }
+
+  // ---- PDF generation ----
+
+  function sevColor(sev){
+    return sev==='critical' ? PDF_CRIT : sev==='high' ? PDF_BAD : sev==='medium' ? PDF_WARN : PDF_ACCENT;
+  }
+
+  function buildPdfDocument(scope, brand){
+    const sum = scope.summary || {};
+    const assets = scope.assets || [];
+    const actionItems = buildActionItems(assets);
+    const passedChecks = buildPassedChecks(scope, assets);
+    const generatedAt = new Date();
+    const domain = scope.rootDomains[0];
+
+    const critCount = actionItems.filter(i => i.severity === 'critical').length;
+    const highCount = actionItems.filter(i => i.severity === 'high').length;
+    const medCount  = actionItems.filter(i => i.severity === 'medium').length;
+
+    // ---- Cover page ----
+    const coverContent = [
+      { text: 'SurfaceLens', style: 'coverEyebrow', margin: [0, 100, 0, 4] },
+      { text: 'Attack Surface Report', style: 'coverTitle', margin: [0, 0, 0, 30] },
+      { canvas: [{ type:'rect', x:0, y:0, w:515, h:3, color: PDF_ACCENT }], margin: [0, 0, 0, 30] },
+      { text: domain, style: 'coverDomain', margin: [0, 0, 0, 8] },
+      { text: `Scan date: ${formatDate(scope.lastScan || generatedAt.toISOString())}`, style: 'coverMeta' },
+      { text: `Generated: ${formatDate(generatedAt.toISOString())}`, style: 'coverMeta', margin: [0, 2, 0, 40] },
+
+      {
+        table: {
+          widths: ['*', '*', '*'],
+          body: [[
+            { text: [{ text: String(sum.subdomains||0)+'\n', style:'statBig' }, { text:'Assets mapped', style:'statLbl' }], alignment:'center', border:[false,false,true,false], borderColor:['','','#e5e7eb',''] },
+            { text: [{ text: String(critCount+highCount)+'\n', style: (critCount+highCount)>0?'statBigBad':'statBigGood' }, { text:'Critical + high findings', style:'statLbl' }], alignment:'center', border:[false,false,true,false], borderColor:['','','#e5e7eb',''] },
+            { text: [{ text: String(passedChecks.length)+'\n', style:'statBigGood' }, { text:'Controls in good shape', style:'statLbl' }], alignment:'center', border:[false,false,false,false] }
+          ]]
+        },
+        layout: { hLineWidth:()=>0, vLineWidth:(i)=>i===1||i===2?1:0, vLineColor:()=>'#e5e7eb' },
+        margin: [0, 0, 0, 60]
+      }
+    ];
+
+    if (brand.preparedFor || brand.preparedBy || brand.contact){
+      const tbl = [];
+      if (brand.preparedFor) tbl.push([{text:'Prepared for', style:'brandLbl'}, {text: brand.preparedFor, style:'brandVal'}]);
+      if (brand.preparedBy)  tbl.push([{text:'Prepared by',  style:'brandLbl'}, {text: brand.preparedBy,  style:'brandVal'}]);
+      if (brand.contact)     tbl.push([{text:'Contact',      style:'brandLbl'}, {text: brand.contact,     style:'brandVal'}]);
+      coverContent.push({
+        table: { widths: [100, '*'], body: tbl },
+        layout: 'noBorders',
+        margin: [0, 20, 0, 0]
+      });
+    }
+
+    coverContent.push({ text: '', pageBreak: 'after' });
+
+    // ---- Executive summary ----
+    const execSummaryProse = (() => {
+      const parts = [];
+      parts.push(`SurfaceLens enumerated ${sum.subdomains||0} subdomain${sum.subdomains===1?'':'s'} of ${domain} from ${sum.certificates||0} Certificate Transparency record${sum.certificates===1?'':'s'}, resolving them to ${sum.uniqueIps||0} unique IP address${sum.uniqueIps===1?'':'es'}.`);
+      if (critCount + highCount === 0 && medCount === 0){
+        parts.push(`No high-priority findings were identified — the external posture for this scope is in good shape across the controls we evaluate.`);
+      } else {
+        const findings = [];
+        if (critCount) findings.push(`${critCount} critical`);
+        if (highCount) findings.push(`${highCount} high`);
+        if (medCount)  findings.push(`${medCount} medium`);
+        parts.push(`Findings: ${findings.join(', ')}. ${passedChecks.length} control${passedChecks.length===1?'':'s'} are operating well.`);
+      }
+      return parts.join(' ');
+    })();
+
+    const execContent = [
+      { text: 'Executive Summary', style: 'h1', margin: [0, 0, 0, 12] },
+      { text: execSummaryProse, style: 'body', margin: [0, 0, 0, 20] },
+
+      // Findings breakdown table
+      { text: 'Findings at a glance', style: 'h2', margin: [0, 0, 0, 8] },
+      {
+        table: {
+          widths: ['*', 60],
+          body: [
+            [{text:'Severity', style:'thLight'}, {text:'Count', style:'thLight', alignment:'right'}],
+            [{text:'Critical', color: PDF_CRIT, bold:true}, {text:String(critCount), alignment:'right'}],
+            [{text:'High',     color: PDF_BAD,  bold:true}, {text:String(highCount), alignment:'right'}],
+            [{text:'Medium',   color: PDF_WARN, bold:true}, {text:String(medCount),  alignment:'right'}],
+            [{text:'Controls in good shape', color: PDF_GOOD, bold:true}, {text:String(passedChecks.length), alignment:'right'}]
+          ]
+        },
+        layout: { hLineWidth:()=>0.5, vLineWidth:()=>0, hLineColor:()=>'#e5e7eb', paddingTop:()=>6, paddingBottom:()=>6 },
+        margin: [0, 0, 0, 20]
+      },
+
+      // Coverage
+      { text: 'Coverage', style: 'h2', margin: [0, 0, 0, 8] },
+      {
+        ul: [
+          `Certificate Transparency: ${sum.certificates||0} certificate${sum.certificates===1?'':'s'} parsed via CertSpotter`,
+          `DNS resolution: ${sum.active||0} of ${sum.subdomains||0} hosts resolved (A/AAAA) via Google DoH`,
+          `Passive port & CVE data: ${sum.uniqueIps||0} unique IP${sum.uniqueIps===1?'':'s'} queried via Shodan InternetDB`,
+          `Open ports observed: ${sum.openPorts||0}`,
+          `Known CVEs: ${sum.cves||0}`,
+          `Sensitive-named hosts: ${sum.sensitive||0}`
+        ],
+        style: 'body', margin: [0, 0, 0, 14]
+      }
+    ];
+
+    if (sum.subdomainsTruncated){
+      execContent.push({ text: `Note: subdomain list was truncated at ${SUBDOMAIN_CAP} entries.`, style: 'noteMuted', margin: [0, 0, 0, 4] });
+    }
+    if (sum.ipsTruncated){
+      execContent.push({ text: `Note: IP lookup was truncated at ${IP_CAP} entries.`, style: 'noteMuted', margin: [0, 0, 0, 14] });
+    }
+
+    execContent.push({ text: '', pageBreak: 'after' });
+
+    // ---- What's working ----
+    const winsContent = [
+      { text: "What's Working", style: 'h1', margin: [0, 0, 0, 6] },
+      { text: 'Controls and posture areas that are operating as expected. These are explicit passes from our scan, not just absence of findings.', style: 'lede', margin: [0, 0, 0, 16] }
+    ];
+
+    if (passedChecks.length === 0){
+      winsContent.push({ text: 'No passed controls to report — this typically means the scan returned partial data. Rescan and retry.', style:'body', italics:true });
+    } else {
+      passedChecks.forEach(c => {
+        winsContent.push({
+          table: {
+            widths: [16, '*'],
+            body: [[
+              { text: '✓', color: PDF_GOOD, bold: true, fontSize: 14, alignment:'center' },
+              [
+                { text: c.title, style: 'winTitle' },
+                { text: c.detail, style: 'winDetail' }
+              ]
+            ]]
+          },
+          layout: 'noBorders',
+          margin: [0, 0, 0, 10]
+        });
+      });
+    }
+
+    winsContent.push({ text: '', pageBreak: 'after' });
+
+    // ---- Findings detail ----
+    const findingsContent = [
+      { text: 'Findings & Recommended Actions', style: 'h1', margin: [0, 0, 0, 6] },
+      { text: 'Prioritized by severity. Each finding lists the affected hosts and a recommended remediation.', style: 'lede', margin: [0, 0, 0, 16] }
+    ];
+
+    if (actionItems.length === 0){
+      findingsContent.push({
+        table: {
+          widths: ['*'],
+          body: [[{
+            stack: [
+              { text: 'No high-risk findings.', style: 'cleanTitle' },
+              { text: 'All matched assets resolve, no known CVEs were detected, and no sensitive ports or risky tags were observed.', style: 'cleanDetail' }
+            ],
+            fillColor: '#ecfdf5', border: [true,true,true,true], borderColor: ['#a7f3d0','#a7f3d0','#a7f3d0','#a7f3d0']
+          }]]
+        },
+        layout: { hLineWidth:()=>1, vLineWidth:()=>1, hLineColor:()=>'#a7f3d0', vLineColor:()=>'#a7f3d0', paddingTop:()=>14, paddingBottom:()=>14, paddingLeft:()=>14, paddingRight:()=>14 }
+      });
+    } else {
+      actionItems.forEach((it, i) => {
+        const hostList = it.hosts.join(', ') + (it.more > 0 ? `, +${it.more} more` : '');
+        findingsContent.push({
+          stack: [
+            {
+              columns: [
+                { width: 'auto', text: it.severity.toUpperCase(), color: sevColor(it.severity), bold: true, fontSize: 9, margin:[0,2,8,0] },
+                { width: '*', text: it.title, style: 'findingTitle' }
+              ]
+            },
+            { text: it.detail, style: 'body', margin: [0, 6, 0, 6] },
+            { text: 'Affected hosts:', style: 'thLight', margin: [0, 2, 0, 2] },
+            { text: hostList, style: 'mono', margin: [0, 0, 0, 0] }
+          ],
+          margin: [0, 0, 0, 16],
+          unbreakable: false
+        });
+        if (i < actionItems.length - 1){
+          findingsContent.push({ canvas: [{ type:'line', x1:0, y1:0, x2:515, y2:0, lineWidth:0.5, lineColor:'#e5e7eb' }], margin: [0, 0, 0, 14] });
+        }
+      });
+    }
+
+    findingsContent.push({ text: '', pageBreak: 'after' });
+
+    // ---- Asset inventory appendix ----
+    const inventoryBody = [[
+      {text:'Host', style:'thLight'},
+      {text:'IPs', style:'thLight'},
+      {text:'Ports', style:'thLight'},
+      {text:'CVEs', style:'thLight'},
+      {text:'Notes', style:'thLight'}
+    ]];
+
+    const sortedAssets = assets.slice().sort((a,b) => {
+      const sa = scoreAsset(a).score, sb = scoreAsset(b).score;
+      if (sa !== sb) return sb - sa;
+      return a.subdomain.localeCompare(b.subdomain);
+    });
+
+    sortedAssets.forEach(a => {
+      const notes = [];
+      if (a.sensitive) notes.push('sensitive');
+      if (!a.active) notes.push('unresolvable');
+      if (a.tags.some(t => RISKY_TAGS.has(t.toLowerCase()))) notes.push('risky tag');
+      inventoryBody.push([
+        { text: a.subdomain, style: 'monoSmall' },
+        { text: a.ips.length ? a.ips.join('\n') : '—', style: 'monoSmall', color: PDF_MUTED },
+        { text: a.ports.length ? a.ports.join(', ') : '—', style: 'monoSmall' },
+        { text: a.cves.length ? a.cves.join('\n') : '—', style: 'monoSmall', color: a.cves.length ? PDF_BAD : PDF_MUTED },
+        { text: notes.length ? notes.join(', ') : '—', style: 'bodySmall', color: PDF_MUTED }
+      ]);
+    });
+
+    const inventoryContent = [
+      { text: 'Asset Inventory', style: 'h1', margin: [0, 0, 0, 6] },
+      { text: `Full inventory of discovered assets, ordered by risk score. ${assets.length} entries.`, style: 'lede', margin: [0, 0, 0, 14] },
+      {
+        table: { widths: ['*', 90, 70, 90, 60], body: inventoryBody, headerRows: 1 },
+        layout: {
+          hLineWidth: (i)=>i===1?1:0.5,
+          vLineWidth: ()=>0,
+          hLineColor: ()=>'#e5e7eb',
+          paddingTop: ()=>5, paddingBottom: ()=>5, paddingLeft: ()=>4, paddingRight: ()=>4
+        }
+      },
+      { text: '', pageBreak: 'after' },
+      { text: 'Methodology', style: 'h2', margin: [0, 0, 0, 8] },
+      {
+        ul: [
+          'Subdomain discovery: CertSpotter Certificate Transparency API. Coverage is excellent for HTTPS-facing assets; hosts without a public TLS cert will not appear.',
+          'DNS resolution: Google DNS-over-HTTPS for A and AAAA records. Hosts that fail to resolve are retained as inactive — possible decommissioned services or subdomain takeover candidates.',
+          'Open ports & CVEs: Shodan InternetDB, a free passive scan dataset refreshed weekly. SurfaceLens never scans the target directly.',
+          'Risk scoring: weighted by CVEs (×10), sensitive hostname patterns (+15), database ports (×12), remote-access ports (×8), risky Shodan tags (×8), unresolvable hosts (+5).',
+          'Limitations: browser-only — no port scanning, banner grabbing, or screenshots. Findings reflect passive data only; verify before remediation.'
+        ],
+        style: 'bodySmall'
+      }
+    ];
+
+    return {
+      pageSize: 'A4',
+      pageMargins: [50, 60, 50, 60],
+      info: {
+        title: `SurfaceLens Report - ${domain}`,
+        author: brand.preparedBy || 'Owlglass SurfaceLens',
+        subject: `Attack surface report for ${domain}`
+      },
+      footer: function(currentPage, pageCount){
+        if (currentPage === 1) return null;
+        return {
+          columns: [
+            { text: `SurfaceLens · ${domain}`, style: 'footerLeft', margin: [50, 20, 0, 0] },
+            { text: `${currentPage} / ${pageCount}`, style: 'footerRight', alignment:'right', margin: [0, 20, 50, 0] }
+          ]
+        };
+      },
+      content: [...coverContent, ...execContent, ...winsContent, ...findingsContent, ...inventoryContent],
+      defaultStyle: { font: 'Roboto', fontSize: 10, color: PDF_TEXT, lineHeight: 1.4 },
+      styles: {
+        coverEyebrow:  { fontSize: 11, color: PDF_ACCENT, bold: true, characterSpacing: 2 },
+        coverTitle:    { fontSize: 30, bold: true, color: PDF_TEXT },
+        coverDomain:   { fontSize: 22, bold: true, color: PDF_TEXT },
+        coverMeta:     { fontSize: 11, color: PDF_MUTED },
+        brandLbl:      { fontSize: 9, color: PDF_MUTED, bold: true, characterSpacing: 1, margin: [0, 4, 0, 4] },
+        brandVal:      { fontSize: 11, color: PDF_TEXT, margin: [0, 4, 0, 4] },
+        statBig:       { fontSize: 24, bold: true, color: PDF_TEXT },
+        statBigGood:   { fontSize: 24, bold: true, color: PDF_GOOD },
+        statBigBad:    { fontSize: 24, bold: true, color: PDF_BAD },
+        statLbl:       { fontSize: 9, color: PDF_MUTED, characterSpacing: 1 },
+        h1:            { fontSize: 18, bold: true, color: PDF_TEXT },
+        h2:            { fontSize: 13, bold: true, color: PDF_TEXT },
+        lede:          { fontSize: 10.5, color: PDF_MUTED, italics: true },
+        body:          { fontSize: 10, color: PDF_TEXT },
+        bodySmall:     { fontSize: 9, color: PDF_TEXT },
+        noteMuted:     { fontSize: 9, color: PDF_MUTED, italics: true },
+        mono:          { fontSize: 9, color: PDF_TEXT, font: 'Courier' },
+        monoSmall:     { fontSize: 8, color: PDF_TEXT, font: 'Courier' },
+        thLight:       { fontSize: 9, color: PDF_MUTED, bold: true, characterSpacing: 1 },
+        findingTitle:  { fontSize: 12, bold: true, color: PDF_TEXT },
+        winTitle:      { fontSize: 11, bold: true, color: PDF_GOOD, margin: [4, 0, 0, 2] },
+        winDetail:     { fontSize: 9.5, color: PDF_TEXT, margin: [4, 0, 0, 0] },
+        cleanTitle:    { fontSize: 13, bold: true, color: PDF_GOOD },
+        cleanDetail:   { fontSize: 10, color: PDF_GOOD },
+        footerLeft:    { fontSize: 8, color: PDF_MUTED },
+        footerRight:   { fontSize: 8, color: PDF_MUTED }
+      }
+    };
+  }
+
+  function generatePdf(){
+    if (pendingPdfScopeIdx === null) return;
+    const scope = state.scopes[pendingPdfScopeIdx];
+    if (!scope) { closePdfModal(); return; }
+
+    const brand = {
+      preparedFor: $('sl-pdf-prepared-for').value.trim(),
+      preparedBy:  $('sl-pdf-prepared-by').value.trim(),
+      contact:     $('sl-pdf-contact').value.trim()
+    };
+    saveBrand(brand);
+
+    if (typeof pdfMake === 'undefined'){
+      status('PDF library not loaded. Check your internet connection and reload.', true);
+      closePdfModal();
+      return;
+    }
+
+    try {
+      const docDef = buildPdfDocument(scope, brand);
+      const fname = `surfacelens-${scope.rootDomains[0]}-${new Date().toISOString().slice(0,10)}.pdf`;
+      pdfMake.createPdf(docDef).download(fname);
+      status(`PDF generated for ${scope.rootDomains[0]}.`);
+    } catch(e){
+      console.error(e);
+      status(`PDF generation failed: ${e.message}`, true);
+    }
+    closePdfModal();
   }
 
   // ---- Boot ----
@@ -974,9 +1367,7 @@
       });
     });
     $('sl-rescan-all').addEventListener('click', async () => {
-      for (let i = 0; i < state.scopes.length; i++){
-        await runScanForScope(i);
-      }
+      for (let i = 0; i < state.scopes.length; i++) await runScanForScope(i);
     });
     $('sl-export').addEventListener('click', () => {
       downloadJson(state, `surfacelens-export-${new Date().toISOString().slice(0,10)}.json`);
@@ -998,19 +1389,23 @@
       saveState(); saveUiState(); renderAll();
     });
 
-    // Search
     const search = $('sl-search');
     search.addEventListener('input', () => onSearchInput(search.value));
     $('sl-search-clear').addEventListener('click', () => {
-      search.value = '';
-      onSearchInput('');
-      search.focus();
+      search.value = ''; onSearchInput(''); search.focus();
     });
     search.addEventListener('keydown', e => {
-      if (e.key === 'Escape'){
-        search.value = '';
-        onSearchInput('');
-      }
+      if (e.key === 'Escape'){ search.value = ''; onSearchInput(''); }
+    });
+
+    // PDF modal wiring
+    $('sl-pdf-cancel').addEventListener('click', closePdfModal);
+    $('sl-pdf-generate').addEventListener('click', generatePdf);
+    $('sl-pdf-modal').addEventListener('click', (e) => {
+      if (e.target === $('sl-pdf-modal')) closePdfModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && $('sl-pdf-modal').classList.contains('show')) closePdfModal();
     });
   }
 

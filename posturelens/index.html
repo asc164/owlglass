@@ -404,11 +404,10 @@
         </div>
         <div class="pl-header-meta">
           <span id="pl-meta-summary" class="pl-meta-summary">No domains tracked yet</span>
-          <button id="pl-add-btn" class="pl-add-btn" type="button">+ Add domain</button>
         </div>
       </header>
 
-      <section id="pl-add-panel" class="pl-add-panel" hidden>
+      <section id="pl-add-panel" class="pl-add-panel">
         <div class="pl-add-row">
           <input id="domainInput" type="text" placeholder="example.com" autocomplete="off" spellcheck="false" />
           <div class="pl-type-toggle">
@@ -416,11 +415,11 @@
             <label><input type="radio" name="domainType" value="vendor"> Vendor</label>
           </div>
           <button id="pl-add-submit" type="button" class="pl-btn-primary">Scan &amp; add</button>
-          <button id="pl-add-cancel" type="button" class="pl-btn-ghost">Cancel</button>
         </div>
         <div class="pl-add-help">Tracks up to 15 domains. Each scan takes ~15–25 seconds and runs client-side using public DNS-over-HTTPS, Certificate Transparency logs, and the Chromium HSTS preload list.</div>
         <div id="pl-add-error" class="pl-add-error" hidden></div>
       </section>
+
 
       <div class="pl-toolbar">
         <div class="pl-toolbar-left">
@@ -2132,7 +2131,7 @@ function renderTable(){
       <div class="pl-empty">
         <h2>Track your first domain</h2>
         <p>Add your organization's primary domain or a vendor you depend on. PostureLens will produce a report card from public signals — no credentials, no port scans, no accounts.</p>
-        <button class="pl-add-btn" type="button" onclick="document.getElementById('pl-add-btn').click()">+ Add domain</button>
+                <button class="pl-add-btn" type="button" onclick="document.getElementById('domainInput').focus()">+ Add domain</button>
         <div class="pl-empty-examples">
           <span style="color:var(--muted);align-self:center">or try:</span>
           <a href="#" data-example="cloudflare.com">cloudflare.com</a>
@@ -2567,32 +2566,22 @@ function render(){
 /* =========================================================
    Wire UI
 ========================================================= */
-function wireUI(){
-  const addBtn = document.getElementById('pl-add-btn');
-  const panel = document.getElementById('pl-add-panel');
-  const cancel = document.getElementById('pl-add-cancel');
   const submit = document.getElementById('pl-add-submit');
   const input = document.getElementById('domainInput');
 
-  if(!addBtn || !panel || !cancel || !submit || !input) return;
+  if(!submit || !input) return;
 
-  addBtn.addEventListener('click', () => {
-    panel.hidden = !panel.hidden;
-    if(!panel.hidden) input.focus();
-  });
-  cancel.addEventListener('click', () => { panel.hidden = true; });
   submit.addEventListener('click', () => {
     const type = (document.querySelector('input[name="domainType"]:checked')||{}).value || 'own';
     if(input.value.trim()){
       addAndScan(input.value.trim(), type);
       input.value = '';
-      panel.hidden = true;
     }
   });
   input.addEventListener('keydown', (e) => {
     if(e.key === 'Enter') submit.click();
-    if(e.key === 'Escape') cancel.click();
   });
+
 
   const rescanBtn = document.getElementById('pl-rescan-all');
   const exportBtn = document.getElementById('pl-export');

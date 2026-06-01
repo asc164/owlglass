@@ -2566,6 +2566,7 @@ function render(){
 /* =========================================================
    Wire UI
 ========================================================= */
+function wireUI(){
   const submit = document.getElementById('pl-add-submit');
   const input = document.getElementById('domainInput');
 
@@ -2581,7 +2582,6 @@ function render(){
   input.addEventListener('keydown', (e) => {
     if(e.key === 'Enter') submit.click();
   });
-
 
   const rescanBtn = document.getElementById('pl-rescan-all');
   const exportBtn = document.getElementById('pl-export');

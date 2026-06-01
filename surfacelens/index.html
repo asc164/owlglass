@@ -1,3 +1,4 @@
+<!-- ============ PART 1 of 3 START ============ -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -13,29 +14,18 @@
 <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/vfs_fonts.js"></script>
 <style>
   :root{
-    --sl-accent:#7c3aed;
-    --sl-accent-hover:#6d28d9;
-    --sl-border:#e5e7eb;
-    --sl-border-strong:#d1d5db;
-    --sl-text:#111827;
-    --sl-muted:#6b7280;
-    --sl-bg:#ffffff;
-    --sl-bg-soft:#f9fafb;
-    --sl-chip-bg:#f3f4f6;
-    --sl-good:#059669;
-    --sl-warn:#d97706;
-    --sl-bad:#dc2626;
-    --sl-crit:#b91c1c;
+    --sl-accent:#7c3aed;--sl-accent-hover:#6d28d9;
+    --sl-border:#e5e7eb;--sl-border-strong:#d1d5db;
+    --sl-text:#111827;--sl-muted:#6b7280;
+    --sl-bg:#ffffff;--sl-bg-soft:#f9fafb;--sl-chip-bg:#f3f4f6;
+    --sl-good:#059669;--sl-warn:#d97706;--sl-bad:#dc2626;--sl-crit:#b91c1c;
   }
-
   .sl-crumb{font-size:13px;color:var(--sl-muted);margin-bottom:8px}
   .sl-crumb a{color:var(--sl-muted);text-decoration:none}
   .sl-crumb a:hover{color:var(--sl-text)}
-
   .sl-header h1{margin:0 0 6px;font-size:24px;font-weight:700;color:var(--sl-text);letter-spacing:-0.01em}
   .sl-tagline{margin:0;color:var(--sl-muted);font-size:14px;line-height:1.55;max-width:760px}
   .sl-header-meta{font-size:13px;color:var(--sl-muted);margin-top:10px}
-
   .sl-input{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:16px;margin-top:20px}
   .sl-input-row{display:flex;gap:8px;flex-wrap:wrap}
   .sl-input input[type=text]{flex:1;min-width:240px;background:var(--sl-bg);border:1px solid var(--sl-border);color:var(--sl-text);padding:10px 12px;border-radius:8px;font:inherit;font-size:14px}
@@ -51,20 +41,27 @@
   .sl-try{font-size:12px;color:var(--sl-muted);margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
   .sl-try-chip{background:var(--sl-chip-bg);color:var(--sl-text);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid transparent}
   .sl-try-chip:hover{border-color:var(--sl-border-strong)}
-
   .sl-status{font-size:13px;color:var(--sl-muted);margin-top:12px;padding:10px 12px;background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;display:none}
   .sl-status.show{display:block}
   .sl-status.error{color:var(--sl-bad);background:#fef2f2;border-color:#fecaca}
-
   .sl-toolbar{display:flex;gap:8px;margin:20px 0 12px;flex-wrap:wrap;align-items:center}
   .sl-toolbar-spacer{flex:1}
 
-  /* Portfolio overview dashboard */
   .sl-overview{background:var(--sl-bg);border:1px solid var(--sl-border);border-radius:10px;padding:20px;margin:20px 0;display:none}
   .sl-overview.show{display:block}
-  .sl-overview-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .sl-overview-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:12px;flex-wrap:wrap}
   .sl-overview-head h2{margin:0;font-size:16px;font-weight:600;color:var(--sl-text)}
   .sl-overview-head .sub{font-size:12.5px;color:var(--sl-muted)}
+
+  .sl-overview-picker{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;margin-bottom:14px}
+  .sl-overview-picker-lbl{font-size:11px;color:var(--sl-muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-right:4px}
+  .sl-overview-picker label{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--sl-text);background:#fff;border:1px solid var(--sl-border);padding:4px 9px;border-radius:6px;cursor:pointer;user-select:none}
+  .sl-overview-picker label:hover{border-color:var(--sl-border-strong)}
+  .sl-overview-picker input[type=checkbox]{margin:0;cursor:pointer;accent-color:var(--sl-accent)}
+  .sl-overview-picker-actions{margin-left:auto;display:flex;gap:10px}
+  .sl-overview-picker-actions a{font-size:11.5px;color:var(--sl-accent);cursor:pointer;text-decoration:none}
+  .sl-overview-picker-actions a:hover{text-decoration:underline}
+
   .sl-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
   .sl-ov-card{background:var(--sl-bg-soft);border:1px solid var(--sl-border);border-radius:8px;padding:14px}
   .sl-ov-card h3{margin:0 0 10px;font-size:11px;font-weight:600;color:var(--sl-muted);text-transform:uppercase;letter-spacing:0.04em}
@@ -216,16 +213,10 @@
 <body>
   <div class="app">
     <div id="sidebar-slot"></div>
-
     <main class="main">
       <div class="main-inner">
-
         <button class="mobile-toggle" aria-label="Toggle menu"></button>
-
-        <div class="sl-crumb">
-          <a href="/">Owlglass</a> / SurfaceLens
-        </div>
-
+        <div class="sl-crumb"><a href="/">Owlglass</a> / SurfaceLens</div>
         <header class="sl-header">
           <h1>SurfaceLens</h1>
           <p class="sl-tagline">Map your public attack surface. Enumerate every subdomain ever issued a TLS certificate, resolve them to live IPs, and reveal open ports and known CVEs from passive scan data — all in your browser, with no accounts or API keys.</p>
@@ -248,18 +239,18 @@
           <div class="sl-status" id="sl-status"></div>
         </div>
 
-        <!-- Portfolio overview dashboard -->
         <div class="sl-overview" id="sl-overview">
           <div class="sl-overview-head">
             <h2>Portfolio overview</h2>
             <span class="sub" id="sl-overview-sub"></span>
           </div>
+          <div class="sl-overview-picker" id="sl-overview-picker"></div>
           <div class="sl-overview-grid" id="sl-overview-grid"></div>
         </div>
 
         <div class="sl-toolbar">
           <button class="sl-btn ghost" id="sl-rescan-all">Rescan all</button>
-          <button class="sl-btn ghost" id="sl-export">Export JSON</button>
+          <button class="sl-btn ghost" id="sl-export">Export JSON (backup)</button>
           <button class="sl-btn ghost" id="sl-collapse-all">Collapse all</button>
           <button class="sl-btn ghost" id="sl-expand-all">Expand all</button>
           <div class="sl-toolbar-spacer"></div>
@@ -278,30 +269,12 @@
           <h2>What SurfaceLens checks</h2>
           <p class="lede">Read this if you want to understand what each finding means and where the data comes from.</p>
           <div class="sl-explain-grid">
-            <div class="sl-explain-card">
-              <h3>Subdomain discovery</h3>
-              <p>We query the public <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">CertSpotter</a> Certificate Transparency API for every TLS certificate ever issued to the domain.</p>
-            </div>
-            <div class="sl-explain-card">
-              <h3>DNS resolution</h3>
-              <p>Each discovered subdomain is resolved through <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google DNS-over-HTTPS</a> for current A and AAAA records.</p>
-            </div>
-            <div class="sl-explain-card">
-              <h3>Open ports &amp; CVEs</h3>
-              <p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>. Data is passive — we never scan you or your assets directly.</p>
-            </div>
-            <div class="sl-explain-card">
-              <h3>Risk scoring &amp; grade</h3>
-              <p>Each scope earns a posture grade (A–F) from weighted penalties on critical, high, and medium findings. Strong DNS hygiene, zero CVEs, and clean port exposure boost the score.</p>
-            </div>
-            <div class="sl-explain-card">
-              <h3>What's working</h3>
-              <p>We highlight controls that passed: full CT enumeration, complete DNS resolution, zero CVEs, no exposed databases, no risky tags, and clean sensitive-name hygiene.</p>
-            </div>
-            <div class="sl-explain-card">
-              <h3>Limitations</h3>
-              <p>Browser-only means no port scanning, banner grabbing, or screenshots. Shodan InternetDB data may be days to weeks old. Subdomains without a cert are invisible to CT-based discovery.</p>
-            </div>
+            <div class="sl-explain-card"><h3>Subdomain discovery</h3><p>We query the public <a href="https://sslmate.com/certspotter/" target="_blank" rel="noopener">CertSpotter</a> Certificate Transparency API for every TLS certificate ever issued to the domain.</p></div>
+            <div class="sl-explain-card"><h3>DNS resolution</h3><p>Each discovered subdomain is resolved through <a href="https://developers.google.com/speed/public-dns/docs/doh" target="_blank" rel="noopener">Google DNS-over-HTTPS</a> for current A and AAAA records.</p></div>
+            <div class="sl-explain-card"><h3>Open ports &amp; CVEs</h3><p>Every unique IP is looked up in <a href="https://internetdb.shodan.io/" target="_blank" rel="noopener">Shodan InternetDB</a>. Data is passive — we never scan you or your assets directly.</p></div>
+            <div class="sl-explain-card"><h3>Risk scoring &amp; grade</h3><p>Each scope earns a posture grade (A–F) from weighted penalties on critical, high, and medium findings.</p></div>
+            <div class="sl-explain-card"><h3>What's working</h3><p>We highlight controls that passed: full CT enumeration, complete DNS resolution, zero CVEs, no exposed databases, no risky tags.</p></div>
+            <div class="sl-explain-card"><h3>Limitations</h3><p>Browser-only means no port scanning, banner grabbing, or screenshots. Shodan InternetDB data may be days to weeks old.</p></div>
           </div>
         </section>
 
@@ -311,13 +284,12 @@
           <a href="/dopplerlens/">DopplerLens</a>
           <span>Runs entirely in your browser. No accounts, no servers.</span>
         </div>
-
       </div>
     </main>
   </div>
 
   <script src="/assets/shared.js"></script>
-  <script>Owlglass.mount({ active: 'surfacelens' });</script>
+  <script>try{Owlglass.mount({ active: 'surfacelens' });}catch(e){}</script>
 <script>
 (function(){
   'use strict';
@@ -357,7 +329,7 @@
   const PDF_CRIT    = '#b91c1c';
 
   let state = { scopes: [] };
-  let uiState = { collapsed: {}, preSearchCollapsed: null };
+  let uiState = { collapsed: {}, preSearchCollapsed: null, selectedScopes: null };
   let searchQuery = '';
   let openMenuIdx = null;
 
@@ -370,7 +342,7 @@
     if (!uiState.collapsed) uiState.collapsed = {};
   }
   function saveState(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
-  function saveUiState(){ try { localStorage.setItem(UI_KEY, JSON.stringify({collapsed: uiState.collapsed})); } catch(e){} }
+  function saveUiState(){ try { localStorage.setItem(UI_KEY, JSON.stringify({collapsed: uiState.collapsed, selectedScopes: uiState.selectedScopes})); } catch(e){} }
 
   const $ = id => document.getElementById(id);
   const status = (msg, isErr) => {
@@ -380,7 +352,7 @@
     el.classList.add('show');
     el.classList.toggle('error', !!isErr);
   };
-  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const escapeHtml = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   function normalizeDomain(input){
     if (!input) return null;
@@ -389,7 +361,6 @@
     if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)) return null;
     return d;
   }
-
   function timeAgo(ts){
     if (!ts) return 'never';
     const s = Math.floor((Date.now() - new Date(ts).getTime())/1000);
@@ -398,15 +369,13 @@
     if (s < 86400) return `${Math.floor(s/3600)}h ago`;
     return `${Math.floor(s/86400)}d ago`;
   }
-
   function formatDate(ts){
     if (!ts) return '—';
     const d = new Date(ts);
     return d.toLocaleString('en-US', {year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
   }
-
   function isSensitive(host){
-    const lower = host.toLowerCase();
+    const lower = String(host||'').toLowerCase();
     return SENSITIVE_PATTERNS.some(p => lower.includes(p));
   }
 
@@ -416,7 +385,6 @@
       new Promise((_, rej) => setTimeout(() => rej(new Error(`Timeout: ${label}`)), ms))
     ]);
   }
-
   async function pool(items, concurrency, worker){
     const results = new Array(items.length);
     let i = 0;
@@ -430,6 +398,8 @@
     await Promise.all(runners);
     return results;
   }
+<!-- ============ PART 1 of 3 END ============ -->
+<!-- ============ PART 2 of 3 START ============ -->
 
   async function fetchCertSpotter(domain){
     const url = `${CERTSPOTTER_API}?domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names`;
@@ -442,7 +412,7 @@
     for (const issuance of data){
       const names = issuance.dns_names || [];
       for (const n of names){
-        const clean = n.toLowerCase().replace(/^\*\./,'');
+        const clean = String(n).toLowerCase().replace(/^\*\./,'');
         if (clean === domain || clean.endsWith('.' + domain)) subs.add(clean);
       }
       certs.push({
@@ -473,10 +443,10 @@
     try {
       const res = await withTimeout(fetch(`${SHODAN_IDB}/${ip}`), 8000, 'Shodan');
       if (res.status === 404) return { ip, ports: [], cves: [], tags: [], hostnames: [], notFound: true };
-      if (!res.ok) return { ip, error: `HTTP ${res.status}` };
+      if (!res.ok) return { ip, ports:[], cves:[], tags:[], hostnames:[], error: `HTTP ${res.status}` };
       const j = await res.json();
       return { ip, ports: j.ports || [], cves: j.vulns || [], tags: j.tags || [], hostnames: j.hostnames || [] };
-    } catch(e){ return { ip, error: e.message }; }
+    } catch(e){ return { ip, ports:[], cves:[], tags:[], hostnames:[], error: e.message }; }
   }
 
   async function scanScope(scope, onProgress){
@@ -509,7 +479,7 @@
     for (const r of idbResults){ if (r && r.ip) ipMap[r.ip] = r; }
 
     const assets = resolved.filter(r => r && !r.__error).map(r => {
-      const allIps = [...r.a, ...r.aaaa];
+      const allIps = [...(r.a||[]), ...(r.aaaa||[])];
       const ports = new Set();
       const cves = new Set();
       const tags = new Set();
@@ -538,8 +508,8 @@
       subdomains: assets.length,
       active: assets.filter(a => a.active).length,
       uniqueIps: ips.length,
-      openPorts: assets.reduce((acc,a) => acc + a.ports.length, 0),
-      cves: new Set(assets.flatMap(a => a.cves)).size,
+      openPorts: assets.reduce((acc,a) => acc + (a.ports||[]).length, 0),
+      cves: new Set(assets.flatMap(a => a.cves||[])).size,
       sensitive: assets.filter(a => a.sensitive).length,
       certificates: cs.certificates.length,
       subdomainsTruncated,
@@ -555,20 +525,22 @@
 
   function scoreAsset(a){
     let score = 0;
-    if (a.cves.length) score += a.cves.length * 10;
+    const cves = a.cves||[], ports = a.ports||[], tags = a.tags||[];
+    if (cves.length) score += cves.length * 10;
     if (a.sensitive) score += 15;
-    score += a.ports.filter(p => DB_PORTS.has(p)).length * 12;
-    score += a.ports.filter(p => REMOTE_PORTS.has(p)).length * 8;
-    score += a.tags.filter(t => RISKY_TAGS.has(t.toLowerCase())).length * 8;
+    score += ports.filter(p => DB_PORTS.has(p)).length * 12;
+    score += ports.filter(p => REMOTE_PORTS.has(p)).length * 8;
+    score += tags.filter(t => RISKY_TAGS.has(String(t).toLowerCase())).length * 8;
     if (!a.active) score += 5;
     return { score };
   }
 
   function buildActionItems(assets){
     const items = [];
-    const cveAssets = assets.filter(a => a.cves.length > 0);
+    const list = assets || [];
+    const cveAssets = list.filter(a => (a.cves||[]).length > 0);
     if (cveAssets.length){
-      const uniqueCves = new Set(cveAssets.flatMap(a => a.cves));
+      const uniqueCves = new Set(cveAssets.flatMap(a => a.cves||[]));
       items.push({
         severity: 'critical',
         title: `${cveAssets.length} host${cveAssets.length===1?'':'s'} have known CVEs (${uniqueCves.size} unique)`,
@@ -577,9 +549,9 @@
         more: Math.max(0, cveAssets.length - HOSTS_PER_ACTION)
       });
     }
-    const dbExposed = assets.filter(a => a.ports.some(p => DB_PORTS.has(p)));
+    const dbExposed = list.filter(a => (a.ports||[]).some(p => DB_PORTS.has(p)));
     if (dbExposed.length){
-      const portsList = [...new Set(dbExposed.flatMap(a => a.ports.filter(p => DB_PORTS.has(p))))].sort((x,y)=>x-y);
+      const portsList = [...new Set(dbExposed.flatMap(a => (a.ports||[]).filter(p => DB_PORTS.has(p))))].sort((x,y)=>x-y);
       const portLabels = portsList.map(p => `${DB_PORT_NAMES[p]||p}/${p}`).join(', ');
       items.push({
         severity: 'critical',
@@ -589,9 +561,9 @@
         more: Math.max(0, dbExposed.length - HOSTS_PER_ACTION)
       });
     }
-    const remoteExposed = assets.filter(a => a.ports.some(p => REMOTE_PORTS.has(p)));
+    const remoteExposed = list.filter(a => (a.ports||[]).some(p => REMOTE_PORTS.has(p)));
     if (remoteExposed.length){
-      const portsList = [...new Set(remoteExposed.flatMap(a => a.ports.filter(p => REMOTE_PORTS.has(p))))].sort((x,y)=>x-y);
+      const portsList = [...new Set(remoteExposed.flatMap(a => (a.ports||[]).filter(p => REMOTE_PORTS.has(p))))].sort((x,y)=>x-y);
       const portLabels = portsList.map(p => `${REMOTE_PORT_NAMES[p]||p}/${p}`).join(', ');
       items.push({
         severity: 'high',
@@ -601,7 +573,7 @@
         more: Math.max(0, remoteExposed.length - HOSTS_PER_ACTION)
       });
     }
-    const sensitiveReachable = assets.filter(a => a.sensitive && a.active);
+    const sensitiveReachable = list.filter(a => a.sensitive && a.active);
     if (sensitiveReachable.length){
       items.push({
         severity: 'high',
@@ -611,9 +583,9 @@
         more: Math.max(0, sensitiveReachable.length - HOSTS_PER_ACTION)
       });
     }
-    const riskyTagged = assets.filter(a => a.tags.some(t => RISKY_TAGS.has(t.toLowerCase())));
+    const riskyTagged = list.filter(a => (a.tags||[]).some(t => RISKY_TAGS.has(String(t).toLowerCase())));
     if (riskyTagged.length){
-      const tagList = [...new Set(riskyTagged.flatMap(a => a.tags.filter(t => RISKY_TAGS.has(t.toLowerCase()))))];
+      const tagList = [...new Set(riskyTagged.flatMap(a => (a.tags||[]).filter(t => RISKY_TAGS.has(String(t).toLowerCase()))))];
       items.push({
         severity: 'medium',
         title: `${riskyTagged.length} host${riskyTagged.length===1?'':'s'} flagged by Shodan with risky tags`,
@@ -622,7 +594,7 @@
         more: Math.max(0, riskyTagged.length - HOSTS_PER_ACTION)
       });
     }
-    const unresolvable = assets.filter(a => !a.active);
+    const unresolvable = list.filter(a => !a.active);
     if (unresolvable.length){
       items.push({
         severity: 'medium',
@@ -640,13 +612,14 @@
   function buildPassedChecks(scope, assets){
     const checks = [];
     const sum = scope.summary || {};
-    const total = assets.length;
-    const active = assets.filter(a => a.active).length;
-    const allCves = new Set(assets.flatMap(a => a.cves));
-    const dbExposed = assets.filter(a => a.ports.some(p => DB_PORTS.has(p)));
-    const remoteExposed = assets.filter(a => a.ports.some(p => REMOTE_PORTS.has(p)));
-    const sensitiveReachable = assets.filter(a => a.sensitive && a.active);
-    const riskyTagged = assets.filter(a => a.tags.some(t => RISKY_TAGS.has(t.toLowerCase())));
+    const list = assets || [];
+    const total = list.length;
+    const active = list.filter(a => a.active).length;
+    const allCves = new Set(list.flatMap(a => a.cves||[]));
+    const dbExposed = list.filter(a => (a.ports||[]).some(p => DB_PORTS.has(p)));
+    const remoteExposed = list.filter(a => (a.ports||[]).some(p => REMOTE_PORTS.has(p)));
+    const sensitiveReachable = list.filter(a => a.sensitive && a.active);
+    const riskyTagged = list.filter(a => (a.tags||[]).some(t => RISKY_TAGS.has(String(t).toLowerCase())));
 
     if (sum.certificates > 0) checks.push({ title: 'Certificate Transparency enumeration complete', detail: `Discovered ${total} subdomain${total===1?'':'s'} from ${sum.certificates} certificate${sum.certificates===1?'':'s'} — full external footprint visibility.` });
     if (total > 0 && active === total) checks.push({ title: 'All enumerated hosts resolve to live IPs', detail: `All ${total} discovered subdomains have current DNS records — no dangling CT artifacts.` });
@@ -659,7 +632,6 @@
     return checks;
   }
 
-  // Posture grade per scope
   function postureFor(scope){
     const assets = scope.assets || [];
     const items = buildActionItems(assets);
@@ -674,19 +646,59 @@
 
   function assetMatches(a, q){
     if (!q) return true;
-    const haystack = [a.subdomain, a.rootDomain, ...a.ips, ...a.ports.map(String), ...a.cves, ...a.tags].join(' ').toLowerCase();
+    const haystack = [a.subdomain, a.rootDomain, ...(a.ips||[]), ...(a.ports||[]).map(String), ...(a.cves||[]), ...(a.tags||[])].join(' ').toLowerCase();
     return haystack.includes(q);
   }
-  function filterAssets(assets, q){ return q ? assets.filter(a => assetMatches(a, q)) : assets; }
+  function filterAssets(assets, q){ return q ? (assets||[]).filter(a => assetMatches(a, q)) : (assets||[]); }
 
-  // ---- Portfolio overview ----
   function renderOverview(){
     const wrap = $('sl-overview');
     const grid = $('sl-overview-grid');
     const sub  = $('sl-overview-sub');
-    const scopes = state.scopes.filter(s => s.summary);
-    if (!scopes.length){ wrap.classList.remove('show'); return; }
+    const picker = $('sl-overview-picker');
+    const allScanned = state.scopes.filter(s => s.summary);
+    if (!allScanned.length){ wrap.classList.remove('show'); return; }
     wrap.classList.add('show');
+
+    if (uiState.selectedScopes === null || !Array.isArray(uiState.selectedScopes)) uiState.selectedScopes = allScanned.map(s => s.id);
+    uiState.selectedScopes = uiState.selectedScopes.filter(id => allScanned.some(s => s.id === id));
+    if (!uiState.selectedScopes.length) uiState.selectedScopes = allScanned.map(s => s.id);
+
+    picker.innerHTML = `
+      <span class="sl-overview-picker-lbl">Include in summary:</span>
+      ${allScanned.map(s => `
+        <label>
+          <input type="checkbox" data-scope-id="${escapeHtml(s.id)}" ${uiState.selectedScopes.includes(s.id)?'checked':''}>
+          ${escapeHtml(s.rootDomains[0])}
+        </label>
+      `).join('')}
+      <span class="sl-overview-picker-actions">
+        <a data-picker-act="all">Select all</a>
+        <a data-picker-act="none">Clear</a>
+      </span>
+    `;
+    picker.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const id = cb.dataset.scopeId;
+        if (cb.checked && !uiState.selectedScopes.includes(id)) uiState.selectedScopes.push(id);
+        else if (!cb.checked) uiState.selectedScopes = uiState.selectedScopes.filter(x => x !== id);
+        saveUiState(); renderOverview();
+      });
+    });
+    picker.querySelectorAll('[data-picker-act]').forEach(a => {
+      a.addEventListener('click', () => {
+        if (a.dataset.pickerAct === 'all') uiState.selectedScopes = allScanned.map(s => s.id);
+        else uiState.selectedScopes = [];
+        saveUiState(); renderOverview();
+      });
+    });
+
+    const scopes = allScanned.filter(s => uiState.selectedScopes.includes(s.id));
+    if (!scopes.length){
+      sub.textContent = `0 of ${allScanned.length} scope${allScanned.length===1?'':'s'} selected`;
+      grid.innerHTML = '<div class="sl-ov-card" style="grid-column:1/-1"><div class="sl-ov-sub">No scopes selected. Tick at least one to see portfolio metrics.</div></div>';
+      return;
+    }
 
     const postures = scopes.map(s => ({ scope: s, p: postureFor(s) }));
     const gradeBuckets = { A:0, B:0, C:0, D:0, F:0 };
@@ -694,15 +706,14 @@
     const totalCrit = postures.reduce((a,x)=>a+x.p.crit, 0);
     const totalHigh = postures.reduce((a,x)=>a+x.p.high, 0);
     const totalMed  = postures.reduce((a,x)=>a+x.p.med, 0);
-    const totalAssets = scopes.reduce((a,s)=>a+(s.summary.subdomains||0), 0);
-    const totalCves   = scopes.reduce((a,s)=>a+(s.summary.cves||0), 0);
+    const totalAssets = scopes.reduce((a,s)=>a+((s.summary&&s.summary.subdomains)||0), 0);
+    const totalCves   = scopes.reduce((a,s)=>a+((s.summary&&s.summary.cves)||0), 0);
     const avgScore = Math.round(postures.reduce((a,x)=>a+x.p.score, 0) / postures.length);
     const avgGrade = avgScore >= 90 ? 'A' : avgScore >= 75 ? 'B' : avgScore >= 60 ? 'C' : avgScore >= 40 ? 'D' : 'F';
     const avgColor = avgScore >= 75 ? 'var(--sl-good)' : avgScore >= 60 ? 'var(--sl-warn)' : 'var(--sl-bad)';
 
-    sub.textContent = `${scopes.length} scope${scopes.length===1?'':'s'} · last update ${timeAgo(scopes[0].lastScan)}`;
+    sub.textContent = `${scopes.length} of ${allScanned.length} scope${allScanned.length===1?'':'s'} selected · last update ${timeAgo(scopes[0].lastScan)}`;
 
-    // Grade distribution (vertical bars)
     const maxGrade = Math.max(1, ...Object.values(gradeBuckets));
     const gradeColors = { A:'#059669', B:'#10b981', C:'#d97706', D:'#dc2626', F:'#991b1b' };
     const gradeChart = ['A','B','C','D','F'].map(g => {
@@ -715,18 +726,11 @@
       </div>`;
     }).join('');
 
-    // Findings stack
-    const findTotal = Math.max(1, totalCrit + totalHigh + totalMed);
     const seg = (v, color, label) => v > 0 ? `<div class="sl-ov-stack-seg" style="flex:${v};background:${color}" title="${label}: ${v}">${v}</div>` : '';
     const stack = totalCrit+totalHigh+totalMed === 0
       ? `<div class="sl-ov-stack"><div class="sl-ov-stack-seg" style="flex:1;background:#10b981">All clean</div></div>`
-      : `<div class="sl-ov-stack">
-          ${seg(totalCrit, '#b91c1c', 'Critical')}
-          ${seg(totalHigh, '#dc2626', 'High')}
-          ${seg(totalMed,  '#d97706', 'Medium')}
-        </div>`;
+      : `<div class="sl-ov-stack">${seg(totalCrit, '#b91c1c', 'Critical')}${seg(totalHigh, '#dc2626', 'High')}${seg(totalMed,  '#d97706', 'Medium')}</div>`;
 
-    // Lowest scoring scopes (top 5 worst)
     const worst = postures.slice().sort((a,b) => a.p.score - b.p.score).slice(0, 5);
     const worstHtml = worst.map(w => `
       <div class="sl-ov-list-row">
@@ -735,7 +739,6 @@
       </div>
     `).join('');
 
-    // Average posture gauge (SVG)
     const gaugeAngle = Math.PI - (avgScore/100) * Math.PI;
     const gcx = 70, gcy = 70, gr = 50;
     const nx = gcx + (gr-10) * Math.cos(gaugeAngle);
@@ -762,15 +765,13 @@
         <h3>Average posture</h3>
         <div class="sl-ov-gauge">${gaugeSvg}</div>
         <div class="sl-ov-big" style="color:${avgColor};font-size:24px">${avgGrade} · ${avgScore}/100</div>
-        <div class="sl-ov-sub">across ${scopes.length} scope${scopes.length===1?'':'s'}</div>
+        <div class="sl-ov-sub">across ${scopes.length} selected scope${scopes.length===1?'':'s'}</div>
       </div>
-
       <div class="sl-ov-card">
         <h3>Grade distribution</h3>
         <div class="sl-ov-chart">${gradeChart}</div>
         <div class="sl-ov-sub" style="margin-top:8px">scopes by posture grade</div>
       </div>
-
       <div class="sl-ov-card">
         <h3>Critical &amp; high findings</h3>
         <div class="sl-ov-big ${totalCrit+totalHigh>0?'bad':'good'}">${totalCrit + totalHigh}</div>
@@ -782,7 +783,6 @@
           <div class="sl-ov-legend-item"><span class="sl-ov-legend-dot" style="background:#d97706"></span>Medium</div>
         </div>
       </div>
-
       <div class="sl-ov-card">
         <h3>Portfolio totals</h3>
         <div class="sl-ov-big">${totalAssets}</div>
@@ -791,10 +791,9 @@
           <span style="color:var(--sl-muted)">Known CVEs</span><span style="font-weight:600;color:${totalCves>0?'var(--sl-bad)':'var(--sl-good)'}">${totalCves}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px solid var(--sl-border)">
-          <span style="color:var(--sl-muted)">Scopes tracked</span><span style="font-weight:600">${scopes.length}</span>
+          <span style="color:var(--sl-muted)">Selected scopes</span><span style="font-weight:600">${scopes.length}</span>
         </div>
       </div>
-
       <div class="sl-ov-card" style="grid-column:span 2;min-width:0">
         <h3>Lowest-scoring scopes</h3>
         ${worst.length ? `<div class="sl-ov-list">${worstHtml}</div>` : '<div class="sl-ov-sub">No data yet.</div>'}
@@ -838,7 +837,7 @@
       ? filtered.slice().sort((a,b) => {
           const sa = scoreAsset(a).score, sb = scoreAsset(b).score;
           if (sa !== sb) return sb - sa;
-          return a.subdomain.localeCompare(b.subdomain);
+          return String(a.subdomain||'').localeCompare(String(b.subdomain||''));
         }).map(a => renderAssetRow(a)).join('')
       : (allAssets.length === 0
           ? `<tr><td colspan="5" class="sl-empty">No assets discovered yet. Click Rescan.</td></tr>`
@@ -908,7 +907,7 @@
               </button>
             </div>
             <button data-act="rescan" data-idx="${idx}">Rescan</button>
-            <button data-act="export" data-idx="${idx}">JSON</button>
+            <button data-act="export-csv" data-idx="${idx}">Export CSV</button>
             <button data-act="remove" data-idx="${idx}" class="danger">Remove</button>
           </div>
         </div>
@@ -951,21 +950,22 @@
   }
 
   function renderAssetRow(a){
+    const ports = a.ports||[], cves = a.cves||[], tags = a.tags||[], ips = a.ips||[];
     const isDbPort = p => DB_PORTS.has(p);
     const isRemPort = p => REMOTE_PORTS.has(p);
-    const portChips = a.ports.length
-      ? a.ports.map(p => `<span class="sl-chip ${(isDbPort(p)||isRemPort(p))?'port-risk':''}">${p}</span>`).join('')
+    const portChips = ports.length
+      ? ports.map(p => `<span class="sl-chip ${(isDbPort(p)||isRemPort(p))?'port-risk':''}">${p}</span>`).join('')
       : '<span class="sl-dash">—</span>';
-    const cveChips  = a.cves.slice(0,6).map(c => `<span class="sl-chip cve">${escapeHtml(c)}</span>`).join('');
-    const moreCves  = a.cves.length > 6 ? `<span class="sl-chip cve">+${a.cves.length-6}</span>` : '';
-    const tagChips  = a.tags.map(t => `<span class="sl-chip tag">${escapeHtml(t)}</span>`).join('');
+    const cveChips  = cves.slice(0,6).map(c => `<span class="sl-chip cve">${escapeHtml(c)}</span>`).join('');
+    const moreCves  = cves.length > 6 ? `<span class="sl-chip cve">+${cves.length-6}</span>` : '';
+    const tagChips  = tags.map(t => `<span class="sl-chip tag">${escapeHtml(t)}</span>`).join('');
     const notes = [];
     if (a.sensitive) notes.push('<span class="sl-chip sensitive">sensitive name</span>');
     if (!a.active)   notes.push('<span class="sl-chip">unresolvable</span>');
     return `
       <tr>
         <td class="sl-host">${escapeHtml(a.subdomain)}</td>
-        <td class="sl-ips">${a.ips.length ? a.ips.map(escapeHtml).join('<br>') : '<span class="sl-dash">—</span>'}</td>
+        <td class="sl-ips">${ips.length ? ips.map(escapeHtml).join('<br>') : '<span class="sl-dash">—</span>'}</td>
         <td><div class="sl-chips">${portChips}</div></td>
         <td><div class="sl-chips">${cveChips}${moreCves}${tagChips || ''}</div></td>
         <td><div class="sl-chips">${notes.join('') || '<span class="sl-dash">—</span>'}</div></td>
@@ -993,8 +993,8 @@
           saveState(); renderAll();
         } else if (act === 'rescan'){
           await runScanForScope(idx);
-        } else if (act === 'export'){
-          downloadJson(scope, `surfacelens-${scope.rootDomains[0]}.json`);
+        } else if (act === 'export-csv'){
+          exportScopeCsv(scope);
         } else if (act === 'pdf'){
           const menu = document.querySelector(`.sl-pdf-menu[data-menu-idx="${idx}"]`);
           if (!menu) return;
@@ -1083,6 +1083,8 @@
     };
     state.scopes.unshift(newScope);
     uiState.collapsed[newScope.id] = false;
+    // Include newly added scope in dashboard by default
+    if (Array.isArray(uiState.selectedScopes)) uiState.selectedScopes.push(newScope.id);
     saveUiState(); saveState(); renderAll();
     await runScanForScope(0);
   }
@@ -1096,7 +1098,50 @@
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
   }
 
-  // ---- PDF generation with diagnostic checks ----
+  function csvEscape(v){
+    if (v === null || v === undefined) return '';
+    const s = String(v);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function exportScopeCsv(scope){
+    const assets = scope.assets || [];
+    if (!assets.length){ status(`No assets to export for ${scope.rootDomains[0]}.`, true); return; }
+    const headers = ['scope','scan_date','host','active','sensitive','ips','ports','db_ports','remote_ports','cve_count','cves','tags','risky_tags','risk_score'];
+    const rows = [headers.join(',')];
+    for (const a of assets){
+      const ports = a.ports||[], cves = a.cves||[], tags = a.tags||[], ips = a.ips||[];
+      const dbPorts = ports.filter(p => DB_PORTS.has(p)).map(p => `${p} ${DB_PORT_NAMES[p]||''}`.trim()).join('; ');
+      const remPorts = ports.filter(p => REMOTE_PORTS.has(p)).map(p => `${p} ${REMOTE_PORT_NAMES[p]||''}`.trim()).join('; ');
+      const riskyT = tags.filter(t => RISKY_TAGS.has(String(t).toLowerCase())).join('; ');
+      rows.push([
+        scope.rootDomains[0],
+        scope.lastScan || '',
+        a.subdomain,
+        a.active ? 'yes' : 'no',
+        a.sensitive ? 'yes' : 'no',
+        ips.join('; '),
+        ports.join('; '),
+        dbPorts, remPorts,
+        cves.length,
+        cves.join('; '),
+        tags.join('; '),
+        riskyT,
+        scoreAsset(a).score
+      ].map(csvEscape).join(','));
+    }
+    const blob = new Blob(['\ufeff' + rows.join('\n')], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `surfacelens-${scope.rootDomains[0]}-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+    status(`Exported ${assets.length} rows for ${scope.rootDomains[0]}.`);
+  }
+<!-- ============ PART 2 of 3 END ============ -->
+<!-- ============ PART 3 of 3 START ============ -->
+
   function sevColor(sev){
     return sev==='critical' ? PDF_CRIT : sev==='high' ? PDF_BAD : sev==='medium' ? PDF_WARN : PDF_ACCENT;
   }
@@ -1188,6 +1233,36 @@
     return { donutSvg, barChartSvg, gaugeSvg };
   }
 
+  function docStyles(){
+    return {
+      coverEyebrow:  { fontSize: 11, color: PDF_ACCENT, bold: true, characterSpacing: 2 },
+      coverTitle:    { fontSize: 30, bold: true, color: PDF_TEXT },
+      coverDomain:   { fontSize: 22, bold: true, color: PDF_TEXT },
+      coverMeta:     { fontSize: 11, color: PDF_MUTED },
+      chartCaption:  { fontSize: 10, color: PDF_MUTED, italics: true },
+      gradeBig:      { fontSize: 16, bold: true },
+      statBig:       { fontSize: 24, bold: true, color: PDF_TEXT },
+      statBigGood:   { fontSize: 24, bold: true, color: PDF_GOOD },
+      statBigBad:    { fontSize: 24, bold: true, color: PDF_BAD },
+      statLbl:       { fontSize: 9, color: PDF_MUTED, characterSpacing: 1 },
+      h1:            { fontSize: 18, bold: true, color: PDF_TEXT },
+      h2:            { fontSize: 13, bold: true, color: PDF_TEXT },
+      lede:          { fontSize: 10.5, color: PDF_MUTED, italics: true },
+      body:          { fontSize: 10, color: PDF_TEXT },
+      bodySmall:     { fontSize: 9, color: PDF_TEXT },
+      mono:          { fontSize: 9, color: PDF_TEXT, font: 'Courier' },
+      monoSmall:     { fontSize: 8, color: PDF_TEXT, font: 'Courier' },
+      thLight:       { fontSize: 9, color: PDF_MUTED, bold: true, characterSpacing: 1 },
+      findingTitle:  { fontSize: 12, bold: true, color: PDF_TEXT },
+      winTitle:      { fontSize: 11, bold: true, color: PDF_GOOD, margin: [4, 0, 0, 2] },
+      winDetail:     { fontSize: 9.5, color: PDF_TEXT, margin: [4, 0, 0, 0] },
+      cleanTitle:    { fontSize: 13, bold: true, color: PDF_GOOD },
+      cleanDetail:   { fontSize: 10, color: PDF_GOOD },
+      footerLeft:    { fontSize: 8, color: PDF_MUTED },
+      footerRight:   { fontSize: 8, color: PDF_MUTED }
+    };
+  }
+
   function buildExecutiveDoc(scope){
     const sum = scope.summary || {};
     const assets = scope.assets || [];
@@ -1261,10 +1336,10 @@
           : { stack: actionItems.slice(0, 5).map(it => ({
               stack: [
                 { columns: [
-                  { width: 'auto', text: it.severity.toUpperCase(), color: sevColor(it.severity), bold: true, fontSize: 9, margin:[0,2,8,0] },
-                  { width: '*', text: it.title, style: 'findingTitle' }
+                  { width: 'auto', text: String(it.severity||'').toUpperCase(), color: sevColor(it.severity), bold: true, fontSize: 9, margin:[0,2,8,0] },
+                  { width: '*', text: String(it.title||''), style: 'findingTitle' }
                 ]},
-                { text: it.detail, style: 'body', margin: [0, 4, 0, 0] }
+                { text: String(it.detail||''), style: 'body', margin: [0, 4, 0, 0] }
               ],
               margin: [0, 0, 0, 14]
             })) }
@@ -1276,7 +1351,7 @@
 
   function buildTechnicalDoc(scope){
     const sum = scope.summary || {};
-    const assets = scope.assets || [];
+    const assets = Array.isArray(scope.assets) ? scope.assets : [];
     const actionItems = buildActionItems(assets);
     const passedChecks = buildPassedChecks(scope, assets);
     const generatedAt = new Date();
@@ -1342,7 +1417,7 @@
         : { stack: passedChecks.map(c => ({
             table: { widths: [22, '*'], body: [[
               { text: 'OK', color: PDF_GOOD, bold: true, fontSize: 9, alignment:'center', margin:[0,3,0,0] },
-              [{ text: c.title, style: 'winTitle' }, { text: c.detail, style: 'winDetail' }]
+              [{ text: String(c.title||''), style: 'winTitle' }, { text: String(c.detail||''), style: 'winDetail' }]
             ]]},
             layout: 'noBorders',
             margin: [0, 0, 0, 10]
@@ -1366,14 +1441,17 @@
       });
     } else {
       actionItems.forEach((it, i) => {
-        const hostList = it.hosts.join(', ') + (it.more > 0 ? `, +${it.more} more` : '');
+        const hostsArr = Array.isArray(it.hosts) ? it.hosts : [];
+        const hostList = hostsArr.length
+          ? hostsArr.join(', ') + (it.more > 0 ? `, +${it.more} more` : '')
+          : '—';
         content.push({
           stack: [
             { columns: [
-              { width: 'auto', text: it.severity.toUpperCase(), color: sevColor(it.severity), bold: true, fontSize: 9, margin:[0,2,8,0] },
-              { width: '*', text: it.title, style: 'findingTitle' }
+              { width: 'auto', text: String(it.severity||'').toUpperCase(), color: sevColor(it.severity), bold: true, fontSize: 9, margin:[0,2,8,0] },
+              { width: '*', text: String(it.title||''), style: 'findingTitle' }
             ]},
-            { text: it.detail, style: 'body', margin: [0, 6, 0, 6] },
+            { text: String(it.detail||''), style: 'body', margin: [0, 6, 0, 6] },
             { text: 'Affected hosts:', style: 'thLight', margin: [0, 2, 0, 2] },
             { text: hostList, style: 'mono' }
           ],
@@ -1386,7 +1464,6 @@
     }
     content.push({ text: '', pageBreak: 'after' });
 
-    // Asset inventory
     const inventoryBody = [[
       {text:'Host', style:'thLight'}, {text:'IPs', style:'thLight'},
       {text:'Ports', style:'thLight'}, {text:'CVEs', style:'thLight'}, {text:'Notes', style:'thLight'}
@@ -1394,18 +1471,22 @@
     const sortedAssets = assets.slice().sort((a,b) => {
       const sa = scoreAsset(a).score, sb = scoreAsset(b).score;
       if (sa !== sb) return sb - sa;
-      return a.subdomain.localeCompare(b.subdomain);
+      return String(a.subdomain||'').localeCompare(String(b.subdomain||''));
     });
     sortedAssets.forEach(a => {
+      const ips   = Array.isArray(a.ips)   ? a.ips   : [];
+      const ports = Array.isArray(a.ports) ? a.ports : [];
+      const cves  = Array.isArray(a.cves)  ? a.cves  : [];
+      const tags  = Array.isArray(a.tags)  ? a.tags  : [];
       const notes = [];
       if (a.sensitive) notes.push('sensitive');
       if (!a.active) notes.push('unresolvable');
-      if (a.tags.some(t => RISKY_TAGS.has(t.toLowerCase()))) notes.push('risky tag');
+      if (tags.some(t => RISKY_TAGS.has(String(t).toLowerCase()))) notes.push('risky tag');
       inventoryBody.push([
-        { text: a.subdomain, style: 'monoSmall' },
-        { text: a.ips.length ? a.ips.join('\n') : '—', style: 'monoSmall', color: PDF_MUTED },
-        { text: a.ports.length ? a.ports.join(', ') : '—', style: 'monoSmall' },
-        { text: a.cves.length ? a.cves.join('\n') : '—', style: 'monoSmall', color: a.cves.length ? PDF_BAD : PDF_MUTED },
+        { text: String(a.subdomain || ''), style: 'monoSmall' },
+        { text: ips.length ? ips.join('\n') : '—', style: 'monoSmall', color: PDF_MUTED },
+        { text: ports.length ? ports.join(', ') : '—', style: 'monoSmall' },
+        { text: cves.length ? cves.join('\n') : '—', style: 'monoSmall', color: cves.length ? PDF_BAD : PDF_MUTED },
         { text: notes.length ? notes.join(', ') : '—', style: 'bodySmall', color: PDF_MUTED }
       ]);
     });
@@ -1443,41 +1524,11 @@
     };
   }
 
-  function docStyles(){
-    return {
-      coverEyebrow:  { fontSize: 11, color: PDF_ACCENT, bold: true, characterSpacing: 2 },
-      coverTitle:    { fontSize: 30, bold: true, color: PDF_TEXT },
-      coverDomain:   { fontSize: 22, bold: true, color: PDF_TEXT },
-      coverMeta:     { fontSize: 11, color: PDF_MUTED },
-      chartCaption:  { fontSize: 10, color: PDF_MUTED, italics: true },
-      gradeBig:      { fontSize: 16, bold: true },
-      statBig:       { fontSize: 24, bold: true, color: PDF_TEXT },
-      statBigGood:   { fontSize: 24, bold: true, color: PDF_GOOD },
-      statBigBad:    { fontSize: 24, bold: true, color: PDF_BAD },
-      statLbl:       { fontSize: 9, color: PDF_MUTED, characterSpacing: 1 },
-      h1:            { fontSize: 18, bold: true, color: PDF_TEXT },
-      h2:            { fontSize: 13, bold: true, color: PDF_TEXT },
-      lede:          { fontSize: 10.5, color: PDF_MUTED, italics: true },
-      body:          { fontSize: 10, color: PDF_TEXT },
-      bodySmall:     { fontSize: 9, color: PDF_TEXT },
-      mono:          { fontSize: 9, color: PDF_TEXT, font: 'Courier' },
-      monoSmall:     { fontSize: 8, color: PDF_TEXT, font: 'Courier' },
-      thLight:       { fontSize: 9, color: PDF_MUTED, bold: true, characterSpacing: 1 },
-      findingTitle:  { fontSize: 12, bold: true, color: PDF_TEXT },
-      winTitle:      { fontSize: 11, bold: true, color: PDF_GOOD, margin: [4, 0, 0, 2] },
-      winDetail:     { fontSize: 9.5, color: PDF_TEXT, margin: [4, 0, 0, 0] },
-      cleanTitle:    { fontSize: 13, bold: true, color: PDF_GOOD },
-      cleanDetail:   { fontSize: 10, color: PDF_GOOD },
-      footerLeft:    { fontSize: 8, color: PDF_MUTED },
-      footerRight:   { fontSize: 8, color: PDF_MUTED }
-    };
-  }
-
   function generatePdf(idx, mode){
     const scope = state.scopes[idx];
-    if (!scope) return;
+    if (!scope){ status('Scope not found.', true); return; }
+    if (!scope.lastScan){ status('Scan this scope before exporting a PDF.', true); return; }
 
-    // Diagnostic checks — these print to console if something is wrong
     if (typeof window.pdfMake === 'undefined'){
       console.error('pdfMake is undefined — CDN failed to load.');
       status('PDF library failed to load. Check your internet connection and reload the page.', true);
@@ -1489,15 +1540,25 @@
       return;
     }
 
+    let docDef;
     try {
-      const docDef = mode === 'executive' ? buildExecutiveDoc(scope) : buildTechnicalDoc(scope);
+      docDef = mode === 'executive' ? buildExecutiveDoc(scope) : buildTechnicalDoc(scope);
+    } catch(e){
+      console.error('PDF build error:', e);
+      status(`PDF build failed: ${e.message}. Check browser console.`, true);
+      return;
+    }
+
+    try {
       const suffix = mode === 'executive' ? 'executive' : 'technical';
       const fname = `surfacelens-${scope.rootDomains[0]}-${suffix}-${new Date().toISOString().slice(0,10)}.pdf`;
-      pdfMake.createPdf(docDef).download(fname);
-      status(`${mode === 'executive' ? 'Executive' : 'Technical'} PDF generated for ${scope.rootDomains[0]}.`);
+      const pdfDoc = pdfMake.createPdf(docDef);
+      pdfDoc.download(fname, () => {
+        status(`${mode === 'executive' ? 'Executive' : 'Technical'} PDF generated for ${scope.rootDomains[0]}.`);
+      });
     } catch(e){
-      console.error('PDF generation error:', e);
-      status(`PDF generation failed: ${e.message}. Check browser console for details.`, true);
+      console.error('PDF render error:', e);
+      status(`PDF render failed: ${e.message}. Check browser console.`, true);
     }
   }
 
@@ -1516,7 +1577,7 @@
       for (let i = 0; i < state.scopes.length; i++) await runScanForScope(i);
     });
     $('sl-export').addEventListener('click', () => {
-      downloadJson(state, `surfacelens-export-${new Date().toISOString().slice(0,10)}.json`);
+      downloadJson(state, `surfacelens-backup-${new Date().toISOString().slice(0,10)}.json`);
     });
     $('sl-collapse-all').addEventListener('click', () => {
       state.scopes.forEach(s => { uiState.collapsed[s.id] = true; });
@@ -1532,6 +1593,7 @@
       state.scopes = [];
       uiState.collapsed = {};
       uiState.preSearchCollapsed = null;
+      uiState.selectedScopes = null;
       saveState(); saveUiState(); renderAll();
     });
 
@@ -1540,7 +1602,6 @@
     $('sl-search-clear').addEventListener('click', () => { search.value = ''; onSearchInput(''); search.focus(); });
     search.addEventListener('keydown', e => { if (e.key === 'Escape'){ search.value = ''; onSearchInput(''); } });
 
-    // Close PDF menus when clicking elsewhere
     document.addEventListener('click', (e) => {
       if (openMenuIdx !== null && !e.target.closest('.sl-scope-actions')) closeAllMenus();
     });
@@ -1555,9 +1616,11 @@
     renderAll();
   }
 
-  document.addEventListener('DOMContentLoaded', boot);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
 </script>
 
 </body>
 </html>
+<!-- ============ PART 3 of 3 END ============ -->

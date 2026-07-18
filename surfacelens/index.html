@@ -179,10 +179,29 @@
   .sl-ips{color:var(--sl-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6}
   .sl-chips{display:flex;flex-wrap:wrap;gap:4px}
   .sl-chip{background:var(--sl-chip-bg);color:var(--sl-text);font-size:11px;padding:2px 8px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  .sl-chip.cve{background:#fef2f2;color:var(--sl-bad);border:1px solid #fecaca}
+  .sl-chip.cve{background:#fef2f2;color:var(--sl-bad);border:1px solid #fecaca;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+  .sl-chip.cve:hover{background:#fee2e2;border-color:#f87171}
+  /* KEV chip — darkest red, solid border, KEV badge */
+  .sl-chip.cve.cve-kev{background:#450a0a;color:#fca5a5;border-color:#7f1d1d}
+  .sl-chip.cve.cve-kev:hover{background:#7f1d1d;color:#fecaca}
+  /* High-EPSS chip — orange tint */
+  .sl-chip.cve.cve-high-epss{background:#431407;color:#fdba74;border-color:#7c2d12}
+  .sl-chip.cve.cve-high-epss:hover{background:#7c2d12;color:#fed7aa}
+  /* Mini badge inside CVE chip */
+  .sl-cve-badge{font-size:9px;font-weight:700;font-family:Inter,sans-serif;padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0}
+  .sl-cve-badge.kev{background:#dc2626;color:#fff}
+  .sl-cve-badge.epss-high{background:#ea580c;color:#fff}
+  /* EPSS percentage shown inline on chip */
+  .sl-cve-epss{font-size:10px;color:currentColor;opacity:0.75;font-family:Inter,sans-serif;margin-left:1px}
   .sl-chip.tag{background:#eef2ff;color:#4338ca;font-family:Inter,sans-serif;border:1px solid #c7d2fe}
   .sl-chip.sensitive{background:#fffbeb;color:var(--sl-warn);font-family:Inter,sans-serif;border:1px solid #fde68a}
   .sl-chip.port-risk{background:#fef2f2;color:var(--sl-bad);border:1px solid #fecaca}
+  /* KEV count inline in summary cell */
+  .sl-kev-count{font-size:10px;font-weight:700;background:#dc2626;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;vertical-align:middle;font-family:Inter,sans-serif;letter-spacing:0.03em;cursor:default}
+  /* Action item tags */
+  .sl-action-tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;border-radius:4px;margin-right:6px;vertical-align:middle;flex-shrink:0;font-family:Inter,sans-serif;cursor:default}
+  .sl-action-tag.kev{background:#dc2626;color:#fff}
+  .sl-action-tag.epss{background:#ea580c;color:#fff}
   .sl-dash{color:var(--sl-muted)}
   .sl-empty{padding:40px 24px;text-align:center;color:var(--sl-muted);font-size:14px;background:var(--sl-bg)}
   .sl-empty code{background:var(--sl-chip-bg);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--sl-text)}
@@ -299,6 +318,8 @@
   const DOH_URL           = 'https://dns.google/resolve';
   const CERTSPOTTER_API   = 'https://api.certspotter.com/v1/issuances';
   const SHODAN_IDB        = 'https://internetdb.shodan.io';
+  const EPSS_API          = 'https://api.first.org/data/v1/epss';
+  const CISA_KEV_URL      = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json';
   const SOFT_CAP_SCOPES   = 20;
   const SUBDOMAIN_CAP     = 200;
   const IP_CAP            = 100;
@@ -306,6 +327,10 @@
   const HISTORY_CAP       = 8;
   const TOP_RISKS_LIMIT   = 5;
   const HOSTS_PER_ACTION  = 6;
+  const EPSS_BATCH_SIZE   = 30;   // FIRST EPSS API accepts up to 100 CVEs per request
+  const EPSS_HIGH_THRESH  = 0.4;  // ≥40% exploit probability = high-EPSS
+  const KEV_CACHE_KEY     = 'owlglass_surfacelens_kev_v1';
+  const KEV_CACHE_TTL_MS  = 24 * 60 * 60 * 1000; // 24 hours
 
   const SENSITIVE_PATTERNS = [
     'admin','staging','stage','dev','test','qa','uat','internal','intranet',
@@ -401,6 +426,91 @@
 <!-- ============ PART 1 of 3 END ============ -->
 <!-- ============ PART 2 of 3 START ============ -->
 
+  // ─────────────────────────────────────────────────────────────
+  //  CISA KEV + FIRST EPSS enrichment
+  // ─────────────────────────────────────────────────────────────
+
+  // Returns Set of CVE IDs that are in the CISA Known Exploited Vulnerabilities catalog.
+  // Caches in localStorage for 24 h to avoid hitting the CISA feed on every scan.
+  async function fetchKev(){
+    try {
+      const cached = localStorage.getItem(KEV_CACHE_KEY);
+      if (cached){
+        const c = JSON.parse(cached);
+        if (c && c.ts && (Date.now() - c.ts) < KEV_CACHE_TTL_MS && Array.isArray(c.cves)){
+          return new Set(c.cves);
+        }
+      }
+    } catch(e){}
+    try {
+      const res = await withTimeout(fetch(CISA_KEV_URL), 15000, 'CISA KEV');
+      if (!res.ok) return new Set();
+      const data = await res.json();
+      const cves = (data.vulnerabilities || []).map(v => v.cveID).filter(Boolean);
+      try { localStorage.setItem(KEV_CACHE_KEY, JSON.stringify({ ts: Date.now(), cves })); } catch(e){}
+      return new Set(cves);
+    } catch(e){
+      console.warn('[SurfaceLens] CISA KEV fetch failed:', e.message);
+      return new Set();
+    }
+  }
+
+  // Fetches EPSS scores for a list of CVE IDs from the FIRST.org API.
+  // Returns a Map: cveId → { epss: 0.123, percentile: 0.95 }
+  async function fetchEpss(cveIds){
+    const result = new Map();
+    if (!cveIds || cveIds.length === 0) return result;
+    // Deduplicate
+    const unique = [...new Set(cveIds)];
+    // Fire batches in parallel (each batch ≤ EPSS_BATCH_SIZE)
+    const batches = [];
+    for (let i = 0; i < unique.length; i += EPSS_BATCH_SIZE){
+      batches.push(unique.slice(i, i + EPSS_BATCH_SIZE));
+    }
+    await Promise.all(batches.map(async batch => {
+      try {
+        const params = new URLSearchParams({ cve: batch.join(','), limit: batch.length });
+        const res = await withTimeout(
+          fetch(`${EPSS_API}?${params}`, { headers: { 'Accept': 'application/json' } }),
+          12000, 'EPSS'
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        (data.data || []).forEach(row => {
+          if (row.cve) result.set(row.cve, {
+            epss: parseFloat(row.epss) || 0,
+            percentile: parseFloat(row.percentile) || 0
+          });
+        });
+      } catch(e){
+        console.warn('[SurfaceLens] EPSS batch fetch failed:', e.message);
+      }
+    }));
+    return result;
+  }
+
+  // Builds a per-CVE enrichment map: cveId → { epss, percentile, kev, cvssLabel }
+  // Called once per scan after all CVEs are known.
+  async function enrichCves(allCveIds, kevSet, onProgress){
+    const enrichment = new Map();
+    if (!allCveIds || allCveIds.length === 0) return enrichment;
+
+    onProgress && onProgress(`Enriching ${allCveIds.length} CVE${allCveIds.length===1?'':'s'} with EPSS scores…`);
+    const epssMap = await fetchEpss(allCveIds);
+
+    allCveIds.forEach(cve => {
+      const epssData = epssMap.get(cve) || { epss: 0, percentile: 0 };
+      const isKev = kevSet.has(cve);
+      // Derive a human label from EPSS score
+      let cvssLabel = 'low';
+      if (epssData.epss >= 0.7)       cvssLabel = 'critical';
+      else if (epssData.epss >= 0.4)  cvssLabel = 'high';
+      else if (epssData.epss >= 0.1)  cvssLabel = 'medium';
+      enrichment.set(cve, { ...epssData, kev: isKev, cvssLabel });
+    });
+    return enrichment;
+  }
+
   async function fetchCertSpotter(domain){
     const url = `${CERTSPOTTER_API}?domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names`;
     const res = await withTimeout(fetch(url), 20000, 'CertSpotter');
@@ -453,6 +563,9 @@
     const startedAt = new Date().toISOString();
     const rootDomain = scope.rootDomains[0];
 
+    // Start fetching CISA KEV catalog in background immediately (it's cached after first call)
+    const kevPromise = fetchKev();
+
     onProgress && onProgress('Fetching certificate transparency data…');
     const cs = await fetchCertSpotter(rootDomain);
     let subdomains = cs.subdomains;
@@ -504,12 +617,33 @@
       };
     });
 
+    // Gather all unique CVEs across all assets for enrichment
+    const allCveIds = [...new Set(assets.flatMap(a => a.cves || []))];
+    let cveEnrichment = new Map();
+    if (allCveIds.length > 0){
+      const kevSet = await kevPromise;
+      cveEnrichment = await enrichCves(allCveIds, kevSet, onProgress);
+    }
+
+    // Attach enrichment data to each asset so rendering and scoring can use it
+    assets.forEach(a => {
+      a.cveDetails = (a.cves || []).map(cve => ({
+        cve,
+        ...(cveEnrichment.get(cve) || { epss: 0, percentile: 0, kev: false, cvssLabel: 'unknown' })
+      }));
+    });
+
+    const kevCount = allCveIds.filter(c => { const e = cveEnrichment.get(c); return e && e.kev; }).length;
+    const highEpssCount = allCveIds.filter(c => { const e = cveEnrichment.get(c); return e && e.epss >= EPSS_HIGH_THRESH; }).length;
+
     const summary = {
       subdomains: assets.length,
       active: assets.filter(a => a.active).length,
       uniqueIps: ips.length,
       openPorts: assets.reduce((acc,a) => acc + (a.ports||[]).length, 0),
       cves: new Set(assets.flatMap(a => a.cves||[])).size,
+      kevCves: kevCount,
+      highEpssCves: highEpssCount,
       sensitive: assets.filter(a => a.sensitive).length,
       certificates: cs.certificates.length,
       subdomainsTruncated,
@@ -526,7 +660,19 @@
   function scoreAsset(a){
     let score = 0;
     const cves = a.cves||[], ports = a.ports||[], tags = a.tags||[];
-    if (cves.length) score += cves.length * 10;
+    const details = a.cveDetails||[];
+
+    // Base CVE score — replaced by enriched scoring below when available
+    if (cves.length && !details.length) score += cves.length * 10;
+
+    // Enriched CVE scoring: KEV = +40, high-EPSS = +25, medium-EPSS = +15, other = +8
+    details.forEach(d => {
+      if (d.kev)                      score += 40;
+      else if (d.epss >= EPSS_HIGH_THRESH) score += 25;
+      else if (d.epss >= 0.1)         score += 15;
+      else                            score += 8;
+    });
+
     if (a.sensitive) score += 15;
     score += ports.filter(p => DB_PORTS.has(p)).length * 12;
     score += ports.filter(p => REMOTE_PORTS.has(p)).length * 8;
@@ -538,8 +684,62 @@
   function buildActionItems(assets){
     const items = [];
     const list = assets || [];
+
+    // ── KEV: actively-exploited CVEs (highest priority) ──────────────
+    const kevAssets = list.filter(a => (a.cveDetails||[]).some(d => d.kev));
+    if (kevAssets.length){
+      const kevCves = [...new Set(kevAssets.flatMap(a => (a.cveDetails||[]).filter(d => d.kev).map(d => d.cve)))];
+      items.push({
+        severity: 'critical',
+        title: `${kevCves.length} CVE${kevCves.length===1?'':'s'} on CISA Known Exploited Vulnerabilities list`,
+        detail: `These vulnerabilities are being actively exploited in the wild: ${kevCves.slice(0,4).join(', ')}${kevCves.length>4?` +${kevCves.length-4} more`:''}.  Treat as P0 — patch immediately or isolate affected hosts.`,
+        hosts: kevAssets.slice(0, HOSTS_PER_ACTION).map(a => a.subdomain),
+        more: Math.max(0, kevAssets.length - HOSTS_PER_ACTION),
+        tag: 'KEV'
+      });
+    }
+
+    // ── High-EPSS: high exploit-probability CVEs ──────────────────────
+    const highEpssAssets = list.filter(a =>
+      (a.cveDetails||[]).some(d => !d.kev && d.epss >= EPSS_HIGH_THRESH)
+    );
+    if (highEpssAssets.length){
+      const highEpssCves = [...new Set(highEpssAssets.flatMap(a =>
+        (a.cveDetails||[]).filter(d => !d.kev && d.epss >= EPSS_HIGH_THRESH).map(d => d.cve)
+      ))];
+      const maxEpss = Math.max(...highEpssCves.map(cve => {
+        for (const a of highEpssAssets){
+          const d = (a.cveDetails||[]).find(x => x.cve === cve);
+          if (d) return d.epss;
+        }
+        return 0;
+      }));
+      items.push({
+        severity: 'critical',
+        title: `${highEpssCves.length} CVE${highEpssCves.length===1?'':'s'} with high exploit probability (EPSS ≥${Math.round(EPSS_HIGH_THRESH*100)}%)`,
+        detail: `EPSS scores up to ${Math.round(maxEpss*100)}% — these vulnerabilities are likely to be exploited within 30 days. Prioritize patching: ${highEpssCves.slice(0,3).join(', ')}${highEpssCves.length>3?` +${highEpssCves.length-3} more`:''}.`,
+        hosts: highEpssAssets.slice(0, HOSTS_PER_ACTION).map(a => a.subdomain),
+        more: Math.max(0, highEpssAssets.length - HOSTS_PER_ACTION),
+        tag: 'EPSS'
+      });
+    }
+
+    // ── All other CVEs ─────────────────────────────────────────────────
     const cveAssets = list.filter(a => (a.cves||[]).length > 0);
-    if (cveAssets.length){
+    const remainingCveAssets = cveAssets.filter(a =>
+      !(kevAssets.includes(a)) && !(highEpssAssets.includes(a))
+    );
+    if (remainingCveAssets.length){
+      const uniqueCves = new Set(remainingCveAssets.flatMap(a => a.cves||[]));
+      items.push({
+        severity: 'critical',
+        title: `${remainingCveAssets.length} host${remainingCveAssets.length===1?'':'s'} have known CVEs (${uniqueCves.size} unique)`,
+        detail: 'These hosts run software flagged by Shodan as having known vulnerabilities. Patch or restrict network access. Review each CVE in NIST NVD for severity.',
+        hosts: remainingCveAssets.slice(0, HOSTS_PER_ACTION).map(a => a.subdomain),
+        more: Math.max(0, remainingCveAssets.length - HOSTS_PER_ACTION)
+      });
+    } else if (cveAssets.length && !kevAssets.length && !highEpssAssets.length){
+      // fallback: no enrichment data available
       const uniqueCves = new Set(cveAssets.flatMap(a => a.cves||[]));
       items.push({
         severity: 'critical',
@@ -624,7 +824,10 @@
     if (sum.certificates > 0) checks.push({ title: 'Certificate Transparency enumeration complete', detail: `Discovered ${total} subdomain${total===1?'':'s'} from ${sum.certificates} certificate${sum.certificates===1?'':'s'} — full external footprint visibility.` });
     if (total > 0 && active === total) checks.push({ title: 'All enumerated hosts resolve to live IPs', detail: `All ${total} discovered subdomains have current DNS records — no dangling CT artifacts.` });
     else if (total > 0 && active / total >= 0.9){ const pct = Math.round((active/total)*100); checks.push({ title: 'Strong DNS hygiene', detail: `${active} of ${total} hosts resolve (${pct}%) — most subdomains in CT are still active.` }); }
+    const kevAssets = list.filter(a => (a.cveDetails||[]).some(d => d.kev));
+    const highEpssAssets = list.filter(a => (a.cveDetails||[]).some(d => !d.kev && d.epss >= EPSS_HIGH_THRESH));
     if (sum.uniqueIps > 0 && allCves.size === 0) checks.push({ title: 'No known CVEs across exposed infrastructure', detail: `Shodan InternetDB reports zero known vulnerabilities across ${sum.uniqueIps} unique IP${sum.uniqueIps===1?'':'s'}.` });
+    else if (allCves.size > 0 && kevAssets.length === 0 && highEpssAssets.length === 0 && list.some(a => (a.cveDetails||[]).length > 0)) checks.push({ title: 'No CISA KEV or high-EPSS CVEs detected', detail: `Found CVEs but none are on the CISA Known Exploited list and none have EPSS ≥${Math.round(EPSS_HIGH_THRESH*100)}% — lower immediate urgency.` });
     if (sum.uniqueIps > 0 && dbExposed.length === 0) checks.push({ title: 'No database ports exposed to the internet', detail: `No MySQL, PostgreSQL, Redis, MongoDB, Elasticsearch or similar services observed on public IPs.` });
     if (sum.uniqueIps > 0 && remoteExposed.length === 0) checks.push({ title: 'No exposed remote-access ports', detail: `No SSH, RDP, Telnet, VNC or WinRM detected on public IPs — administrative access appears properly gated.` });
     if (total > 0 && sensitiveReachable.length === 0) checks.push({ title: 'Clean sensitive-name hygiene', detail: `No reachable hosts with admin/staging/dev/internal naming patterns leaking into Certificate Transparency.` });
@@ -790,6 +993,17 @@
         <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px solid var(--sl-border)">
           <span style="color:var(--sl-muted)">Known CVEs</span><span style="font-weight:600;color:${totalCves>0?'var(--sl-bad)':'var(--sl-good)'}">${totalCves}</span>
         </div>
+        ${(() => {
+          const totalKev = scopes.reduce((a,s)=>a+((s.summary&&s.summary.kevCves)||0), 0);
+          const totalHiEpss = scopes.reduce((a,s)=>a+((s.summary&&s.summary.highEpssCves)||0), 0);
+          return totalKev > 0 || totalHiEpss > 0 ? `
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px solid var(--sl-border)">
+          <span style="color:var(--sl-muted)">CISA KEV</span><span style="font-weight:700;color:#b91c1c">${totalKev}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px solid var(--sl-border)">
+          <span style="color:var(--sl-muted)">High EPSS (≥40%)</span><span style="font-weight:600;color:${totalHiEpss>0?'#c2410c':'var(--sl-good)'}">${totalHiEpss}</span>
+        </div>` : '';
+        })()}
         <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px solid var(--sl-border)">
           <span style="color:var(--sl-muted)">Selected scopes</span><span style="font-weight:600">${scopes.length}</span>
         </div>
@@ -805,10 +1019,14 @@
     const el = $('sl-meta-summary');
     const n = state.scopes.length;
     if (!n){ el.textContent = 'No scopes tracked yet. Add a domain below to begin.'; return; }
-    const totalAssets = state.scopes.reduce((acc,s) => acc + (s.summary ? s.summary.subdomains : 0), 0);
-    const totalCves   = state.scopes.reduce((acc,s) => acc + (s.summary ? s.summary.cves : 0), 0);
-    const totalSens   = state.scopes.reduce((acc,s) => acc + (s.summary ? s.summary.sensitive : 0), 0);
-    el.innerHTML = `Tracking <strong>${n}</strong> scope${n>1?'s':''} · <strong>${totalAssets}</strong> assets · <strong>${totalCves}</strong> known CVEs · <strong>${totalSens}</strong> sensitive hostnames`;
+    const totalAssets   = state.scopes.reduce((acc,s) => acc + (s.summary ? s.summary.subdomains : 0), 0);
+    const totalCves     = state.scopes.reduce((acc,s) => acc + (s.summary ? s.summary.cves : 0), 0);
+    const totalKev      = state.scopes.reduce((acc,s) => acc + (s.summary ? (s.summary.kevCves||0) : 0), 0);
+    const totalHiEpss   = state.scopes.reduce((acc,s) => acc + (s.summary ? (s.summary.highEpssCves||0) : 0), 0);
+    const totalSens     = state.scopes.reduce((acc,s) => acc + (s.summary ? s.summary.sensitive : 0), 0);
+    const kevBadge      = totalKev > 0 ? ` · <span class="sl-kev-count" title="CISA Known Exploited Vulnerabilities">${totalKev} KEV</span>` : '';
+    const epssNote      = totalHiEpss > 0 && !totalKev ? ` · <strong style="color:#c2410c">${totalHiEpss} high-EPSS</strong>` : '';
+    el.innerHTML = `Tracking <strong>${n}</strong> scope${n>1?'s':''} · <strong>${totalAssets}</strong> assets · <strong ${totalCves>0?'style="color:#dc2626"':''}>${totalCves}</strong> CVEs${kevBadge}${epssNote} · <strong>${totalSens}</strong> sensitive hostnames`;
   }
 
   function renderScopes(){
@@ -913,11 +1131,12 @@
         </div>
         <div class="sl-scope-body">
           <div class="sl-summary">
-            <div class="sl-summary-cell"><div class="lbl">Subdomains</div><div class="val">${sum.subdomains}</div></div>
+          <div class="sl-summary-cell"><div class="lbl">Subdomains</div><div class="val">${sum.subdomains}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Active</div><div class="val">${sum.active}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Unique IPs</div><div class="val">${sum.uniqueIps}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Open ports</div><div class="val">${sum.openPorts}</div></div>
-            <div class="sl-summary-cell"><div class="lbl">Known CVEs</div><div class="val ${sum.cves>0?'bad':'good'}">${sum.cves}</div></div>
+            <div class="sl-summary-cell"><div class="lbl">Known CVEs</div><div class="val ${sum.cves>0?'bad':'good'}">${sum.cves}${sum.kevCves>0?` <span class="sl-kev-count" title="${sum.kevCves} on CISA KEV">+${sum.kevCves} KEV</span>`:''}</div></div>
+            <div class="sl-summary-cell"><div class="lbl">High EPSS</div><div class="val ${sum.highEpssCves>0?'warn':'good'}">${sum.highEpssCves!=null?sum.highEpssCves:'—'}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Sensitive</div><div class="val ${sum.sensitive>0?'warn':'good'}">${sum.sensitive}</div></div>
             <div class="sl-summary-cell"><div class="lbl">Certificates</div><div class="val">${sum.certificates}</div></div>
           </div>
@@ -937,10 +1156,17 @@
   function renderAction(it){
     const hostChips = it.hosts.map(h => `<span class="sl-action-host">${escapeHtml(h)}</span>`).join('');
     const moreText = it.more > 0 ? `<span class="sl-action-host">+${it.more} more</span>` : '';
+    let tagBadge = '';
+    if (it.tag === 'KEV'){
+      tagBadge = `<span class="sl-action-tag kev" title="CISA Known Exploited Vulnerabilities — actively exploited in the wild">KEV</span>`;
+    } else if (it.tag === 'EPSS'){
+      tagBadge = `<span class="sl-action-tag epss" title="FIRST EPSS — high probability of exploitation">EPSS</span>`;
+    }
     return `
       <div class="sl-action">
         <div class="sl-action-head">
           <span class="sl-sev ${it.severity}">${it.severity}</span>
+          ${tagBadge}
           <span class="sl-action-title">${escapeHtml(it.title)}</span>
         </div>
         <div class="sl-action-detail">${escapeHtml(it.detail)}</div>
@@ -949,15 +1175,59 @@
     `;
   }
 
+  function renderCveChip(detail){
+    // detail = { cve, epss, percentile, kev, cvssLabel }
+    const cve = detail.cve || '';
+    const nvdUrl = `https://nvd.nist.gov/vuln/detail/${encodeURIComponent(cve)}`;
+    const epssLabel = detail.epss > 0 ? `${Math.round(detail.epss * 100)}%` : null;
+
+    let chipClass = 'sl-chip cve';
+    let badgeHtml = '';
+    let epssHtml = '';
+    let titleAttr = `title="${escapeHtml(cve)}"`;
+
+    if (detail.kev){
+      chipClass = 'sl-chip cve cve-kev';
+      badgeHtml = `<span class="sl-cve-badge kev">KEV</span>`;
+      titleAttr = `title="${escapeHtml(cve)} · CISA Known Exploited Vulnerability — actively exploited in the wild"`;
+    } else if (detail.epss >= EPSS_HIGH_THRESH){
+      chipClass = 'sl-chip cve cve-high-epss';
+      badgeHtml = `<span class="sl-cve-badge epss-high">EPSS</span>`;
+      titleAttr = `title="${escapeHtml(cve)} · High exploit probability: ${Math.round(detail.epss*100)}%"`;
+    }
+    if (epssLabel && !detail.kev){
+      epssHtml = `<span class="sl-cve-epss">${epssLabel}</span>`;
+    }
+    return `<a href="${nvdUrl}" target="_blank" rel="noopener" class="${chipClass}" ${titleAttr}>${badgeHtml}${escapeHtml(cve)}${epssHtml}</a>`;
+  }
+
   function renderAssetRow(a){
     const ports = a.ports||[], cves = a.cves||[], tags = a.tags||[], ips = a.ips||[];
+    const details = a.cveDetails||[];
     const isDbPort = p => DB_PORTS.has(p);
     const isRemPort = p => REMOTE_PORTS.has(p);
     const portChips = ports.length
       ? ports.map(p => `<span class="sl-chip ${(isDbPort(p)||isRemPort(p))?'port-risk':''}">${p}</span>`).join('')
       : '<span class="sl-dash">—</span>';
-    const cveChips  = cves.slice(0,6).map(c => `<span class="sl-chip cve">${escapeHtml(c)}</span>`).join('');
-    const moreCves  = cves.length > 6 ? `<span class="sl-chip cve">+${cves.length-6}</span>` : '';
+
+    // Sort CVEs: KEV first, then by EPSS descending, then alphabetical
+    const sortedDetails = details.slice().sort((a,b) => {
+      if (a.kev !== b.kev) return a.kev ? -1 : 1;
+      return b.epss - a.epss;
+    });
+    const MAX_CVE_SHOW = 5;
+    const shownDetails = sortedDetails.slice(0, MAX_CVE_SHOW);
+    const cveChips = shownDetails.map(d => renderCveChip(d)).join('');
+    const moreCves = sortedDetails.length > MAX_CVE_SHOW
+      ? `<span class="sl-chip cve">+${sortedDetails.length - MAX_CVE_SHOW} more</span>`
+      : '';
+    // Fallback: no enrichment data
+    const fallbackCveChips = !details.length && cves.length
+      ? cves.slice(0, MAX_CVE_SHOW).map(c =>
+          `<a href="https://nvd.nist.gov/vuln/detail/${encodeURIComponent(c)}" target="_blank" rel="noopener" class="sl-chip cve">${escapeHtml(c)}</a>`
+        ).join('') + (cves.length > MAX_CVE_SHOW ? `<span class="sl-chip cve">+${cves.length-MAX_CVE_SHOW}</span>` : '')
+      : '';
+
     const tagChips  = tags.map(t => `<span class="sl-chip tag">${escapeHtml(t)}</span>`).join('');
     const notes = [];
     if (a.sensitive) notes.push('<span class="sl-chip sensitive">sensitive name</span>');
@@ -967,7 +1237,7 @@
         <td class="sl-host">${escapeHtml(a.subdomain)}</td>
         <td class="sl-ips">${ips.length ? ips.map(escapeHtml).join('<br>') : '<span class="sl-dash">—</span>'}</td>
         <td><div class="sl-chips">${portChips}</div></td>
-        <td><div class="sl-chips">${cveChips}${moreCves}${tagChips || ''}</div></td>
+        <td><div class="sl-chips">${details.length ? cveChips + moreCves : fallbackCveChips}${tagChips || ''}</div></td>
         <td><div class="sl-chips">${notes.join('') || '<span class="sl-dash">—</span>'}</div></td>
       </tr>
     `;

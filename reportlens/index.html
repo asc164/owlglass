@@ -138,59 +138,129 @@
 .rl-privacy-modal .pm-notice strong{display:block;margin-bottom:2px}
 
 
-/* ── Narrative Report ─────────────────────────────────────── */
-.rl-report-btn{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
-.rl-report-btn:hover{opacity:0.85}
-.rl-report-btn:disabled{opacity:0.5;cursor:not-allowed}
+/* ── Report / Chat Buttons ─────────────────────────────────── */
+.rl-exec-btn{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
+.rl-exec-btn:hover{opacity:0.85}
+.rl-exec-btn:disabled{opacity:0.5;cursor:not-allowed}
+.rl-tech-btn{background:linear-gradient(135deg,#065f46,#047857);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
+.rl-tech-btn:hover{opacity:0.85}
+.rl-tech-btn:disabled{opacity:0.5;cursor:not-allowed}
+.rl-chat-btn{background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s}
+.rl-chat-btn:hover{background:#e5e7eb}
 
-/* Full-screen report overlay */
-.rl-report-overlay{position:fixed;inset:0;background:#f8f9fa;z-index:500;overflow-y:auto;font-family:'Inter',-apple-system,sans-serif}
-.rl-report-overlay.hidden{display:none}
+/* ── Report Workshop Overlay ────────────────────────────────── */
+.rl-workshop{position:fixed;inset:0;background:#f1f5f9;z-index:500;display:flex;flex-direction:column;font-family:'Inter',-apple-system,sans-serif}
+.rl-workshop.hidden{display:none}
 
-/* Report toolbar */
-.rl-report-toolbar{position:sticky;top:0;background:#fff;border-bottom:1px solid #e4e4e7;padding:10px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.rl-report-toolbar .tb-left{display:flex;align-items:center;gap:12px;font-size:0.85rem;color:#374151}
-.rl-report-toolbar .tb-left strong{color:#111827}
-.rl-report-toolbar .tb-right{display:flex;gap:8px}
-.rl-report-toolbar button{padding:7px 14px;border-radius:6px;border:1px solid #d1d5db;background:#fff;font-family:inherit;font-size:0.82rem;font-weight:500;cursor:pointer;color:#374151}
-.rl-report-toolbar button:hover{background:#f9fafb}
-.rl-report-toolbar button.primary{background:#111827;color:#fff;border-color:#111827}
-.rl-report-toolbar button.primary:hover{background:#1f2937}
+/* Workshop top bar */
+.rl-ws-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.rl-ws-bar .wb-brand{font-size:0.88rem;font-weight:700;color:#111827;display:flex;align-items:center;gap:10px}
+.rl-ws-bar .wb-brand .wb-mode{font-size:0.72rem;font-weight:600;padding:2px 9px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+.wb-mode.exec{background:#0f172a;color:#fff}
+.wb-mode.tech{background:#065f46;color:#fff}
+.wb-mode.chat{background:#6366f1;color:#fff}
+.rl-ws-bar .wb-steps{display:flex;align-items:center;gap:6px;font-size:0.78rem}
+.wb-step{padding:4px 12px;border-radius:999px;color:#9ca3af;font-weight:500;cursor:default}
+.wb-step.active{background:#eff6ff;color:#1d4ed8;font-weight:600}
+.wb-step.done{color:#15803d;font-weight:500}
+.wb-step.done::before{content:'✓ '}
+.rl-ws-bar .wb-right{display:flex;gap:8px}
+.rl-ws-bar button{padding:6px 14px;border-radius:6px;border:1px solid #d1d5db;background:#fff;font-family:inherit;font-size:0.8rem;font-weight:500;cursor:pointer;color:#374151}
+.rl-ws-bar button:hover{background:#f9fafb}
+.rl-ws-bar button.primary{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.rl-ws-bar button.primary:hover{background:#1e40af}
+
+/* Workshop body */
+.rl-ws-body{flex:1;overflow:hidden;display:flex}
+
+/* ── STEP 1: Scope ─────────────────────────────────────────── */
+.rl-ws-scope{flex:1;overflow-y:auto;padding:32px}
+.ws-scope-inner{max-width:680px;margin:0 auto}
+.ws-scope-inner h2{font-size:1.25rem;font-weight:700;color:#111827;margin:0 0 6px}
+.ws-scope-inner .ws-sub{font-size:0.88rem;color:#6b7280;margin:0 0 24px;line-height:1.5}
+.ws-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:16px}
+.ws-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;font-weight:700;margin:0 0 12px}
+.ws-col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.ws-col-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:#fafafa;transition:background 0.1s}
+.ws-col-chip:hover{background:#eff6ff;border-color:#bfdbfe}
+.ws-col-chip.selected{background:#eff6ff;border-color:#3b82f6}
+.ws-col-chip input[type=checkbox]{cursor:pointer;flex-shrink:0}
+.ws-col-chip .cc-name{font-size:0.82rem;font-weight:500;color:#111827;flex:1;font-family:ui-monospace,monospace}
+.ws-col-chip .cc-type{font-size:0.68rem;color:#9ca3af;background:#f3f4f6;padding:1px 5px;border-radius:3px}
+.ws-col-chip .cc-pii{font-size:0.65rem;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:1px 5px;border-radius:3px;font-weight:600}
+.ws-notice{display:flex;gap:10px;align-items:flex-start;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:0.82rem;color:#92400e;margin-bottom:16px}
+.ws-notice strong{display:block;margin-bottom:2px}
+.ws-focus-area{width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px;font-family:inherit;font-size:0.88rem;color:#374151;resize:vertical;min-height:72px;outline:none;transition:border-color 0.15s}
+.ws-focus-area:focus{border-color:#3b82f6}
+
+/* ── STEP 2: Outline Preview ───────────────────────────────── */
+.rl-ws-outline{flex:1;overflow-y:auto;padding:32px}
+.ws-outline-inner{max-width:700px;margin:0 auto}
+.ws-outline-inner h2{font-size:1.25rem;font-weight:700;color:#111827;margin:0 0 6px}
+.ws-outline-inner .ws-sub{font-size:0.88rem;color:#6b7280;margin:0 0 20px;line-height:1.5}
+.ws-outline-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:16px}
+.ws-outline-header{padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:flex-start;gap:12px}
+.ws-outline-header .oh-icon{font-size:1.3rem;flex-shrink:0;margin-top:2px}
+.ws-outline-header h3{margin:0 0 3px;font-size:1rem;font-weight:700;color:#111827}
+.ws-outline-header p{margin:0;font-size:0.82rem;color:#6b7280;line-height:1.5}
+.ws-sections-list{padding:12px 20px}
+.ws-section-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f8fafc}
+.ws-section-row:last-child{border-bottom:0}
+.ws-section-row input[type=checkbox]{flex-shrink:0;margin-top:3px;cursor:pointer}
+.ws-section-row .sr-num{font-size:0.72rem;font-weight:700;color:#9ca3af;flex-shrink:0;padding-top:3px;width:18px}
+.ws-section-row .sr-body{flex:1}
+.ws-section-row .sr-title{font-weight:600;color:#111827;font-size:0.88rem;margin-bottom:2px}
+.ws-section-row .sr-desc{font-size:0.78rem;color:#6b7280;line-height:1.4}
+.ws-section-row .sr-edit{background:transparent;border:none;color:#6b7280;cursor:pointer;font-size:0.75rem;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.ws-section-row .sr-edit:hover{background:#f3f4f6;color:#374151}
+.ws-edit-inline{width:100%;border:1px solid #bfdbfe;border-radius:4px;padding:5px 8px;font-family:inherit;font-size:0.82rem;margin-top:4px;outline:none;background:#eff6ff}
+.ws-outline-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 16px}
+.ws-outline-actions button{padding:5px 12px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;font-family:inherit;font-size:0.78rem;cursor:pointer;color:#374151}
+.ws-outline-actions button:hover{background:#e2e8f0}
+
+/* ── STEP 3: Report + Chat ─────────────────────────────────── */
+.rl-ws-report-chat{flex:1;overflow:hidden;display:grid;grid-template-columns:1fr 380px}
+.rwc-report{overflow-y:auto;padding:40px 48px;background:#f8fafc;border-right:1px solid #e2e8f0}
+.rwc-report.full{grid-column:1/-1}
+.rwc-chat{display:flex;flex-direction:column;background:#fff}
 
 /* Report page */
-.rl-report-page{max-width:820px;margin:40px auto 80px;padding:0 32px}
+.rl-report-page{max-width:820px;margin:0 auto}
 
 /* Cover */
-.rl-report-cover{padding:48px 0 36px;border-bottom:3px solid #7c3aed;margin-bottom:40px}
-.rl-report-cover .rc-eyebrow{font-size:0.72rem;text-transform:uppercase;letter-spacing:.1em;color:#7c3aed;font-weight:700;margin-bottom:10px}
-.rl-report-cover h1{font-size:2rem;font-weight:700;letter-spacing:-0.025em;color:#111827;margin:0 0 10px;line-height:1.2}
-.rl-report-cover .rc-meta{font-size:0.85rem;color:#6b7280;display:flex;gap:20px;flex-wrap:wrap;margin-top:14px}
+.rl-report-cover{padding:40px 0 32px;border-bottom:3px solid #7c3aed;margin-bottom:36px}
+.rl-report-cover .rc-eyebrow{font-size:0.72rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px}
+.rc-eyebrow.exec{color:#1e40af}
+.rc-eyebrow.tech{color:#065f46}
+.rl-report-cover h1{font-size:1.9rem;font-weight:700;letter-spacing:-0.025em;color:#111827;margin:0 0 10px;line-height:1.2}
+.rl-report-cover .rc-meta{font-size:0.82rem;color:#6b7280;display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
 .rl-report-cover .rc-meta span{display:flex;align-items:center;gap:5px}
 .rl-report-cover .rc-privacy{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:999px;margin-top:14px}
 
 /* Sections */
-.rl-report-section{margin-bottom:36px}
-.rl-report-section .rs-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:.1em;color:#7c3aed;font-weight:700;margin-bottom:6px}
-.rl-report-section h2{font-size:1.2rem;font-weight:700;color:#111827;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid #e5e7eb}
-.rl-report-section p{font-size:0.95rem;line-height:1.75;color:#374151;margin:0 0 12px}
+.rl-report-section{margin-bottom:32px}
+.rl-report-section .rs-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:5px}
+.rs-label.exec{color:#1e40af}
+.rs-label.tech{color:#065f46}
+.rl-report-section h2{font-size:1.15rem;font-weight:700;color:#111827;margin:0 0 12px;padding-bottom:7px;border-bottom:1px solid #e5e7eb}
+.rl-report-section p{font-size:0.93rem;line-height:1.75;color:#374151;margin:0 0 10px}
 .rl-report-section p:last-child{margin-bottom:0}
 
 /* Action items */
 .rl-action-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
-.rl-action-item{display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:start;padding:14px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff}
+.rl-action-item{display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:start;padding:13px 15px;border-radius:8px;border:1px solid #e5e7eb;background:#fff}
 .rl-action-item.priority-critical{border-left:4px solid #dc2626;background:#fff5f5}
 .rl-action-item.priority-high{border-left:4px solid #ea580c;background:#fff7ed}
 .rl-action-item.priority-medium{border-left:4px solid #d97706;background:#fffbeb}
 .rl-action-item.priority-low{border-left:4px solid #2563eb;background:#eff6ff}
-.rl-action-item .ai-num{font-size:1.1rem;font-weight:800;color:#6b7280;line-height:1;padding-top:2px}
+.rl-action-item .ai-num{font-size:1rem;font-weight:800;color:#6b7280;line-height:1;padding-top:2px}
 .rl-action-item.priority-critical .ai-num{color:#dc2626}
 .rl-action-item.priority-high .ai-num{color:#ea580c}
 .rl-action-item.priority-medium .ai-num{color:#d97706}
 .rl-action-item.priority-low .ai-num{color:#2563eb}
-.rl-action-item .ai-body{}
-.rl-action-item .ai-title{font-weight:600;color:#111827;font-size:0.95rem;margin-bottom:4px}
-.rl-action-item .ai-why{font-size:0.85rem;color:#6b7280;line-height:1.5}
-.rl-action-item .ai-badge{font-size:0.65rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap;align-self:start}
+.rl-action-item .ai-title{font-weight:600;color:#111827;font-size:0.92rem;margin-bottom:3px}
+.rl-action-item .ai-why{font-size:0.82rem;color:#6b7280;line-height:1.5}
+.rl-action-item .ai-badge{font-size:0.62rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:3px 7px;border-radius:4px;white-space:nowrap;align-self:start}
 .rl-action-item.priority-critical .ai-badge{background:#fee2e2;color:#991b1b}
 .rl-action-item.priority-high .ai-badge{background:#ffedd5;color:#9a3412}
 .rl-action-item.priority-medium .ai-badge{background:#fef3c7;color:#92400e}
@@ -198,33 +268,64 @@
 
 /* Key findings */
 .rl-finding-list{display:flex;flex-direction:column;gap:8px}
-.rl-finding-item{padding:12px 14px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-size:0.9rem;line-height:1.6;color:#374151;display:flex;gap:10px;align-items:flex-start}
+.rl-finding-item{padding:11px 13px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-size:0.88rem;line-height:1.6;color:#374151;display:flex;gap:10px;align-items:flex-start}
 .rl-finding-item .fi-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
 
+/* Tech-specific: code/metric blocks */
+.rl-tech-metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:8px 0}
+.rl-tech-metric{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;font-family:ui-monospace,monospace}
+.tm-label{font-size:0.68rem;text-transform:uppercase;color:#6b7280;font-weight:600;margin-bottom:4px;letter-spacing:.05em}
+.tm-val{font-size:1.2rem;font-weight:700;color:#111827}
+.tm-sub{font-size:0.72rem;color:#9ca3af;margin-top:2px}
+.rl-anomaly-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.rl-anomaly{padding:10px 13px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;display:flex;gap:10px;align-items:flex-start}
+.rl-anomaly .an-icon{flex-shrink:0;font-size:0.9rem}
+.rl-anomaly .an-text{color:#374151;line-height:1.5}
+
 /* Stats snapshot */
-.rl-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:4px}
-.rl-stat-box{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px}
-.rl-stat-box .sb-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;font-weight:600;margin-bottom:4px}
-.rl-stat-box .sb-val{font-size:1.4rem;font-weight:700;color:#111827;letter-spacing:-0.02em}
-.rl-stat-box .sb-sub{font-size:0.75rem;color:#9ca3af;margin-top:2px}
+.rl-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.rl-stat-box{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:13px 15px}
+.rl-stat-box .sb-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;font-weight:600;margin-bottom:4px}
+.rl-stat-box .sb-val{font-size:1.35rem;font-weight:700;color:#111827;letter-spacing:-0.02em}
+.rl-stat-box .sb-sub{font-size:0.72rem;color:#9ca3af;margin-top:2px}
 
 /* Report footer */
-.rl-report-footer{text-align:center;padding:24px 0;border-top:1px solid #e5e7eb;font-size:0.75rem;color:#9ca3af;margin-top:40px}
+.rl-report-footer{text-align:center;padding:24px 0;border-top:1px solid #e5e7eb;font-size:0.72rem;color:#9ca3af;margin-top:32px}
 
-/* Generating skeleton */
-.rl-report-generating{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:#6b7280}
-.rl-report-generating .rg-spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#7c3aed;border-radius:50%;animation:spin 0.8s linear infinite}
-.rl-report-generating p{font-size:0.9rem;font-weight:500}
-.rl-report-generating .rg-sub{font-size:0.78rem;color:#9ca3af;margin-top:-10px}
+/* Chat panel */
+.rwc-chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:88%;font-size:0.85rem;line-height:1.6}
+.chat-msg.user{align-self:flex-end;background:#1d4ed8;color:#fff;padding:9px 13px;border-radius:12px 12px 2px 12px}
+.chat-msg.ai{align-self:flex-start;background:#f1f5f9;color:#1f2937;padding:9px 13px;border-radius:12px 12px 12px 2px;border:1px solid #e2e8f0}
+.chat-msg.ai.thinking{color:#9ca3af;font-style:italic}
+.chat-msg.system{align-self:center;background:#f8fafc;color:#6b7280;font-size:0.75rem;padding:5px 12px;border-radius:999px;border:1px solid #e2e8f0;text-align:center;max-width:100%}
+.rwc-chat-input-row{padding:12px 14px;border-top:1px solid #e2e8f0;display:flex;gap:8px;background:#fff}
+.rwc-chat-input-row textarea{flex:1;border:1px solid #d1d5db;border-radius:8px;padding:8px 11px;font-family:inherit;font-size:0.85rem;resize:none;outline:none;height:68px;color:#111827;line-height:1.5;transition:border-color 0.15s}
+.rwc-chat-input-row textarea:focus{border-color:#3b82f6}
+.rwc-chat-input-row .send-btn{padding:8px 14px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;flex-shrink:0;align-self:flex-end}
+.rwc-chat-input-row .send-btn:disabled{opacity:0.5;cursor:not-allowed}
+.rwc-chat-input-row .send-btn:hover:not(:disabled){background:#1e40af}
+.rwc-chat-header{padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;font-size:0.78rem;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;flex-shrink:0}
+
+/* Pure chat (no-file mode) */
+.rl-ws-pure-chat{flex:1;display:flex;flex-direction:column;max-width:740px;margin:0 auto;width:100%;padding:0 16px}
+.rl-ws-pure-chat .rwc-chat-messages{border:1px solid #e2e8f0;border-radius:10px;background:#fff;margin:20px 0 12px}
+.rl-ws-pure-chat .rwc-chat-input-row{border:1px solid #e2e8f0;border-radius:10px;padding:12px}
+
+/* Loading spinner */
+.ws-spinner{display:inline-block;width:14px;height:14px;border:2px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+.ws-full-spinner{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:14px;color:#6b7280}
+.ws-full-spinner .fs-ring{width:40px;height:40px;border:3px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite}
+
+@keyframes spin{to{transform:rotate(360deg)}}
 
 @media print {
-  .rl-report-toolbar{display:none!important}
-  .rl-report-page{margin:0;padding:20px 32px}
-  .rl-report-overlay{position:static}
+  .rl-ws-bar,.rwc-chat{display:none!important}
+  .rl-ws-report-chat{display:block}
+  .rwc-report{padding:20px 32px;border:none;background:#fff}
 }
-
 @media print{
-  .rl-actions,.rl-suggestions,.rl-qb,.sidebar,.mobile-toggle,.btn,.rl-report-overlay .rl-report-toolbar{display:none !important}
+  .rl-actions,.rl-suggestions,.rl-qb,.sidebar,.mobile-toggle,.btn{display:none !important}
 }
 </style>
 </head>
@@ -252,7 +353,9 @@
           <button class="btn" id="rl-export-btn" disabled>Export PDF</button>
           <button class="btn" id="rl-clear-btn" disabled>Clear</button>
           <button class="rl-ai-btn" id="rl-ai-btn" disabled><span class="spark">✦</span> Ask AI</button>
-          <button class="rl-report-btn" id="rl-report-btn" disabled>📄 Generate Report</button>
+          <button class="rl-exec-btn" id="rl-exec-btn" disabled>🏛 Executive Report</button>
+          <button class="rl-tech-btn" id="rl-tech-btn" disabled>⚙️ Technical Report</button>
+          <button class="rl-chat-btn" id="rl-chat-btn">💬 Chat</button>
         </div>
       </div>
 
@@ -442,7 +545,8 @@ function ingestRows(rawRows){
   $('#rl-source').textContent=`${state.fileName} — ${state.rows.length.toLocaleString()} rows · ${state.cols.length} columns`;
   $('#rl-replace-btn').disabled=false;$('#rl-export-btn').disabled=false;$('#rl-clear-btn').disabled=false;
   document.getElementById('rl-ai-btn').disabled=false;
-  document.getElementById('rl-report-btn').disabled=false;
+  document.getElementById('rl-exec-btn').disabled=false;
+  document.getElementById('rl-tech-btn').disabled=false;
   renderAll();
 }
 
@@ -1195,250 +1299,697 @@ document.getElementById('rl-ai-btn').addEventListener('click', openAiModal);
 </script>
 
 <!-- ============================================================
-     NARRATIVE REPORT GENERATOR
-     Sends metadata only → AI writes a full executive report
+     REPORT WORKSHOP + CHAT
+     Executive report, Technical report, and free-form Chat
+     All metadata-only, privacy-first, Pollinations.ai
      ============================================================ -->
 <script>
+'use strict';
 // ============================================================
-// NARRATIVE REPORT GENERATOR
-// Sends metadata only → AI writes a full executive report
+// REPORT WORKSHOP ENGINE
 // ============================================================
 
-function buildReportPrompt(meta) {
-  return `You are a senior data analyst writing an executive report for a CISO and leadership team.
-You have been given ONLY the structural metadata of a dataset (no raw row data was shared).
-Write a professional, insightful narrative report in JSON format.
+// ── Shared workshop state ────────────────────────────────────
+const WS = {
+  mode: null,          // 'exec' | 'tech' | 'chat'
+  step: 1,             // 1=scope, 2=outline, 3=report+chat
+  includedCols: [],
+  focusNote: '',
+  outline: null,       // {title, sections:[{id,title,description,include}], audienceNote}
+  report: null,        // rendered JSON from AI
+  meta: null,
+  chatHistory: [],     // [{role,content}]
+  chatMeta: null,      // context for chat msgs
+};
 
-The report must include:
-1. "title" — a concise, meaningful report title based on what the data appears to be about
-2. "executiveSummary" — 3-4 sentences. What is this dataset? What is the overall picture? What is the single most important takeaway for leadership?
-3. "keyFindings" — array of 4-6 objects, each with "icon" (single emoji), "text" (1-2 sentences describing a specific insight or pattern observable from the statistics)
-4. "dataSnapshot" — array of 3-5 objects with "label", "value" (string), "sub" (context string) — the most meaningful numbers from the metadata
-5. "recommendations" — array of 4-6 objects, each with "title", "why" (1-2 sentence explanation), "priority" (one of: critical, high, medium, low)
-6. "conclusion" — 2-3 sentences. What should the reader do next? What does good look like?
-7. "audienceNote" — 1 sentence describing who this report is most relevant for
-
-Be specific and data-driven. Reference actual column names and statistics from the metadata.
-Do not make up data that isn't in the metadata. Write in clear, non-technical executive prose.
-
-Respond ONLY with valid JSON matching this exact structure — no markdown, no extra text:
-{"title":"...","executiveSummary":"...","keyFindings":[{"icon":"📊","text":"..."}],"dataSnapshot":[{"label":"...","value":"...","sub":"..."}],"recommendations":[{"title":"...","why":"...","priority":"high"}],"conclusion":"...","audienceNote":"..."}
-
-Dataset metadata:
-${JSON.stringify(meta, null, 2)}`;
-}
-
-function openReportModal() {
-  const bg = el('div',{class:'rl-modal-bg'});
-  const modal = el('div',{class:'rl-modal rl-privacy-modal',style:'max-width:600px'});
-
-  modal.appendChild(el('h3',{style:'margin:0 0 4px;font-size:1rem'},'📄 Generate Narrative Report'));
-  modal.appendChild(el('p',{style:'font-size:0.82rem;color:#6b7280;margin:0 0 14px;line-height:1.5'},
-    'AI will write a full executive narrative — summary, key findings, and recommended actions — based only on your data\'s structure and statistics. Choose which columns to include below.'
-  ));
-
-  const notice = el('div',{class:'pm-notice'});
-  notice.innerHTML = '<span style="font-size:1.1rem">🔒</span><div><strong>Privacy-first — same as Ask AI</strong>Only column names, types, and aggregate stats are sent. No actual row values ever leave your browser.</div>';
-  modal.appendChild(notice);
-  modal.appendChild(el('div',{style:'margin-bottom:14px'}));
-
-  const secCols = el('div',{class:'pm-section'});
-  secCols.appendChild(el('h4',{},'Choose columns to include'));
-  const colList = el('div',{class:'pm-col-list'});
-  const checkboxes = {};
-  state.cols.forEach(col => {
-    const isPii = detectPii(col.name);
-    const row = el('div',{class:'pm-col-row'});
-    const cb = el('input',{type:'checkbox'});
-    cb.checked = !isPii;
-    checkboxes[col.name] = cb;
-    row.appendChild(cb);
-    row.appendChild(el('span',{class:'pm-col-name'},col.name));
-    row.appendChild(el('span',{class:'pm-col-type'},col.type));
-    const vals = state.rows.map(r=>r[col.name]).filter(v=>v!=null&&v!=='');
-    row.appendChild(el('span',{class:'pm-col-stats'},`${vals.length} values, ${col.unique} unique`));
-    if(isPii) row.appendChild(el('span',{class:'pm-pii-flag'},'PII — excluded by default'));
-    colList.appendChild(row);
-  });
-  secCols.appendChild(colList);
-  modal.appendChild(secCols);
-
-  const actions = el('div',{class:'rl-modal-actions'});
-  actions.appendChild(el('button',{class:'btn',onClick:()=>bg.remove()},'Cancel'));
-  const genBtn = el('button',{class:'btn primary',style:'background:linear-gradient(135deg,#0f172a,#1e3a5f);border-color:#0f172a'},'📄 Generate Report');
-  genBtn.addEventListener('click',()=>{
-    const included = Object.entries(checkboxes).filter(([,cb])=>cb.checked).map(([n])=>n);
-    if(!included.length){ toast('Select at least one column'); return; }
-    bg.remove();
-    generateNarrativeReport(included);
-  });
-  actions.appendChild(genBtn);
-  modal.appendChild(actions);
-  bg.appendChild(modal);
-  bg.addEventListener('click',e=>{ if(e.target===bg) bg.remove(); });
-  document.body.appendChild(bg);
-}
-
-async function generateNarrativeReport(includedCols) {
-  const overlay = document.getElementById('rl-report-overlay');
-  overlay.classList.remove('hidden');
-
-  // Show generating spinner
-  overlay.innerHTML = `
-    <div class="rl-report-toolbar">
-      <div class="tb-left"><strong>ReportLens</strong> · Generating report…</div>
-      <div class="tb-right"><button onclick="document.getElementById('rl-report-overlay').classList.add('hidden')">✕ Close</button></div>
-    </div>
-    <div class="rl-report-generating">
-      <div class="rg-spinner"></div>
-      <p>AI is writing your executive report…</p>
-      <p class="rg-sub">Analysing structure and generating narrative — usually takes 10-20 seconds</p>
-    </div>`;
-
-  const meta = buildMetadata(includedCols);
-
-  async function callReportAi(model) {
+// ── Shared AI call ───────────────────────────────────────────
+async function wsCallAi(messages, jsonMode) {
+  async function attempt(model) {
     const res = await fetch('https://text.pollinations.ai/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [
-          { role: 'system', content: 'You are a senior data analyst writing executive reports. Always respond with valid JSON only, no markdown.' },
-          { role: 'user', content: buildReportPrompt(meta) }
-        ],
-        model: model,
-        jsonMode: true,
-        seed: 99
-      })
+      body: JSON.stringify({ messages, model, jsonMode: !!jsonMode, seed: 77 })
     });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const raw = typeof data === 'string' ? data : (data.content || data.text || JSON.stringify(data));
-    const clean = raw.replace(/^```[\w]*\n?/,'').replace(/\n?```$/,'').trim();
-    try { return JSON.parse(clean); }
-    catch(e) {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if(match) return JSON.parse(match[0]);
-      throw new Error('Could not parse AI response');
-    }
+    return typeof data === 'string' ? data : (data.content || data.text || JSON.stringify(data));
   }
+  try { return await attempt('openai'); }
+  catch(e) { return await attempt('mistral'); }
+}
 
-  let report;
-  try {
-    try { report = await callReportAi('openai'); }
-    catch(e) { report = await callReportAi('mistral'); }
-    renderNarrativeReport(report, meta);
-  } catch(err) {
-    console.error('[ReportLens Report]', err);
-    overlay.classList.add('hidden');
-    toast('Report generation failed: ' + err.message);
+async function wsCallAiJson(messages) {
+  const raw = await wsCallAi(messages, true);
+  const clean = raw.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
+  try { return JSON.parse(clean); }
+  catch(_) {
+    const m = clean.match(/\{[\s\S]*\}/);
+    if (m) return JSON.parse(m[0]);
+    throw new Error('Could not parse AI JSON response');
   }
 }
 
-function renderNarrativeReport(r, meta) {
-  const overlay = document.getElementById('rl-report-overlay');
-  const now = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const fname = meta.fileName || 'Dataset';
+// ── Open workshop ────────────────────────────────────────────
+function openWorkshop(mode) {
+  WS.mode = mode;
+  WS.step = (mode === 'chat') ? 3 : 1;
+  WS.outline = null;
+  WS.report = null;
+  WS.chatHistory = [];
+  WS.chatMeta = null;
 
-  // Priority label map
-  const prioLabel = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+  const ws = document.getElementById('rl-workshop');
+  ws.classList.remove('hidden');
+  wsRender();
+}
 
-  // Build key findings HTML
-  const findingsHtml = (r.keyFindings||[]).map(f=>`
-    <div class="rl-finding-item">
-      <span class="fi-icon">${f.icon||'📌'}</span>
-      <span>${f.text||''}</span>
-    </div>`).join('');
+function closeWorkshop() {
+  document.getElementById('rl-workshop').classList.add('hidden');
+}
 
-  // Build data snapshot HTML
-  const snapshotHtml = (r.dataSnapshot||[]).map(s=>`
-    <div class="rl-stat-box">
-      <div class="sb-label">${s.label||''}</div>
-      <div class="sb-val">${s.value||''}</div>
-      <div class="sb-sub">${s.sub||''}</div>
-    </div>`).join('');
+// ── Top bar renderer ─────────────────────────────────────────
+function wsRenderBar() {
+  const modeLabel = { exec: 'Executive', tech: 'Technical', chat: 'Chat' }[WS.mode];
+  const modeIcon  = { exec: '🏛', tech: '⚙️', chat: '💬' }[WS.mode];
+  const steps = WS.mode === 'chat'
+    ? []
+    : [
+        { n: 1, label: 'Scope' },
+        { n: 2, label: 'Outline' },
+        { n: 3, label: 'Report' },
+      ];
 
-  // Build recommendations HTML
-  const recoHtml = (r.recommendations||[]).map((a,i)=>`
-    <div class="rl-action-item priority-${a.priority||'medium'}">
-      <div class="ai-num">${i+1}</div>
-      <div class="ai-body">
-        <div class="ai-title">${a.title||''}</div>
-        <div class="ai-why">${a.why||''}</div>
-      </div>
-      <div class="ai-badge">${prioLabel[a.priority]||a.priority||'Medium'}</div>
-    </div>`).join('');
+  let stepsHtml = steps.map(s => {
+    const cls = s.n < WS.step ? 'done' : (s.n === WS.step ? 'active' : '');
+    return `<span class="wb-step ${cls}">${s.label}</span>`;
+  }).join('<span style="color:#d1d5db">›</span>');
 
-  overlay.innerHTML = `
-    <div class="rl-report-toolbar">
-      <div class="tb-left">
-        <strong>ReportLens</strong>
-        <span>·</span>
-        <span>${r.title||'Data Report'}</span>
-      </div>
-      <div class="tb-right">
-        <button onclick="window.print()">🖨 Print / Save PDF</button>
-        <button class="primary" onclick="document.getElementById('rl-report-overlay').classList.add('hidden')">✕ Close</button>
-      </div>
+  // Right-side actions depend on step
+  let rightHtml = `<button onclick="closeWorkshop()">✕ Close</button>`;
+  if (WS.step === 1) {
+    rightHtml = `
+      <button onclick="closeWorkshop()">Cancel</button>
+      <button class="primary" id="ws-next-btn" onclick="wsStep1Next()">Get AI Suggestions →</button>`;
+  } else if (WS.step === 2) {
+    rightHtml = `
+      <button onclick="WS.step=1;wsRender()">← Back</button>
+      <button onclick="wsRefreshOutline()">↺ Regenerate</button>
+      <button class="primary" onclick="wsStep2Next()">Generate Report →</button>`;
+  } else if (WS.step === 3 && WS.mode !== 'chat') {
+    rightHtml = `
+      <button onclick="WS.step=2;wsRender()">← Back to Outline</button>
+      <button onclick="window.print()">🖨 Print / PDF</button>
+      <button onclick="closeWorkshop()">✕ Close</button>`;
+  }
+
+  document.getElementById('rl-ws-bar').innerHTML = `
+    <div class="wb-brand">
+      <strong>ReportLens</strong>
+      <span class="wb-mode ${WS.mode}">${modeIcon} ${modeLabel}</span>
     </div>
+    <div class="wb-steps">${stepsHtml}</div>
+    <div class="wb-right">${rightHtml}</div>`;
+}
 
-    <div class="rl-report-page">
+// ── Main render dispatcher ────────────────────────────────────
+function wsRender() {
+  wsRenderBar();
+  document.getElementById('ws-scope').style.display   = (WS.step === 1 && WS.mode !== 'chat') ? 'block' : 'none';
+  document.getElementById('ws-outline').style.display = (WS.step === 2) ? 'block' : 'none';
+  document.getElementById('ws-report-chat').style.display = (WS.step === 3) ? 'flex' : 'none';
 
-      <div class="rl-report-cover">
-        <div class="rc-eyebrow">Executive Data Report</div>
-        <h1>${r.title||'Data Analysis Report'}</h1>
-        <div class="rc-meta">
-          <span>📁 ${fname}</span>
-          <span>📅 ${now}</span>
-          <span>📊 ${meta.rowCount.toLocaleString()} records · ${meta.columns.length} columns</span>
+  if (WS.step === 1) wsRenderScope();
+  if (WS.step === 2) wsRenderOutline();
+  if (WS.step === 3) wsRenderReportChat();
+}
+
+// ── STEP 1: Scope ─────────────────────────────────────────────
+function wsRenderScope() {
+  const hasData = state.cols && state.cols.length > 0;
+  const modeLabel = { exec: 'Executive', tech: 'Technical' }[WS.mode];
+
+  let colsHtml = '';
+  if (hasData) {
+    colsHtml = state.cols.map(col => {
+      const isPii = detectPii(col.name);
+      const checked = !isPii ? 'checked' : '';
+      const sel = !isPii ? 'selected' : '';
+      return `
+        <label class="ws-col-chip ${sel}" id="wcc-${CSS.escape(col.name)}">
+          <input type="checkbox" ${checked} data-col="${col.name}" onchange="wsToggleCol(this)">
+          <span class="cc-name">${col.name}</span>
+          <span class="cc-type">${col.type}</span>
+          ${isPii ? '<span class="cc-pii">PII</span>' : ''}
+        </label>`;
+    }).join('');
+  }
+
+  document.getElementById('ws-scope').innerHTML = `
+    <div class="ws-scope-inner">
+      <h2>${modeLabel} Report Setup</h2>
+      <p class="ws-sub">Tell the AI what to focus on, then it will suggest a report outline you can customise before generating the full report.</p>
+
+      <div class="ws-notice">
+        <span style="font-size:1.1rem">🔒</span>
+        <div>
+          <strong>Privacy-first</strong>
+          Only column names, types, and aggregate statistics are sent to AI — never actual row values.
         </div>
-        ${r.audienceNote ? `<p style="margin:12px 0 0;font-size:0.85rem;color:#6b7280;font-style:italic">👥 ${r.audienceNote}</p>` : ''}
-        <div class="rc-privacy">🔒 Generated from structure & statistics only — no raw data was processed by AI</div>
       </div>
 
-      <div class="rl-report-section">
-        <div class="rs-label">01 · Executive Summary</div>
-        <h2>Overview</h2>
-        <p>${r.executiveSummary||''}</p>
-      </div>
-
-      ${snapshotHtml ? `
-      <div class="rl-report-section">
-        <div class="rs-label">02 · At a Glance</div>
-        <h2>Data Snapshot</h2>
-        <div class="rl-stats-grid">${snapshotHtml}</div>
+      ${hasData ? `
+      <div class="ws-card">
+        <h3>Choose columns to include</h3>
+        <div class="ws-col-grid">${colsHtml}</div>
       </div>` : ''}
 
-      ${findingsHtml ? `
-      <div class="rl-report-section">
-        <div class="rs-label">03 · Analysis</div>
-        <h2>Key Findings</h2>
-        <div class="rl-finding-list">${findingsHtml}</div>
-      </div>` : ''}
-
-      ${recoHtml ? `
-      <div class="rl-report-section">
-        <div class="rs-label">04 · Actions</div>
-        <h2>Recommended Course of Action</h2>
-        <div class="rl-action-list">${recoHtml}</div>
-      </div>` : ''}
-
-      <div class="rl-report-section">
-        <div class="rs-label">05 · Conclusion</div>
-        <h2>Next Steps</h2>
-        <p>${r.conclusion||''}</p>
+      <div class="ws-card">
+        <h3>Focus area <span style="font-weight:400;color:#9ca3af">(optional)</span></h3>
+        <textarea class="ws-focus-area" id="ws-focus-input" placeholder="e.g. &quot;Focus on security incidents by region and severity&quot; or &quot;Highlight trends over time and anomalies&quot; — leave blank for AI to decide">${WS.focusNote}</textarea>
       </div>
+    </div>`;
 
-      <div class="rl-report-footer">
-        Generated by ReportLens · Owlglass · ${now} · AI-assisted narrative (Pollinations.ai) · No raw data was transmitted
+  // Restore checked state from WS.includedCols if already set
+  if (WS.includedCols.length && hasData) {
+    state.cols.forEach(col => {
+      const chip = document.getElementById('wcc-' + CSS.escape(col.name));
+      const cb = chip && chip.querySelector('input');
+      if (cb) {
+        cb.checked = WS.includedCols.includes(col.name);
+        chip.classList.toggle('selected', cb.checked);
+      }
+    });
+  } else if (hasData) {
+    // default: non-PII cols
+    WS.includedCols = state.cols.filter(c => !detectPii(c.name)).map(c => c.name);
+  }
+}
+
+function wsToggleCol(cb) {
+  const name = cb.dataset.col;
+  const chip = cb.closest('.ws-col-chip');
+  chip.classList.toggle('selected', cb.checked);
+  if (cb.checked) { if (!WS.includedCols.includes(name)) WS.includedCols.push(name); }
+  else { WS.includedCols = WS.includedCols.filter(n => n !== name); }
+}
+
+async function wsStep1Next() {
+  // Save focus note
+  const fi = document.getElementById('ws-focus-input');
+  WS.focusNote = fi ? fi.value.trim() : '';
+
+  if (state.cols && state.cols.length && !WS.includedCols.length) {
+    toast('Select at least one column'); return;
+  }
+
+  // Show loading state
+  WS.step = 2;
+  wsRender();
+  wsShowOutlineLoading();
+  await wsGenerateOutline();
+}
+
+// ── STEP 2: Outline ───────────────────────────────────────────
+function wsShowOutlineLoading() {
+  document.getElementById('ws-outline').innerHTML = `
+    <div class="ws-outline-inner">
+      <div class="ws-full-spinner">
+        <div class="fs-ring"></div>
+        <p>AI is suggesting a report outline…</p>
+        <p style="font-size:0.78rem;color:#9ca3af;margin-top:-8px">Usually 5–10 seconds</p>
       </div>
-
     </div>`;
 }
 
-document.getElementById('rl-report-btn').addEventListener('click', openReportModal);
+async function wsGenerateOutline() {
+  const meta = buildMetadata(WS.includedCols.length ? WS.includedCols : (state.cols||[]).map(c=>c.name));
+  WS.meta = meta;
+  const modeLabel = { exec: 'executive', tech: 'technical' }[WS.mode];
+  const focus = WS.focusNote ? `\nUser focus note: "${WS.focusNote}"` : '';
+
+  const prompt = `You are a senior data analyst. Given metadata for a dataset, suggest an outline for a ${modeLabel} report.
+${focus}
+
+Return ONLY valid JSON with this structure:
+{
+  "title": "concise report title",
+  "audienceNote": "one sentence: who this report is for",
+  "reportDescription": "2 sentences: what this report will cover and its value",
+  "sections": [
+    { "id": "s1", "title": "Section title", "description": "What this section will contain (1–2 sentences)" }
+  ]
+}
+
+For an EXECUTIVE report include: Executive Summary, Key Business Metrics, Risk Overview, Strategic Recommendations, Conclusion.
+For a TECHNICAL report include: Data Quality Assessment, Statistical Summary, Anomaly Detection, Column-level Analysis, Technical Recommendations, Appendix.
+Tailor sections to what the data actually contains. Suggest 5–7 sections.
+
+Dataset metadata:
+${JSON.stringify(meta, null, 2)}`;
+
+  try {
+    const result = await wsCallAiJson([
+      { role: 'system', content: 'You are a data analyst. Respond only with valid JSON, no markdown.' },
+      { role: 'user', content: prompt }
+    ]);
+    // Add include:true to each section
+    WS.outline = {
+      ...result,
+      sections: (result.sections || []).map(s => ({ ...s, include: true }))
+    };
+    wsRenderOutline();
+    wsRenderBar(); // refresh bar buttons now outline is ready
+  } catch(err) {
+    document.getElementById('ws-outline').innerHTML = `
+      <div class="ws-outline-inner">
+        <div style="text-align:center;padding:60px 20px;color:#6b7280">
+          <p style="font-size:1.1rem">⚠️ Outline generation failed</p>
+          <p style="font-size:0.85rem">${err.message}</p>
+          <button class="btn" onclick="wsRefreshOutline()" style="margin-top:12px">Try again</button>
+        </div>
+      </div>`;
+  }
+}
+
+async function wsRefreshOutline() {
+  wsShowOutlineLoading();
+  await wsGenerateOutline();
+}
+
+function wsRenderOutline() {
+  const o = WS.outline;
+  if (!o) return;
+  const modeLabel = { exec: 'Executive', tech: 'Technical' }[WS.mode];
+
+  const sectionsHtml = (o.sections || []).map((s, i) => `
+    <div class="ws-section-row" id="wsr-${s.id}">
+      <input type="checkbox" ${s.include ? 'checked' : ''} onchange="wsToggleSection('${s.id}', this.checked)">
+      <span class="sr-num">${i + 1}</span>
+      <div class="sr-body">
+        <div class="sr-title" id="wsst-${s.id}">${s.title}</div>
+        <div class="sr-desc">${s.description}</div>
+      </div>
+      <button class="sr-edit" onclick="wsEditSection('${s.id}')">✏ Edit</button>
+    </div>`).join('');
+
+  document.getElementById('ws-outline').innerHTML = `
+    <div class="ws-outline-inner">
+      <h2>AI-Suggested Report Outline</h2>
+      <p class="ws-sub">This is the report structure AI recommends based on your data. Check or uncheck sections, edit titles, or click "Regenerate" for a different take — then click Generate Report.</p>
+
+      <div class="ws-outline-card">
+        <div class="ws-outline-header">
+          <span class="oh-icon">${WS.mode === 'exec' ? '🏛' : '⚙️'}</span>
+          <div>
+            <h3 id="ws-outline-title">${o.title || modeLabel + ' Report'}</h3>
+            <p>${o.reportDescription || ''}</p>
+            ${o.audienceNote ? `<p style="color:#9ca3af;font-size:0.78rem;margin-top:4px">👥 ${o.audienceNote}</p>` : ''}
+          </div>
+        </div>
+        <div class="ws-sections-list">${sectionsHtml}</div>
+        <div class="ws-outline-actions">
+          <button onclick="wsSelectAllSections(true)">✓ Select all</button>
+          <button onclick="wsSelectAllSections(false)">✗ Deselect all</button>
+          <button onclick="wsAddSection()">+ Add section</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function wsToggleSection(id, checked) {
+  const s = WS.outline.sections.find(x => x.id === id);
+  if (s) s.include = checked;
+}
+
+function wsEditSection(id) {
+  const s = WS.outline.sections.find(x => x.id === id);
+  if (!s) return;
+  const titleEl = document.getElementById('wsst-' + id);
+  if (!titleEl) return;
+  // Replace title with inline input
+  const current = titleEl.textContent;
+  titleEl.outerHTML = `<input class="ws-edit-inline" id="wsst-${id}" value="${current.replace(/"/g,'&quot;')}" onblur="wsFinishEditSection('${id}', this.value)" onkeydown="if(event.key==='Enter')this.blur()">`;
+  document.getElementById('wsst-' + id).focus();
+}
+
+function wsFinishEditSection(id, val) {
+  const s = WS.outline.sections.find(x => x.id === id);
+  if (s) s.title = val.trim() || s.title;
+  // Replace input with span again
+  const inp = document.getElementById('wsst-' + id);
+  if (inp) inp.outerHTML = `<div class="sr-title" id="wsst-${id}">${s.title}</div>`;
+}
+
+function wsSelectAllSections(checked) {
+  (WS.outline.sections || []).forEach(s => {
+    s.include = checked;
+    const row = document.getElementById('wsr-' + s.id);
+    if (row) { const cb = row.querySelector('input[type=checkbox]'); if (cb) cb.checked = checked; }
+  });
+}
+
+function wsAddSection() {
+  const id = 's' + Date.now();
+  WS.outline.sections.push({ id, title: 'New section', description: 'Describe what this section will cover.', include: true });
+  wsRenderOutline();
+}
+
+async function wsStep2Next() {
+  const activeSections = (WS.outline.sections || []).filter(s => s.include);
+  if (!activeSections.length) { toast('Include at least one section'); return; }
+  WS.step = 3;
+  wsRender();
+  wsShowReportLoading();
+  await wsGenerateFullReport();
+}
+
+// ── STEP 3: Report + Chat ─────────────────────────────────────
+function wsRenderReportChat() {
+  const reportPanel = document.getElementById('ws-report-panel');
+  const chatPanel   = document.getElementById('ws-chat-panel');
+
+  if (WS.mode === 'chat') {
+    // Pure chat mode
+    reportPanel.style.display = 'none';
+    chatPanel.style.display = 'flex';
+    chatPanel.className = 'rl-ws-pure-chat';
+    wsRenderChatPanel();
+  } else {
+    reportPanel.style.display = 'block';
+    chatPanel.style.display = 'flex';
+    chatPanel.className = 'rwc-chat';
+    // Report panel will be filled by wsShowReportLoading / wsRenderReport
+    wsRenderChatPanel();
+  }
+}
+
+function wsShowReportLoading() {
+  const panel = document.getElementById('ws-report-panel');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="rl-report-page">
+      <div class="ws-full-spinner" style="min-height:60vh">
+        <div class="fs-ring"></div>
+        <p>Generating your ${WS.mode === 'exec' ? 'executive' : 'technical'} report…</p>
+        <p style="font-size:0.78rem;color:#9ca3af;margin-top:-8px">Usually 15–25 seconds</p>
+      </div>
+    </div>`;
+}
+
+async function wsGenerateFullReport() {
+  const meta = WS.meta;
+  const activeSections = (WS.outline.sections || []).filter(s => s.include);
+  const sectionList = activeSections.map((s,i) => `${i+1}. "${s.title}" — ${s.description}`).join('\n');
+  const focus = WS.focusNote ? `\nUser focus: "${WS.focusNote}"` : '';
+  const modeInstruction = WS.mode === 'exec'
+    ? 'Write in clear, non-technical executive prose suitable for a CISO and leadership team. Avoid jargon. Focus on business risk, strategic value, and actionable decisions.'
+    : 'Write in precise technical language suitable for a security analyst or data engineer. Include specific metrics, column-level observations, data quality notes, and concrete technical actions.';
+
+  const prioLabel = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+
+  const systemMsg = 'You are a senior data analyst. Respond only with valid JSON, no markdown, no extra text.';
+  const userMsg = `Write a complete ${WS.mode === 'exec' ? 'executive' : 'technical'} data report in JSON.
+${modeInstruction}
+${focus}
+
+The report MUST include exactly these sections (use the section titles as provided):
+${sectionList}
+
+Return this JSON structure:
+{
+  "title": "${WS.outline.title || 'Data Report'}",
+  "audienceNote": "${WS.outline.audienceNote || ''}",
+  "sections": [
+    {
+      "title": "Section title (must match list above)",
+      "content": "Full narrative paragraphs for this section (2-4 sentences minimum)",
+      "items": [ { "icon": "emoji", "text": "bullet point" } ],
+      "stats": [ { "label": "Metric name", "value": "123", "sub": "context" } ],
+      "actions": [ { "title": "Action", "why": "Reason", "priority": "high" } ]
+    }
+  ],
+  "conclusion": "2-3 sentence conclusion",
+  "audienceNote": "who should read this"
+}
+
+For each section use the most appropriate fields — all sections need "content". Add "items" for findings/bullets, "stats" for numbers, "actions" for recommendations (with priority: critical/high/medium/low).
+Be specific and reference actual column names and statistics. Do not invent data not in the metadata.
+
+Dataset metadata:
+${JSON.stringify(meta, null, 2)}
+
+Sections to include:
+${sectionList}`;
+
+  try {
+    const result = await wsCallAiJson([
+      { role: 'system', content: systemMsg },
+      { role: 'user', content: userMsg }
+    ]);
+    WS.report = result;
+
+    // Seed chat history with context
+    WS.chatHistory = [
+      { role: 'system', content: `You are an expert data analyst helping refine a ${WS.mode === 'exec' ? 'executive' : 'technical'} report. The report has been generated. When the user asks for changes, respond with the FULL updated report JSON in the same structure. If they ask a question (not a change), answer conversationally — no JSON needed.` },
+      { role: 'assistant', content: JSON.stringify(result) }
+    ];
+    WS.chatMeta = meta;
+
+    wsRenderReport(result);
+    // Add system message to chat
+    wsAddChatMsg('system', '✓ Report generated — ask me to refine any section, change the tone, add focus areas, or anything else.');
+  } catch(err) {
+    const panel = document.getElementById('ws-report-panel');
+    if (panel) panel.innerHTML = `
+      <div class="rl-report-page">
+        <div style="text-align:center;padding:80px 20px;color:#6b7280">
+          <p style="font-size:1.1rem">⚠️ Report generation failed</p>
+          <p style="font-size:0.85rem">${err.message}</p>
+          <button class="btn" onclick="wsGenerateFullReport()" style="margin-top:12px">Try again</button>
+        </div>
+      </div>`;
+    wsAddChatMsg('ai', '⚠️ Generation failed: ' + err.message + '. Click "Try again" in the report panel.');
+  }
+}
+
+function wsRenderReport(r) {
+  const panel = document.getElementById('ws-report-panel');
+  if (!panel) return;
+  const now = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const meta = WS.meta || {};
+  const fname = meta.fileName || 'Dataset';
+  const accentClass = WS.mode === 'exec' ? 'exec' : 'tech';
+  const eyebrowText = WS.mode === 'exec' ? 'Executive Data Report' : 'Technical Data Report';
+  const prioLabel = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+
+  const sectionsHtml = (r.sections || []).map((sec, idx) => {
+    const labelNum = String(idx + 1).padStart(2, '0');
+
+    const contentHtml = sec.content
+      ? sec.content.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('')
+      : '';
+
+    const itemsHtml = (sec.items && sec.items.length)
+      ? `<div class="rl-finding-list">${sec.items.map(f=>`
+          <div class="rl-finding-item">
+            <span class="fi-icon">${f.icon||'•'}</span>
+            <span>${f.text||''}</span>
+          </div>`).join('')}</div>`
+      : '';
+
+    const statsHtml = (sec.stats && sec.stats.length)
+      ? `<div class="${WS.mode==='tech' ? 'rl-tech-metrics' : 'rl-stats-grid'}">${sec.stats.map(s=>`
+          <div class="${WS.mode==='tech' ? 'rl-tech-metric' : 'rl-stat-box'}">
+            <div class="${WS.mode==='tech'?'tm-label':'sb-label'}">${s.label||''}</div>
+            <div class="${WS.mode==='tech'?'tm-val':'sb-val'}">${s.value||''}</div>
+            <div class="${WS.mode==='tech'?'tm-sub':'sb-sub'}">${s.sub||''}</div>
+          </div>`).join('')}</div>`
+      : '';
+
+    const actionsHtml = (sec.actions && sec.actions.length)
+      ? `<div class="rl-action-list">${sec.actions.map((a,i)=>`
+          <div class="rl-action-item priority-${a.priority||'medium'}">
+            <div class="ai-num">${i+1}</div>
+            <div>
+              <div class="ai-title">${a.title||''}</div>
+              <div class="ai-why">${a.why||''}</div>
+            </div>
+            <div class="ai-badge">${prioLabel[a.priority]||a.priority||'Medium'}</div>
+          </div>`).join('')}</div>`
+      : '';
+
+    return `
+      <div class="rl-report-section">
+        <div class="rs-label ${accentClass}">${labelNum} · ${sec.title||'Section'}</div>
+        <h2>${sec.title||''}</h2>
+        ${contentHtml}${statsHtml}${itemsHtml}${actionsHtml}
+      </div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="rl-report-page">
+      <div class="rl-report-cover">
+        <div class="rc-eyebrow ${accentClass}">${eyebrowText}</div>
+        <h1>${r.title || 'Data Report'}</h1>
+        <div class="rc-meta">
+          <span>📁 ${fname}</span>
+          <span>📅 ${now}</span>
+          <span>📊 ${(meta.rowCount||0).toLocaleString()} records · ${(meta.columns||[]).length} columns</span>
+        </div>
+        ${r.audienceNote ? `<p style="margin:12px 0 0;font-size:0.82rem;color:#6b7280;font-style:italic">👥 ${r.audienceNote}</p>` : ''}
+        <div class="rc-privacy">🔒 Generated from structure &amp; statistics only — no raw data was sent to AI</div>
+      </div>
+      ${sectionsHtml}
+      ${r.conclusion ? `
+      <div class="rl-report-section">
+        <div class="rs-label ${accentClass}">✦ Conclusion</div>
+        <h2>Conclusion &amp; Next Steps</h2>
+        <p>${r.conclusion}</p>
+      </div>` : ''}
+      <div class="rl-report-footer">
+        Generated by ReportLens · Owlglass · ${now} · AI-assisted (Pollinations.ai) · No raw data transmitted
+      </div>
+    </div>`;
+}
+
+// ── Chat panel ────────────────────────────────────────────────
+function wsRenderChatPanel() {
+  const panel = document.getElementById('ws-chat-panel');
+  if (!panel) return;
+  const isPure = WS.mode === 'chat';
+  const placeholder = isPure
+    ? 'Ask anything about your data, request analysis, or describe what you want to explore…'
+    : 'Ask me to refine the report — e.g. "Make the tone less formal", "Add an anomaly section", "Emphasise the top 3 risks"…';
+
+  panel.innerHTML = `
+    ${!isPure ? `<div class="rwc-chat-header">💬 Refine with AI <span style="font-weight:400;color:#9ca3af;font-size:0.72rem;margin-left:4px">— ask for changes or ask questions</span></div>` : ''}
+    <div class="rwc-chat-messages" id="ws-chat-msgs"></div>
+    <div class="rwc-chat-input-row">
+      <textarea id="ws-chat-input" placeholder="${placeholder}" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wsSendChat()}"></textarea>
+      <button class="send-btn" id="ws-chat-send" onclick="wsSendChat()">Send ↑</button>
+    </div>`;
+
+  if (isPure) {
+    // Seed chat for pure mode
+    const hasData = state.cols && state.cols.length > 0;
+    if (hasData) {
+      WS.chatMeta = buildMetadata(state.cols.filter(c=>!detectPii(c.name)).map(c=>c.name));
+      WS.chatHistory = [
+        { role: 'system', content: `You are an expert data analyst. The user has uploaded a dataset. You have access to the structural metadata (column names, types, statistics). Answer questions, suggest analyses, identify patterns, and provide insights. Be specific and reference actual column names and stats.\n\nDataset metadata:\n${JSON.stringify(WS.chatMeta, null, 2)}` }
+      ];
+      wsAddChatMsg('system', `📊 Dataset loaded: ${WS.chatMeta.fileName || 'file'} — ${WS.chatMeta.rowCount.toLocaleString()} rows, ${WS.chatMeta.columns.length} columns. Ask me anything about your data!`);
+    } else {
+      WS.chatHistory = [
+        { role: 'system', content: 'You are an expert data analyst assistant. Help users understand data analysis concepts, review data strategies, or answer questions about their dataset once uploaded.' }
+      ];
+      wsAddChatMsg('system', '💬 Chat mode — upload a file first for data-specific insights, or ask general analysis questions.');
+    }
+  }
+}
+
+function wsAddChatMsg(role, content) {
+  const msgs = document.getElementById('ws-chat-msgs');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.textContent = content;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function wsAddChatMsgHtml(role, html) {
+  const msgs = document.getElementById('ws-chat-msgs');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.innerHTML = html;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+async function wsSendChat() {
+  const input = document.getElementById('ws-chat-input');
+  const sendBtn = document.getElementById('ws-chat-send');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  sendBtn.disabled = true;
+  wsAddChatMsg('user', text);
+
+  // Build message history
+  const history = [...WS.chatHistory, { role: 'user', content: text }];
+
+  const thinking = wsAddChatMsg('ai thinking', '⏳ Thinking…');
+
+  try {
+    const raw = await wsCallAi(history, false);
+    thinking.remove();
+
+    // Try to detect if AI returned a JSON report (for report-mode refinements)
+    let parsedReport = null;
+    if (WS.mode !== 'chat' && WS.report) {
+      try {
+        const clean = raw.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
+        const candidate = JSON.parse(clean.match(/\{[\s\S]*\}/) ? clean.match(/\{[\s\S]*\}/)[0] : clean);
+        if (candidate && candidate.sections) parsedReport = candidate;
+      } catch(_) {}
+    }
+
+    if (parsedReport) {
+      WS.report = parsedReport;
+      wsRenderReport(parsedReport);
+      WS.chatHistory = [...history, { role: 'assistant', content: raw }];
+      wsAddChatMsg('ai', '✓ Report updated. Scroll the left panel to review the changes.');
+    } else {
+      WS.chatHistory = [...history, { role: 'assistant', content: raw }];
+      // Render markdown-like text
+      const formatted = raw
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,'<em>$1</em>')
+        .replace(/\n/g,'<br>');
+      wsAddChatMsgHtml('ai', formatted);
+    }
+  } catch(err) {
+    thinking.remove();
+    wsAddChatMsg('ai', '⚠️ Error: ' + err.message);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+// ── Event wiring ─────────────────────────────────────────────
+document.getElementById('rl-exec-btn').addEventListener('click', () => openWorkshop('exec'));
+document.getElementById('rl-tech-btn').addEventListener('click', () => openWorkshop('tech'));
+document.getElementById('rl-chat-btn').addEventListener('click', () => openWorkshop('chat'));
 </script>
 
-<div class="rl-report-overlay hidden" id="rl-report-overlay"></div>
+<!-- ── Report Workshop Overlay ───────────────────────────────── -->
+<div class="rl-workshop hidden" id="rl-workshop">
+
+  <!-- Top bar (rendered by JS) -->
+  <div class="rl-ws-bar" id="rl-ws-bar"></div>
+
+  <!-- Body -->
+  <div class="rl-ws-body">
+
+    <!-- Step 1: Scope (hidden in chat mode) -->
+    <div class="rl-ws-scope" id="ws-scope" style="display:none;overflow-y:auto;padding:32px;flex:1"></div>
+
+    <!-- Step 2: Outline preview -->
+    <div class="rl-ws-outline" id="ws-outline" style="display:none;overflow-y:auto;padding:32px;flex:1"></div>
+
+    <!-- Step 3: Report + Chat (split panel) -->
+    <div class="rl-ws-report-chat" id="ws-report-chat" style="display:none">
+      <div class="rwc-report" id="ws-report-panel"></div>
+      <div class="rwc-chat"   id="ws-chat-panel"></div>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>

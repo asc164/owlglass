@@ -109,6 +109,34 @@
 /* Toast */
 .rl-toast{position:fixed;bottom:20px;right:20px;background:#18181b;color:#fff;padding:10px 16px;border-radius:6px;font-size:0.85rem;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.2);font-family:inherit}
 
+/* AI Analysis */
+.rl-ai-btn{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
+.rl-ai-btn:hover{opacity:0.88}
+.rl-ai-btn:disabled{opacity:0.5;cursor:not-allowed}
+.rl-ai-btn .spark{font-size:1rem}
+
+.rl-ai-card{background:linear-gradient(180deg,#faf5ff 0%,#fff 100%);border:1px solid #e9d5ff;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:16px}
+.rl-ai-card .ai-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.rl-ai-card .ai-header h2{margin:0;font-size:1rem;color:#1f2937}
+.rl-ai-card .ai-badge{background:#7c3aed;color:#fff;font-size:0.62rem;padding:2px 8px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;flex-shrink:0}
+.rl-ai-card .ai-privacy{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:999px;margin-bottom:12px}
+.rl-ai-card .ai-summary{font-size:0.92rem;line-height:1.65;color:#1f2937;margin-bottom:14px}
+.rl-ai-card .ai-summary strong{color:#5b21b6}
+.rl-ai-card .ai-applied{font-size:0.78rem;color:#6b7280;padding-top:10px;border-top:1px solid #f3e8ff}
+
+.rl-privacy-modal .pm-section{margin-bottom:16px}
+.rl-privacy-modal .pm-section h4{font-size:0.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:600;margin:0 0 8px}
+.rl-privacy-modal .pm-col-list{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto}
+.rl-privacy-modal .pm-col-row{display:flex;align-items:center;gap:10px;padding:6px 8px;background:#fafafa;border:1px solid #e4e4e7;border-radius:5px;font-size:0.82rem}
+.rl-privacy-modal .pm-col-row input[type=checkbox]{flex-shrink:0;cursor:pointer}
+.rl-privacy-modal .pm-col-name{font-weight:500;color:#18181b;flex:1;font-family:ui-monospace,monospace;font-size:0.8rem}
+.rl-privacy-modal .pm-col-type{color:#71717a;font-size:0.72rem;background:#f4f4f5;padding:1px 6px;border-radius:4px}
+.rl-privacy-modal .pm-col-stats{color:#71717a;font-size:0.72rem;flex-shrink:0}
+.rl-privacy-modal .pm-pii-flag{font-size:0.68rem;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:1px 6px;border-radius:4px;font-weight:600}
+.rl-privacy-modal .pm-preview{background:#18181b;color:#a5f3fc;font-family:ui-monospace,monospace;font-size:0.72rem;border-radius:6px;padding:12px;max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin-top:8px}
+.rl-privacy-modal .pm-notice{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;font-size:0.8rem;color:#92400e;display:flex;gap:8px;align-items:flex-start}
+.rl-privacy-modal .pm-notice strong{display:block;margin-bottom:2px}
+
 @media print{
   .rl-actions,.rl-suggestions,.rl-qb,.sidebar,.mobile-toggle,.btn{display:none !important}
 }
@@ -137,6 +165,7 @@
           <button class="btn" id="rl-replace-btn" disabled>Replace</button>
           <button class="btn" id="rl-export-btn" disabled>Export PDF</button>
           <button class="btn" id="rl-clear-btn" disabled>Clear</button>
+          <button class="rl-ai-btn" id="rl-ai-btn" disabled><span class="spark">✦</span> Ask AI</button>
         </div>
       </div>
 
@@ -156,6 +185,8 @@
           <p class="muted" style="margin-top:14px;font-size:0.78rem">Supports up to 50,000 rows. CSV / TSV / JSON.</p>
         </div>
       </div>
+
+      <div id="rl-ai-card-slot"></div>
 
       <div id="rl-app" style="display:none">
 
@@ -323,6 +354,7 @@ function ingestRows(rawRows){
   $('#rl-app').style.display='block';
   $('#rl-source').textContent=`${state.fileName} — ${state.rows.length.toLocaleString()} rows · ${state.cols.length} columns`;
   $('#rl-replace-btn').disabled=false;$('#rl-export-btn').disabled=false;$('#rl-clear-btn').disabled=false;
+  document.getElementById('rl-ai-btn').disabled=false;
   renderAll();
 }
 
@@ -856,6 +888,199 @@ function wireUp(){
 }
 
 wireUp();
+
+// ============================================================
+// AI ANALYSIS — Option 1: metadata only, zero raw data sent
+// Uses Pollinations.ai text API (free, no key required)
+// ============================================================
+
+function buildMetadata(includedCols){
+  const rows = applyGlobalFilters(state.rows);
+  const meta = { rowCount: rows.length, fileName: state.fileName, columns: [] };
+  includedCols.forEach(colName => {
+    const col = state.cols.find(c => c.name === colName);
+    if(!col) return;
+    const vals = rows.map(r => r[colName]).filter(v => v != null && v !== '');
+    const entry = { name: col.name, type: col.type, nonNullCount: vals.length, uniqueCount: col.unique };
+    if(col.type === 'number'){
+      const nums = vals.map(Number);
+      entry.min = Math.min(...nums);
+      entry.max = Math.max(...nums);
+      entry.avg = parseFloat((nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2));
+    }
+    if(col.type === 'date'){
+      const sorted = [...vals].sort((a,b)=>a-b);
+      entry.earliest = sorted[0] instanceof Date ? sorted[0].toISOString().slice(0,10) : String(sorted[0]);
+      entry.latest   = sorted[sorted.length-1] instanceof Date ? sorted[sorted.length-1].toISOString().slice(0,10) : String(sorted[sorted.length-1]);
+    }
+    if(col.type === 'text' && col.values){
+      entry.topValues = col.values.slice(0,6);
+    }
+    meta.columns.push(entry);
+  });
+  return meta;
+}
+
+function detectPii(colName){
+  const n = colName.toLowerCase();
+  return /email|e-mail|phone|mobile|ssn|passport|dob|birth|address|postcode|zipcode|surname|lastname|firstname|first_name|last_name|national_id|nino|ip_addr/.test(n);
+}
+
+function openAiModal(){
+  const bg = el('div',{class:'rl-modal-bg'});
+  const modal = el('div',{class:'rl-modal rl-privacy-modal',style:'max-width:600px'});
+
+  modal.appendChild(el('h3',{style:'margin:0 0 4px;font-size:1rem'},'\u2726 Ask AI to analyse your data'));
+  modal.appendChild(el('p',{style:'font-size:0.82rem;color:#6b7280;margin:0 0 14px;line-height:1.5'},
+    'Review exactly what will be sent before anything leaves your browser. No raw row data is ever included \u2014 only column names, types, and aggregate statistics.'
+  ));
+
+  const notice = el('div',{class:'pm-notice'});
+  notice.innerHTML = '<span style="font-size:1.1rem">\uD83D\uDD12</span><div><strong>Your data stays in your browser</strong>Only column structure and statistics are sent \u2014 never actual row values. Powered by Pollinations.ai (free, no account needed).</div>';
+  modal.appendChild(notice);
+  modal.appendChild(el('div',{style:'margin-bottom:14px'}));
+
+  const secCols = el('div',{class:'pm-section'});
+  secCols.appendChild(el('h4',{},'Choose columns to include'));
+  const colList = el('div',{class:'pm-col-list'});
+  const checkboxes = {};
+
+  state.cols.forEach(col => {
+    const isPii = detectPii(col.name);
+    const row = el('div',{class:'pm-col-row'});
+    const cb = el('input',{type:'checkbox'});
+    cb.checked = !isPii;
+    checkboxes[col.name] = cb;
+    row.appendChild(cb);
+    row.appendChild(el('span',{class:'pm-col-name'},col.name));
+    row.appendChild(el('span',{class:'pm-col-type'},col.type));
+    const vals = state.rows.map(r=>r[col.name]).filter(v=>v!=null&&v!=='');
+    row.appendChild(el('span',{class:'pm-col-stats'},`${vals.length} values, ${col.unique} unique`));
+    if(isPii) row.appendChild(el('span',{class:'pm-pii-flag'},'PII \u2014 excluded by default'));
+    cb.addEventListener('change', updatePreview);
+    colList.appendChild(row);
+  });
+  secCols.appendChild(colList);
+  modal.appendChild(secCols);
+
+  const secPreview = el('div',{class:'pm-section'});
+  secPreview.appendChild(el('h4',{},'Exact payload that will be sent to AI'));
+  const previewBox = el('div',{class:'pm-preview'});
+  secPreview.appendChild(previewBox);
+  modal.appendChild(secPreview);
+
+  function getIncluded(){ return Object.entries(checkboxes).filter(([,cb])=>cb.checked).map(([name])=>name); }
+  function updatePreview(){ previewBox.textContent = JSON.stringify(buildMetadata(getIncluded()), null, 2); }
+  updatePreview();
+
+  const actions = el('div',{class:'rl-modal-actions'});
+  actions.appendChild(el('button',{class:'btn',onClick:()=>bg.remove()},'Cancel'));
+  const sendBtn = el('button',{class:'btn primary',style:'background:linear-gradient(135deg,#7c3aed,#2563eb);border-color:#7c3aed'},'\u2726 Confirm & Ask AI');
+  sendBtn.addEventListener('click',()=>{
+    const included = getIncluded();
+    if(!included.length){ toast('Select at least one column'); return; }
+    bg.remove();
+    runAiAnalysis(included);
+  });
+  actions.appendChild(sendBtn);
+  modal.appendChild(actions);
+  bg.appendChild(modal);
+  bg.addEventListener('click', e=>{ if(e.target===bg) bg.remove(); });
+  document.body.appendChild(bg);
+}
+
+async function runAiAnalysis(includedCols){
+  const aiBtn = document.getElementById('rl-ai-btn');
+  aiBtn.disabled = true;
+  aiBtn.innerHTML = '<span class="spark">\u21BB</span> Thinking\u2026';
+
+  const meta = buildMetadata(includedCols);
+
+  const prompt = `You are a data analyst. A user has uploaded a dataset. Based ONLY on the metadata below (no raw data was shared), suggest:
+1. A brief 2-3 sentence plain-English summary of what this dataset appears to contain and its analytical potential.
+2. Up to 4 KPI cards. Each must use type from: count, sum, avg, min, max, distinct, topn. The col field must exactly match a column name from the metadata.
+3. Up to 4 charts. Each must use type: bar, line, or pie. xCol and yCol must exactly match column names. agg must be count, sum, or avg.
+
+Respond ONLY with a valid JSON object in this exact shape, no markdown fences, no explanation:
+{"summary":"...","kpis":[{"type":"count"},{"type":"sum","col":"exact_col_name"}],"charts":[{"type":"bar","xCol":"exact_col_name","yCol":"","agg":"count","title":"Chart title"}]}
+
+Dataset metadata:
+${JSON.stringify(meta)}`;
+
+  try {
+    const url = 'https://text.pollinations.ai/' + encodeURIComponent(prompt) + '?model=openai&json=true&seed=42';
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('API returned ' + res.status);
+    const text = await res.text();
+    let json;
+    try {
+      const clean = text.replace(/^```[\w]*\n?/,'').replace(/\n?```$/,'').trim();
+      json = JSON.parse(clean);
+    } catch(e) {
+      const match = text.match(/\{[\s\S]*\}/);
+      if(match) json = JSON.parse(match[0]);
+      else throw new Error('Could not parse AI response as JSON');
+    }
+    applyAiSuggestions(json, meta);
+  } catch(err) {
+    console.error('[ReportLens AI]', err);
+    toast('AI analysis failed: ' + err.message);
+  } finally {
+    aiBtn.disabled = false;
+    aiBtn.innerHTML = '<span class="spark">\u2726</span> Ask AI';
+  }
+}
+
+function applyAiSuggestions(json, meta){
+  const validCols = new Set(meta.columns.map(c=>c.name));
+  let kpisAdded = 0, chartsAdded = 0;
+
+  if(Array.isArray(json.kpis)){
+    json.kpis.forEach(k=>{
+      if(k.type==='count'){ state.kpis.push({id:nextId(),type:'count'}); kpisAdded++; }
+      else if(k.col && validCols.has(k.col)){ state.kpis.push({id:nextId(),type:k.type,col:k.col,expanded:false}); kpisAdded++; }
+    });
+  }
+
+  if(Array.isArray(json.charts)){
+    json.charts.forEach(c=>{
+      if(!c.xCol || !validCols.has(c.xCol)) return;
+      if((c.agg==='sum'||c.agg==='avg') && c.yCol && !validCols.has(c.yCol)) return;
+      state.charts.push({
+        id:nextId(),
+        type:['bar','line','pie'].includes(c.type)?c.type:'bar',
+        xCol:c.xCol, yCol:c.yCol||'', agg:['count','sum','avg'].includes(c.agg)?c.agg:'count',
+        title:c.title||('Count by '+c.xCol)
+      });
+      chartsAdded++;
+    });
+  }
+
+  renderAll();
+
+  // Render AI summary card
+  const slot = document.getElementById('rl-ai-card-slot');
+  if(slot){
+    slot.innerHTML='';
+    const card = el('div',{class:'rl-ai-card'});
+    const hdr = el('div',{class:'ai-header'});
+    hdr.appendChild(el('h2',{},'\u2726 AI Analysis'));
+    hdr.appendChild(el('span',{class:'ai-badge'},'Pollinations.ai \u2014 Free'));
+    card.appendChild(hdr);
+    card.appendChild(el('div',{class:'ai-privacy'},'\uD83D\uDD12 No raw data was sent \u2014 structure & statistics only'));
+    const summary = el('p',{class:'ai-summary'});
+    summary.innerHTML = (json.summary||'Analysis complete.').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+    card.appendChild(summary);
+    card.appendChild(el('div',{class:'ai-applied'},
+      `Auto-generated \u2014 ${kpisAdded} KPI${kpisAdded!==1?'s':''} and ${chartsAdded} chart${chartsAdded!==1?'s':''}. You can add, edit or remove any of them below.`
+    ));
+    slot.appendChild(card);
+  }
+  toast('\u2726 AI added ' + kpisAdded + ' KPIs and ' + chartsAdded + ' charts');
+}
+
+document.getElementById('rl-ai-btn').addEventListener('click', openAiModal);
+
 </script>
 </body>
 </html>

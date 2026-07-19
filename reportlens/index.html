@@ -138,15 +138,14 @@
 .rl-privacy-modal .pm-notice strong{display:block;margin-bottom:2px}
 
 
-/* ── Report / Chat Buttons ─────────────────────────────────── */
+/* ── Report Buttons ─────────────────────────────────── */
 .rl-exec-btn{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
 .rl-exec-btn:hover{opacity:0.85}
 .rl-exec-btn:disabled{opacity:0.5;cursor:not-allowed}
 .rl-tech-btn{background:linear-gradient(135deg,#065f46,#047857);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
 .rl-tech-btn:hover{opacity:0.85}
 .rl-tech-btn:disabled{opacity:0.5;cursor:not-allowed}
-.rl-chat-btn{background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s}
-.rl-chat-btn:hover{background:#e5e7eb}
+
 
 /* ── Report Workshop Overlay ────────────────────────────────── */
 .rl-workshop{position:fixed;inset:0;background:#f1f5f9;z-index:500;display:flex;flex-direction:column;font-family:'Inter',-apple-system,sans-serif}
@@ -355,7 +354,6 @@
           <button class="rl-ai-btn" id="rl-ai-btn" disabled><span class="spark">✦</span> Ask AI</button>
           <button class="rl-exec-btn" id="rl-exec-btn" disabled>🏛 Executive Report</button>
           <button class="rl-tech-btn" id="rl-tech-btn" disabled>⚙️ Technical Report</button>
-          <button class="rl-chat-btn" id="rl-chat-btn">💬 Chat</button>
         </div>
       </div>
 
@@ -1311,93 +1309,77 @@ document.getElementById('rl-ai-btn').addEventListener('click', openAiModal);
 
 // ── Shared workshop state ────────────────────────────────────
 const WS = {
-  mode: null,          // 'exec' | 'tech' | 'chat'
-  step: 1,             // 1=scope, 2=outline, 3=report+chat
-  includedCols: [],
-  focusNote: '',
-  outline: null,       // {title, sections:[{id,title,description,include}], audienceNote}
+  mode: null,          // 'exec' | 'tech'
+  step: 1,             // 1=outline, 2=report
+  outline: null,       // {title, audienceNote, reportDescription, recommendedCols:[], sections:[{id,title,description,include,recommended}]}
   report: null,        // rendered JSON from AI
   meta: null,
-  chatHistory: [],     // [{role,content}]
-  chatMeta: null,      // context for chat msgs
 };
 
 // ── Shared AI call ───────────────────────────────────────────
-async function wsCallAi(messages, jsonMode) {
+async function wsCallAiJson(messages) {
   async function attempt(model) {
     const res = await fetch('https://text.pollinations.ai/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages, model, jsonMode: !!jsonMode, seed: 77 })
+      body: JSON.stringify({ messages, model, jsonMode: true, seed: 42 })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    return typeof data === 'string' ? data : (data.content || data.text || JSON.stringify(data));
+    const raw = typeof data === 'string' ? data : (data.content || data.text || JSON.stringify(data));
+    const clean = raw.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
+    try { return JSON.parse(clean); }
+    catch(_) {
+      const m = clean.match(/\{[\s\S]*\}/);
+      if (m) return JSON.parse(m[0]);
+      throw new Error('Could not parse AI response as JSON');
+    }
   }
   try { return await attempt('openai'); }
   catch(e) { return await attempt('mistral'); }
 }
 
-async function wsCallAiJson(messages) {
-  const raw = await wsCallAi(messages, true);
-  const clean = raw.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
-  try { return JSON.parse(clean); }
-  catch(_) {
-    const m = clean.match(/\{[\s\S]*\}/);
-    if (m) return JSON.parse(m[0]);
-    throw new Error('Could not parse AI JSON response');
-  }
-}
-
 // ── Open workshop ────────────────────────────────────────────
 function openWorkshop(mode) {
   WS.mode = mode;
-  WS.step = (mode === 'chat') ? 3 : 1;
+  WS.step = 1;
   WS.outline = null;
   WS.report = null;
-  WS.chatHistory = [];
-  WS.chatMeta = null;
 
-  const ws = document.getElementById('rl-workshop');
-  ws.classList.remove('hidden');
+  document.getElementById('rl-workshop').classList.remove('hidden');
   wsRender();
+  // Immediately kick off outline generation — no scope screen
+  wsShowOutlineLoading();
+  wsGenerateOutline();
 }
 
 function closeWorkshop() {
   document.getElementById('rl-workshop').classList.add('hidden');
 }
 
-// ── Top bar renderer ─────────────────────────────────────────
+// ── Top bar ───────────────────────────────────────────────────
 function wsRenderBar() {
-  const modeLabel = { exec: 'Executive', tech: 'Technical', chat: 'Chat' }[WS.mode];
-  const modeIcon  = { exec: '🏛', tech: '⚙️', chat: '💬' }[WS.mode];
-  const steps = WS.mode === 'chat'
-    ? []
-    : [
-        { n: 1, label: 'Scope' },
-        { n: 2, label: 'Outline' },
-        { n: 3, label: 'Report' },
-      ];
+  const modeLabel = WS.mode === 'exec' ? 'Executive Report' : 'Technical Report';
+  const modeIcon  = WS.mode === 'exec' ? '🏛' : '⚙️';
 
-  let stepsHtml = steps.map(s => {
+  const steps = [
+    { n: 1, label: 'Outline' },
+    { n: 2, label: 'Report'  },
+  ];
+  const stepsHtml = steps.map(s => {
     const cls = s.n < WS.step ? 'done' : (s.n === WS.step ? 'active' : '');
     return `<span class="wb-step ${cls}">${s.label}</span>`;
-  }).join('<span style="color:#d1d5db">›</span>');
+  }).join('<span style="color:#d1d5db;padding:0 4px">›</span>');
 
-  // Right-side actions depend on step
-  let rightHtml = `<button onclick="closeWorkshop()">✕ Close</button>`;
+  let rightHtml;
   if (WS.step === 1) {
     rightHtml = `
       <button onclick="closeWorkshop()">Cancel</button>
-      <button class="primary" id="ws-next-btn" onclick="wsStep1Next()">Get AI Suggestions →</button>`;
-  } else if (WS.step === 2) {
-    rightHtml = `
-      <button onclick="WS.step=1;wsRender()">← Back</button>
       <button onclick="wsRefreshOutline()">↺ Regenerate</button>
-      <button class="primary" onclick="wsStep2Next()">Generate Report →</button>`;
-  } else if (WS.step === 3 && WS.mode !== 'chat') {
+      <button class="primary" id="ws-gen-btn" disabled onclick="wsGenerateReport()">Generate Report →</button>`;
+  } else {
     rightHtml = `
-      <button onclick="WS.step=2;wsRender()">← Back to Outline</button>
+      <button onclick="WS.step=1;wsRender()">← Back to Outline</button>
       <button onclick="window.print()">🖨 Print / PDF</button>
       <button onclick="closeWorkshop()">✕ Close</button>`;
   }
@@ -1411,161 +1393,105 @@ function wsRenderBar() {
     <div class="wb-right">${rightHtml}</div>`;
 }
 
-// ── Main render dispatcher ────────────────────────────────────
+// ── Main render ───────────────────────────────────────────────
 function wsRender() {
   wsRenderBar();
-  document.getElementById('ws-scope').style.display   = (WS.step === 1 && WS.mode !== 'chat') ? 'block' : 'none';
-  document.getElementById('ws-outline').style.display = (WS.step === 2) ? 'block' : 'none';
-  document.getElementById('ws-report-chat').style.display = (WS.step === 3) ? 'flex' : 'none';
-
-  if (WS.step === 1) wsRenderScope();
-  if (WS.step === 2) wsRenderOutline();
-  if (WS.step === 3) wsRenderReportChat();
+  document.getElementById('ws-outline').style.display     = WS.step === 1 ? 'block' : 'none';
+  document.getElementById('ws-report-chat').style.display = WS.step === 2 ? 'flex'  : 'none';
+  // scope panel never shown — remove display entirely
+  document.getElementById('ws-scope').style.display = 'none';
 }
 
-// ── STEP 1: Scope ─────────────────────────────────────────────
-function wsRenderScope() {
-  const hasData = state.cols && state.cols.length > 0;
-  const modeLabel = { exec: 'Executive', tech: 'Technical' }[WS.mode];
-
-  let colsHtml = '';
-  if (hasData) {
-    colsHtml = state.cols.map(col => {
-      const isPii = detectPii(col.name);
-      const checked = !isPii ? 'checked' : '';
-      const sel = !isPii ? 'selected' : '';
-      return `
-        <label class="ws-col-chip ${sel}" id="wcc-${CSS.escape(col.name)}">
-          <input type="checkbox" ${checked} data-col="${col.name}" onchange="wsToggleCol(this)">
-          <span class="cc-name">${col.name}</span>
-          <span class="cc-type">${col.type}</span>
-          ${isPii ? '<span class="cc-pii">PII</span>' : ''}
-        </label>`;
-    }).join('');
-  }
-
-  document.getElementById('ws-scope').innerHTML = `
-    <div class="ws-scope-inner">
-      <h2>${modeLabel} Report Setup</h2>
-      <p class="ws-sub">Tell the AI what to focus on, then it will suggest a report outline you can customise before generating the full report.</p>
-
-      <div class="ws-notice">
-        <span style="font-size:1.1rem">🔒</span>
-        <div>
-          <strong>Privacy-first</strong>
-          Only column names, types, and aggregate statistics are sent to AI — never actual row values.
-        </div>
-      </div>
-
-      ${hasData ? `
-      <div class="ws-card">
-        <h3>Choose columns to include</h3>
-        <div class="ws-col-grid">${colsHtml}</div>
-      </div>` : ''}
-
-      <div class="ws-card">
-        <h3>Focus area <span style="font-weight:400;color:#9ca3af">(optional)</span></h3>
-        <textarea class="ws-focus-area" id="ws-focus-input" placeholder="e.g. &quot;Focus on security incidents by region and severity&quot; or &quot;Highlight trends over time and anomalies&quot; — leave blank for AI to decide">${WS.focusNote}</textarea>
-      </div>
-    </div>`;
-
-  // Restore checked state from WS.includedCols if already set
-  if (WS.includedCols.length && hasData) {
-    state.cols.forEach(col => {
-      const chip = document.getElementById('wcc-' + CSS.escape(col.name));
-      const cb = chip && chip.querySelector('input');
-      if (cb) {
-        cb.checked = WS.includedCols.includes(col.name);
-        chip.classList.toggle('selected', cb.checked);
-      }
-    });
-  } else if (hasData) {
-    // default: non-PII cols
-    WS.includedCols = state.cols.filter(c => !detectPii(c.name)).map(c => c.name);
-  }
-}
-
-function wsToggleCol(cb) {
-  const name = cb.dataset.col;
-  const chip = cb.closest('.ws-col-chip');
-  chip.classList.toggle('selected', cb.checked);
-  if (cb.checked) { if (!WS.includedCols.includes(name)) WS.includedCols.push(name); }
-  else { WS.includedCols = WS.includedCols.filter(n => n !== name); }
-}
-
-async function wsStep1Next() {
-  // Save focus note
-  const fi = document.getElementById('ws-focus-input');
-  WS.focusNote = fi ? fi.value.trim() : '';
-
-  if (state.cols && state.cols.length && !WS.includedCols.length) {
-    toast('Select at least one column'); return;
-  }
-
-  // Show loading state
-  WS.step = 2;
-  wsRender();
-  wsShowOutlineLoading();
-  await wsGenerateOutline();
-}
-
-// ── STEP 2: Outline ───────────────────────────────────────────
+// ── STEP 1: Outline (AI suggests + user adjusts) ─────────────
 function wsShowOutlineLoading() {
+  wsRender(); // ensure outline panel is visible
   document.getElementById('ws-outline').innerHTML = `
     <div class="ws-outline-inner">
       <div class="ws-full-spinner">
         <div class="fs-ring"></div>
-        <p>AI is suggesting a report outline…</p>
-        <p style="font-size:0.78rem;color:#9ca3af;margin-top:-8px">Usually 5–10 seconds</p>
+        <p>Analysing your data…</p>
+        <p style="font-size:0.78rem;color:#9ca3af;margin-top:-8px">AI is selecting the most useful columns and sections</p>
       </div>
     </div>`;
 }
 
 async function wsGenerateOutline() {
-  const meta = buildMetadata(WS.includedCols.length ? WS.includedCols : (state.cols||[]).map(c=>c.name));
-  WS.meta = meta;
-  const modeLabel = { exec: 'executive', tech: 'technical' }[WS.mode];
-  const focus = WS.focusNote ? `\nUser focus note: "${WS.focusNote}"` : '';
+  // Send ALL non-PII columns so AI can decide what's relevant
+  const allNonPii = (state.cols || []).filter(c => !detectPii(c.name)).map(c => c.name);
+  const metaAll = buildMetadata(allNonPii.length ? allNonPii : (state.cols||[]).map(c=>c.name));
+  WS.meta = metaAll;
 
-  const prompt = `You are a senior data analyst. Given metadata for a dataset, suggest an outline for a ${modeLabel} report.
-${focus}
+  const modeWord = WS.mode === 'exec' ? 'executive' : 'technical';
+  const modeAudience = WS.mode === 'exec'
+    ? 'CISO and business leadership — no technical jargon, focus on risk, impact, and decisions'
+    : 'security analysts and data engineers — precise metrics, column-level details, and technical actions';
+  const modeSections = WS.mode === 'exec'
+    ? 'Executive Summary, Key Metrics, Risk Overview, Strategic Recommendations, Conclusion'
+    : 'Data Quality Assessment, Statistical Summary, Anomaly & Outlier Detection, Column-level Analysis, Technical Recommendations, Appendix';
 
-Return ONLY valid JSON with this structure:
+  const prompt = `You are a senior data analyst. A user has uploaded a dataset and wants a ${modeWord} report.
+
+Your task:
+1. Look at ALL the column metadata provided.
+2. Choose the 3 to 8 columns that are MOST ANALYTICALLY USEFUL for a ${modeWord} report. Exclude ID columns, timestamps with no variance, free-text blobs, and low-value fields. Set "recommended": true for those columns.
+3. Suggest a tailored report outline with 5 to 7 sections based on what the data actually contains.
+
+Respond with ONLY this JSON (no markdown, no extra text):
 {
-  "title": "concise report title",
-  "audienceNote": "one sentence: who this report is for",
-  "reportDescription": "2 sentences: what this report will cover and its value",
+  "title": "A specific, meaningful report title based on what this dataset is actually about",
+  "audienceNote": "One sentence: who this report is for",
+  "reportDescription": "Two sentences: what this report covers and why it matters",
+  "recommendedCols": ["col1", "col2", "col3"],
   "sections": [
-    { "id": "s1", "title": "Section title", "description": "What this section will contain (1–2 sentences)" }
+    {
+      "id": "s1",
+      "title": "Section title",
+      "description": "What this section will analyse and report (1-2 sentences, specific to this data)",
+      "recommended": true
+    }
   ]
 }
 
-For an EXECUTIVE report include: Executive Summary, Key Business Metrics, Risk Overview, Strategic Recommendations, Conclusion.
-For a TECHNICAL report include: Data Quality Assessment, Statistical Summary, Anomaly Detection, Column-level Analysis, Technical Recommendations, Appendix.
-Tailor sections to what the data actually contains. Suggest 5–7 sections.
+Audience: ${modeAudience}
+Suggested section types (adapt to actual data): ${modeSections}
 
-Dataset metadata:
-${JSON.stringify(meta, null, 2)}`;
+Dataset metadata (all columns):
+${JSON.stringify(metaAll, null, 2)}`;
 
   try {
     const result = await wsCallAiJson([
-      { role: 'system', content: 'You are a data analyst. Respond only with valid JSON, no markdown.' },
+      { role: 'system', content: 'You are a senior data analyst. Respond only with valid JSON. No markdown.' },
       { role: 'user', content: prompt }
     ]);
-    // Add include:true to each section
+
     WS.outline = {
-      ...result,
-      sections: (result.sections || []).map(s => ({ ...s, include: true }))
+      title:             result.title             || 'Data Report',
+      audienceNote:      result.audienceNote       || '',
+      reportDescription: result.reportDescription  || '',
+      recommendedCols:   Array.isArray(result.recommendedCols) ? result.recommendedCols : [],
+      sections: (result.sections || []).map(s => ({
+        id:          s.id          || ('s' + Math.random().toString(36).slice(2,7)),
+        title:       s.title       || 'Section',
+        description: s.description || '',
+        include:     s.recommended !== false, // AI-recommended = checked; non-recommended = unchecked
+        recommended: !!s.recommended,
+      }))
     };
+
     wsRenderOutline();
-    wsRenderBar(); // refresh bar buttons now outline is ready
+    wsRenderBar(); // enable the Generate button now outline is ready
+    // enable the generate button
+    const genBtn = document.getElementById('ws-gen-btn');
+    if (genBtn) genBtn.disabled = false;
+
   } catch(err) {
     document.getElementById('ws-outline').innerHTML = `
       <div class="ws-outline-inner">
         <div style="text-align:center;padding:60px 20px;color:#6b7280">
           <p style="font-size:1.1rem">⚠️ Outline generation failed</p>
-          <p style="font-size:0.85rem">${err.message}</p>
-          <button class="btn" onclick="wsRefreshOutline()" style="margin-top:12px">Try again</button>
+          <p style="font-size:0.82rem;color:#9ca3af">${err.message}</p>
+          <button class="btn" onclick="wsRefreshOutline()" style="margin-top:14px">Try again</button>
+          <button class="btn" onclick="closeWorkshop()" style="margin-top:14px;margin-left:8px">Cancel</button>
         </div>
       </div>`;
   }
@@ -1579,197 +1505,209 @@ async function wsRefreshOutline() {
 function wsRenderOutline() {
   const o = WS.outline;
   if (!o) return;
-  const modeLabel = { exec: 'Executive', tech: 'Technical' }[WS.mode];
+
+  // Column chips — show recommended (checked) vs skipped (unchecked)
+  const allCols = (state.cols || []);
+  const recSet  = new Set(o.recommendedCols);
+  const colChipsHtml = allCols.map(col => {
+    const isPii = detectPii(col.name);
+    if (isPii) return ''; // never show PII
+    const isRec = recSet.has(col.name);
+    return `<span class="ws-col-chip ${isRec ? 'selected' : ''}" title="${isRec ? 'AI selected' : 'Not selected by AI'}">
+      ${isRec ? '<span style="color:#16a34a;font-size:0.75rem">✓</span>' : '<span style="color:#d1d5db;font-size:0.75rem">○</span>'}
+      <span class="cc-name">${col.name}</span>
+      <span class="cc-type">${col.type}</span>
+    </span>`;
+  }).filter(Boolean).join('');
 
   const sectionsHtml = (o.sections || []).map((s, i) => `
     <div class="ws-section-row" id="wsr-${s.id}">
       <input type="checkbox" ${s.include ? 'checked' : ''} onchange="wsToggleSection('${s.id}', this.checked)">
-      <span class="sr-num">${i + 1}</span>
+      <span class="sr-num">${String(i + 1).padStart(2,'0')}</span>
       <div class="sr-body">
         <div class="sr-title" id="wsst-${s.id}">${s.title}</div>
         <div class="sr-desc">${s.description}</div>
       </div>
-      <button class="sr-edit" onclick="wsEditSection('${s.id}')">✏ Edit</button>
+      <button class="sr-edit" title="Edit title" onclick="wsEditSection('${s.id}')">✏</button>
     </div>`).join('');
 
   document.getElementById('ws-outline').innerHTML = `
     <div class="ws-outline-inner">
-      <h2>AI-Suggested Report Outline</h2>
-      <p class="ws-sub">This is the report structure AI recommends based on your data. Check or uncheck sections, edit titles, or click "Regenerate" for a different take — then click Generate Report.</p>
+      <h2>AI-Suggested Outline</h2>
+      <p class="ws-sub">AI selected the most useful columns and sections based on your data. Uncheck any sections you don't want — then click <strong>Generate Report</strong>.</p>
 
       <div class="ws-outline-card">
         <div class="ws-outline-header">
           <span class="oh-icon">${WS.mode === 'exec' ? '🏛' : '⚙️'}</span>
           <div>
-            <h3 id="ws-outline-title">${o.title || modeLabel + ' Report'}</h3>
-            <p>${o.reportDescription || ''}</p>
-            ${o.audienceNote ? `<p style="color:#9ca3af;font-size:0.78rem;margin-top:4px">👥 ${o.audienceNote}</p>` : ''}
+            <h3>${o.title}</h3>
+            <p>${o.reportDescription}</p>
+            ${o.audienceNote ? `<p style="color:#9ca3af;font-size:0.78rem;margin-top:6px">👥 ${o.audienceNote}</p>` : ''}
           </div>
         </div>
+
+        ${colChipsHtml ? `
+        <div style="padding:12px 20px;border-bottom:1px solid #f1f5f9">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;font-weight:700;margin-bottom:8px">
+            Columns AI selected (✓) vs skipped
+          </div>
+          <div class="ws-col-grid">${colChipsHtml}</div>
+        </div>` : ''}
+
         <div class="ws-sections-list">${sectionsHtml}</div>
+
         <div class="ws-outline-actions">
-          <button onclick="wsSelectAllSections(true)">✓ Select all</button>
-          <button onclick="wsSelectAllSections(false)">✗ Deselect all</button>
+          <button onclick="wsSelectAllSections(true)">✓ All</button>
+          <button onclick="wsSelectAllSections(false)">✗ None</button>
           <button onclick="wsAddSection()">+ Add section</button>
         </div>
+      </div>
+
+      <div class="ws-notice" style="margin-top:16px">
+        <span style="font-size:1rem">🔒</span>
+        <div>Only column names, types, and statistics are sent to AI — no actual row values ever leave your browser.</div>
       </div>
     </div>`;
 }
 
 function wsToggleSection(id, checked) {
-  const s = WS.outline.sections.find(x => x.id === id);
+  const s = WS.outline && WS.outline.sections.find(x => x.id === id);
   if (s) s.include = checked;
 }
 
 function wsEditSection(id) {
-  const s = WS.outline.sections.find(x => x.id === id);
+  const s = WS.outline && WS.outline.sections.find(x => x.id === id);
   if (!s) return;
-  const titleEl = document.getElementById('wsst-' + id);
-  if (!titleEl) return;
-  // Replace title with inline input
-  const current = titleEl.textContent;
-  titleEl.outerHTML = `<input class="ws-edit-inline" id="wsst-${id}" value="${current.replace(/"/g,'&quot;')}" onblur="wsFinishEditSection('${id}', this.value)" onkeydown="if(event.key==='Enter')this.blur()">`;
+  const el = document.getElementById('wsst-' + id);
+  if (!el) return;
+  el.outerHTML = `<input class="ws-edit-inline" id="wsst-${id}" value="${s.title.replace(/"/g,'&quot;')}"
+    onblur="wsFinishEditSection('${id}',this.value)"
+    onkeydown="if(event.key==='Enter')this.blur()">`;
   document.getElementById('wsst-' + id).focus();
 }
 
 function wsFinishEditSection(id, val) {
-  const s = WS.outline.sections.find(x => x.id === id);
-  if (s) s.title = val.trim() || s.title;
-  // Replace input with span again
+  const s = WS.outline && WS.outline.sections.find(x => x.id === id);
+  if (s && val.trim()) s.title = val.trim();
   const inp = document.getElementById('wsst-' + id);
-  if (inp) inp.outerHTML = `<div class="sr-title" id="wsst-${id}">${s.title}</div>`;
+  if (inp) inp.outerHTML = `<div class="sr-title" id="wsst-${id}">${s ? s.title : val}</div>`;
 }
 
 function wsSelectAllSections(checked) {
-  (WS.outline.sections || []).forEach(s => {
+  (WS.outline && WS.outline.sections || []).forEach(s => {
     s.include = checked;
     const row = document.getElementById('wsr-' + s.id);
-    if (row) { const cb = row.querySelector('input[type=checkbox]'); if (cb) cb.checked = checked; }
+    if (row) { const cb = row.querySelector('input[type=checkbox]'); if(cb) cb.checked = checked; }
   });
 }
 
 function wsAddSection() {
   const id = 's' + Date.now();
-  WS.outline.sections.push({ id, title: 'New section', description: 'Describe what this section will cover.', include: true });
+  WS.outline.sections.push({ id, title: 'Custom section', description: 'Describe what this section should cover.', include: true, recommended: true });
   wsRenderOutline();
 }
 
-async function wsStep2Next() {
-  const activeSections = (WS.outline.sections || []).filter(s => s.include);
-  if (!activeSections.length) { toast('Include at least one section'); return; }
-  WS.step = 3;
+// ── STEP 2: Generate and render full report ───────────────────
+async function wsGenerateReport() {
+  const activeSections = (WS.outline && WS.outline.sections || []).filter(s => s.include);
+  if (!activeSections.length) { toast('Check at least one section'); return; }
+
+  WS.step = 2;
   wsRender();
-  wsShowReportLoading();
-  await wsGenerateFullReport();
-}
 
-// ── STEP 3: Report + Chat ─────────────────────────────────────
-function wsRenderReportChat() {
-  const reportPanel = document.getElementById('ws-report-panel');
-  const chatPanel   = document.getElementById('ws-chat-panel');
-
-  if (WS.mode === 'chat') {
-    // Pure chat mode
-    reportPanel.style.display = 'none';
-    chatPanel.style.display = 'flex';
-    chatPanel.className = 'rl-ws-pure-chat';
-    wsRenderChatPanel();
-  } else {
-    reportPanel.style.display = 'block';
-    chatPanel.style.display = 'flex';
-    chatPanel.className = 'rwc-chat';
-    // Report panel will be filled by wsShowReportLoading / wsRenderReport
-    wsRenderChatPanel();
-  }
-}
-
-function wsShowReportLoading() {
+  // Show spinner in the report panel
   const panel = document.getElementById('ws-report-panel');
-  if (!panel) return;
   panel.innerHTML = `
     <div class="rl-report-page">
-      <div class="ws-full-spinner" style="min-height:60vh">
+      <div class="ws-full-spinner" style="min-height:70vh">
         <div class="fs-ring"></div>
-        <p>Generating your ${WS.mode === 'exec' ? 'executive' : 'technical'} report…</p>
+        <p>Writing your ${WS.mode === 'exec' ? 'executive' : 'technical'} report…</p>
         <p style="font-size:0.78rem;color:#9ca3af;margin-top:-8px">Usually 15–25 seconds</p>
       </div>
     </div>`;
-}
 
-async function wsGenerateFullReport() {
-  const meta = WS.meta;
-  const activeSections = (WS.outline.sections || []).filter(s => s.include);
-  const sectionList = activeSections.map((s,i) => `${i+1}. "${s.title}" — ${s.description}`).join('\n');
-  const focus = WS.focusNote ? `\nUser focus: "${WS.focusNote}"` : '';
+  // Use only the AI-recommended columns for the actual report metadata
+  const recCols = (WS.outline.recommendedCols || []).filter(n => !detectPii(n));
+  const metaForReport = buildMetadata(recCols.length ? recCols : WS.meta.columns.map(c=>c.name));
+
+  const modeWord = WS.mode === 'exec' ? 'executive' : 'technical';
   const modeInstruction = WS.mode === 'exec'
-    ? 'Write in clear, non-technical executive prose suitable for a CISO and leadership team. Avoid jargon. Focus on business risk, strategic value, and actionable decisions.'
-    : 'Write in precise technical language suitable for a security analyst or data engineer. Include specific metrics, column-level observations, data quality notes, and concrete technical actions.';
+    ? 'Write in clear, non-technical executive prose. No jargon. Focus on business risk, strategic value, and actionable decisions for a CISO and leadership team.'
+    : 'Write in precise technical language for security analysts and data engineers. Include specific metrics, column-level observations, data quality notes, and concrete technical actions.';
 
-  const prioLabel = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+  const sectionSpecs = activeSections.map((s,i) =>
+    `Section ${i+1}: "${s.title}" — ${s.description}`
+  ).join('\n');
 
-  const systemMsg = 'You are a senior data analyst. Respond only with valid JSON, no markdown, no extra text.';
-  const userMsg = `Write a complete ${WS.mode === 'exec' ? 'executive' : 'technical'} data report in JSON.
+  // Build a complete, unambiguous prompt
+  const systemMsg = `You are a senior data analyst writing a ${modeWord} report. You must respond with ONLY a single valid JSON object. No markdown fences, no explanation text, no preamble. Start your response with { and end with }.`;
+
+  const userMsg = `Write a complete ${modeWord} data analysis report as a JSON object.
+
 ${modeInstruction}
-${focus}
 
-The report MUST include exactly these sections (use the section titles as provided):
-${sectionList}
+The report must have exactly these sections:
+${sectionSpecs}
 
-Return this JSON structure:
+Rules:
+- Every section MUST have a "content" string with at least 3 sentences of genuine analysis.
+- Reference actual column names and real statistics from the metadata below.
+- Do NOT invent numbers not present in the metadata.
+- "items" is an optional array of finding bullets: each has "icon" (one emoji) and "text" (one sentence).
+- "stats" is an optional array of key numbers: each has "label", "value" (string), and "sub" (context).
+- "actions" is an optional array for recommendation sections only: each has "title", "why", and "priority" (critical/high/medium/low).
+
+Required JSON structure:
 {
-  "title": "${WS.outline.title || 'Data Report'}",
-  "audienceNote": "${WS.outline.audienceNote || ''}",
+  "title": "report title here",
+  "audienceNote": "one sentence about audience",
   "sections": [
     {
-      "title": "Section title (must match list above)",
-      "content": "Full narrative paragraphs for this section (2-4 sentences minimum)",
-      "items": [ { "icon": "emoji", "text": "bullet point" } ],
-      "stats": [ { "label": "Metric name", "value": "123", "sub": "context" } ],
-      "actions": [ { "title": "Action", "why": "Reason", "priority": "high" } ]
+      "title": "exact section title from list above",
+      "content": "narrative paragraph text here",
+      "items": [],
+      "stats": [],
+      "actions": []
     }
   ],
-  "conclusion": "2-3 sentence conclusion",
-  "audienceNote": "who should read this"
+  "conclusion": "2-3 sentence conclusion paragraph"
 }
 
-For each section use the most appropriate fields — all sections need "content". Add "items" for findings/bullets, "stats" for numbers, "actions" for recommendations (with priority: critical/high/medium/low).
-Be specific and reference actual column names and statistics. Do not invent data not in the metadata.
-
-Dataset metadata:
-${JSON.stringify(meta, null, 2)}
-
-Sections to include:
-${sectionList}`;
+Dataset metadata used for this report:
+${JSON.stringify(metaForReport, null, 2)}`;
 
   try {
     const result = await wsCallAiJson([
       { role: 'system', content: systemMsg },
-      { role: 'user', content: userMsg }
+      { role: 'user',   content: userMsg   }
     ]);
+
+    // Validate we got something usable
+    if (!result || !Array.isArray(result.sections) || result.sections.length === 0) {
+      throw new Error('AI returned an empty report — try Regenerate Outline and try again.');
+    }
+
     WS.report = result;
-
-    // Seed chat history with context
-    WS.chatHistory = [
-      { role: 'system', content: `You are an expert data analyst helping refine a ${WS.mode === 'exec' ? 'executive' : 'technical'} report. The report has been generated. When the user asks for changes, respond with the FULL updated report JSON in the same structure. If they ask a question (not a change), answer conversationally — no JSON needed.` },
-      { role: 'assistant', content: JSON.stringify(result) }
-    ];
-    WS.chatMeta = meta;
-
     wsRenderReport(result);
-    // Add system message to chat
-    wsAddChatMsg('system', '✓ Report generated — ask me to refine any section, change the tone, add focus areas, or anything else.');
   } catch(err) {
-    const panel = document.getElementById('ws-report-panel');
-    if (panel) panel.innerHTML = `
+    panel.innerHTML = `
       <div class="rl-report-page">
         <div style="text-align:center;padding:80px 20px;color:#6b7280">
           <p style="font-size:1.1rem">⚠️ Report generation failed</p>
-          <p style="font-size:0.85rem">${err.message}</p>
-          <button class="btn" onclick="wsGenerateFullReport()" style="margin-top:12px">Try again</button>
+          <p style="font-size:0.82rem;color:#9ca3af;max-width:400px;margin:0 auto">${err.message}</p>
+          <button class="btn" onclick="wsGenerateReport()" style="margin-top:16px">Try again</button>
+          <button class="btn" onclick="WS.step=1;wsRender()" style="margin-top:16px;margin-left:8px">← Back to Outline</button>
         </div>
       </div>`;
-    wsAddChatMsg('ai', '⚠️ Generation failed: ' + err.message + '. Click "Try again" in the report panel.');
   }
+}
+
+function wsRenderReportChat() {
+  // Full-width report only — no chat panel
+  const reportPanel = document.getElementById('ws-report-panel');
+  const chatPanel   = document.getElementById('ws-chat-panel');
+  reportPanel.style.display = 'block';
+  chatPanel.style.display   = 'none';
 }
 
 function wsRenderReport(r) {
@@ -1778,36 +1716,38 @@ function wsRenderReport(r) {
   const now = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   const meta = WS.meta || {};
   const fname = meta.fileName || 'Dataset';
-  const accentClass = WS.mode === 'exec' ? 'exec' : 'tech';
-  const eyebrowText = WS.mode === 'exec' ? 'Executive Data Report' : 'Technical Data Report';
-  const prioLabel = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+  const ac = WS.mode === 'exec' ? 'exec' : 'tech';
+  const eyebrow = WS.mode === 'exec' ? 'Executive Data Report' : 'Technical Data Report';
+  const prioLabel = { critical:'Critical', high:'High', medium:'Medium', low:'Low' };
 
   const sectionsHtml = (r.sections || []).map((sec, idx) => {
     const labelNum = String(idx + 1).padStart(2, '0');
 
-    const contentHtml = sec.content
-      ? sec.content.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('')
+    const contentHtml = (sec.content || '')
+      .split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+
+    const statsHtml = (sec.stats && sec.stats.length)
+      ? `<div class="${ac==='tech' ? 'rl-tech-metrics' : 'rl-stats-grid'} rpt-stats">${
+          sec.stats.map(s => `
+          <div class="${ac==='tech' ? 'rl-tech-metric' : 'rl-stat-box'}">
+            <div class="${ac==='tech'?'tm-label':'sb-label'}">${s.label||''}</div>
+            <div class="${ac==='tech'?'tm-val':'sb-val'}">${s.value||''}</div>
+            <div class="${ac==='tech'?'tm-sub':'sb-sub'}">${s.sub||''}</div>
+          </div>`).join('')}</div>`
       : '';
 
     const itemsHtml = (sec.items && sec.items.length)
-      ? `<div class="rl-finding-list">${sec.items.map(f=>`
+      ? `<div class="rl-finding-list">${
+          sec.items.map(f => `
           <div class="rl-finding-item">
             <span class="fi-icon">${f.icon||'•'}</span>
             <span>${f.text||''}</span>
           </div>`).join('')}</div>`
       : '';
 
-    const statsHtml = (sec.stats && sec.stats.length)
-      ? `<div class="${WS.mode==='tech' ? 'rl-tech-metrics' : 'rl-stats-grid'}">${sec.stats.map(s=>`
-          <div class="${WS.mode==='tech' ? 'rl-tech-metric' : 'rl-stat-box'}">
-            <div class="${WS.mode==='tech'?'tm-label':'sb-label'}">${s.label||''}</div>
-            <div class="${WS.mode==='tech'?'tm-val':'sb-val'}">${s.value||''}</div>
-            <div class="${WS.mode==='tech'?'tm-sub':'sb-sub'}">${s.sub||''}</div>
-          </div>`).join('')}</div>`
-      : '';
-
     const actionsHtml = (sec.actions && sec.actions.length)
-      ? `<div class="rl-action-list">${sec.actions.map((a,i)=>`
+      ? `<div class="rl-action-list">${
+          sec.actions.map((a, i) => `
           <div class="rl-action-item priority-${a.priority||'medium'}">
             <div class="ai-num">${i+1}</div>
             <div>
@@ -1820,7 +1760,7 @@ function wsRenderReport(r) {
 
     return `
       <div class="rl-report-section">
-        <div class="rs-label ${accentClass}">${labelNum} · ${sec.title||'Section'}</div>
+        <div class="rs-label ${ac}">${labelNum} · ${sec.title||'Section'}</div>
         <h2>${sec.title||''}</h2>
         ${contentHtml}${statsHtml}${itemsHtml}${actionsHtml}
       </div>`;
@@ -1829,7 +1769,7 @@ function wsRenderReport(r) {
   panel.innerHTML = `
     <div class="rl-report-page">
       <div class="rl-report-cover">
-        <div class="rc-eyebrow ${accentClass}">${eyebrowText}</div>
+        <div class="rc-eyebrow ${ac}">${eyebrow}</div>
         <h1>${r.title || 'Data Report'}</h1>
         <div class="rc-meta">
           <span>📁 ${fname}</span>
@@ -1842,130 +1782,19 @@ function wsRenderReport(r) {
       ${sectionsHtml}
       ${r.conclusion ? `
       <div class="rl-report-section">
-        <div class="rs-label ${accentClass}">✦ Conclusion</div>
+        <div class="rs-label ${ac}">✦ Conclusion</div>
         <h2>Conclusion &amp; Next Steps</h2>
         <p>${r.conclusion}</p>
       </div>` : ''}
       <div class="rl-report-footer">
-        Generated by ReportLens · Owlglass · ${now} · AI-assisted (Pollinations.ai) · No raw data transmitted
+        ReportLens · Owlglass · ${now} · AI-assisted narrative (Pollinations.ai) · No raw data transmitted
       </div>
     </div>`;
-}
-
-// ── Chat panel ────────────────────────────────────────────────
-function wsRenderChatPanel() {
-  const panel = document.getElementById('ws-chat-panel');
-  if (!panel) return;
-  const isPure = WS.mode === 'chat';
-  const placeholder = isPure
-    ? 'Ask anything about your data, request analysis, or describe what you want to explore…'
-    : 'Ask me to refine the report — e.g. "Make the tone less formal", "Add an anomaly section", "Emphasise the top 3 risks"…';
-
-  panel.innerHTML = `
-    ${!isPure ? `<div class="rwc-chat-header">💬 Refine with AI <span style="font-weight:400;color:#9ca3af;font-size:0.72rem;margin-left:4px">— ask for changes or ask questions</span></div>` : ''}
-    <div class="rwc-chat-messages" id="ws-chat-msgs"></div>
-    <div class="rwc-chat-input-row">
-      <textarea id="ws-chat-input" placeholder="${placeholder}" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wsSendChat()}"></textarea>
-      <button class="send-btn" id="ws-chat-send" onclick="wsSendChat()">Send ↑</button>
-    </div>`;
-
-  if (isPure) {
-    // Seed chat for pure mode
-    const hasData = state.cols && state.cols.length > 0;
-    if (hasData) {
-      WS.chatMeta = buildMetadata(state.cols.filter(c=>!detectPii(c.name)).map(c=>c.name));
-      WS.chatHistory = [
-        { role: 'system', content: `You are an expert data analyst. The user has uploaded a dataset. You have access to the structural metadata (column names, types, statistics). Answer questions, suggest analyses, identify patterns, and provide insights. Be specific and reference actual column names and stats.\n\nDataset metadata:\n${JSON.stringify(WS.chatMeta, null, 2)}` }
-      ];
-      wsAddChatMsg('system', `📊 Dataset loaded: ${WS.chatMeta.fileName || 'file'} — ${WS.chatMeta.rowCount.toLocaleString()} rows, ${WS.chatMeta.columns.length} columns. Ask me anything about your data!`);
-    } else {
-      WS.chatHistory = [
-        { role: 'system', content: 'You are an expert data analyst assistant. Help users understand data analysis concepts, review data strategies, or answer questions about their dataset once uploaded.' }
-      ];
-      wsAddChatMsg('system', '💬 Chat mode — upload a file first for data-specific insights, or ask general analysis questions.');
-    }
-  }
-}
-
-function wsAddChatMsg(role, content) {
-  const msgs = document.getElementById('ws-chat-msgs');
-  if (!msgs) return;
-  const div = document.createElement('div');
-  div.className = `chat-msg ${role}`;
-  div.textContent = content;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
-}
-
-function wsAddChatMsgHtml(role, html) {
-  const msgs = document.getElementById('ws-chat-msgs');
-  if (!msgs) return;
-  const div = document.createElement('div');
-  div.className = `chat-msg ${role}`;
-  div.innerHTML = html;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
-}
-
-async function wsSendChat() {
-  const input = document.getElementById('ws-chat-input');
-  const sendBtn = document.getElementById('ws-chat-send');
-  const text = input.value.trim();
-  if (!text) return;
-
-  input.value = '';
-  sendBtn.disabled = true;
-  wsAddChatMsg('user', text);
-
-  // Build message history
-  const history = [...WS.chatHistory, { role: 'user', content: text }];
-
-  const thinking = wsAddChatMsg('ai thinking', '⏳ Thinking…');
-
-  try {
-    const raw = await wsCallAi(history, false);
-    thinking.remove();
-
-    // Try to detect if AI returned a JSON report (for report-mode refinements)
-    let parsedReport = null;
-    if (WS.mode !== 'chat' && WS.report) {
-      try {
-        const clean = raw.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
-        const candidate = JSON.parse(clean.match(/\{[\s\S]*\}/) ? clean.match(/\{[\s\S]*\}/)[0] : clean);
-        if (candidate && candidate.sections) parsedReport = candidate;
-      } catch(_) {}
-    }
-
-    if (parsedReport) {
-      WS.report = parsedReport;
-      wsRenderReport(parsedReport);
-      WS.chatHistory = [...history, { role: 'assistant', content: raw }];
-      wsAddChatMsg('ai', '✓ Report updated. Scroll the left panel to review the changes.');
-    } else {
-      WS.chatHistory = [...history, { role: 'assistant', content: raw }];
-      // Render markdown-like text
-      const formatted = raw
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g,'<em>$1</em>')
-        .replace(/\n/g,'<br>');
-      wsAddChatMsgHtml('ai', formatted);
-    }
-  } catch(err) {
-    thinking.remove();
-    wsAddChatMsg('ai', '⚠️ Error: ' + err.message);
-  } finally {
-    sendBtn.disabled = false;
-    input.focus();
-  }
 }
 
 // ── Event wiring ─────────────────────────────────────────────
 document.getElementById('rl-exec-btn').addEventListener('click', () => openWorkshop('exec'));
 document.getElementById('rl-tech-btn').addEventListener('click', () => openWorkshop('tech'));
-document.getElementById('rl-chat-btn').addEventListener('click', () => openWorkshop('chat'));
 </script>
 
 <!-- ── Report Workshop Overlay ───────────────────────────────── -->
@@ -1977,16 +1806,16 @@ document.getElementById('rl-chat-btn').addEventListener('click', () => openWorks
   <!-- Body -->
   <div class="rl-ws-body">
 
-    <!-- Step 1: Scope (hidden in chat mode) -->
-    <div class="rl-ws-scope" id="ws-scope" style="display:none;overflow-y:auto;padding:32px;flex:1"></div>
+    <!-- Scope panel (kept in DOM, always hidden — AI decides columns) -->
+    <div id="ws-scope" style="display:none"></div>
 
-    <!-- Step 2: Outline preview -->
+    <!-- Step 1: Outline preview -->
     <div class="rl-ws-outline" id="ws-outline" style="display:none;overflow-y:auto;padding:32px;flex:1"></div>
 
-    <!-- Step 3: Report + Chat (split panel) -->
+    <!-- Step 2: Report (full-width, no chat panel) -->
     <div class="rl-ws-report-chat" id="ws-report-chat" style="display:none">
-      <div class="rwc-report" id="ws-report-panel"></div>
-      <div class="rwc-chat"   id="ws-chat-panel"></div>
+      <div class="rwc-report" id="ws-report-panel" style="flex:1;border-right:none"></div>
+      <div id="ws-chat-panel" style="display:none"></div>
     </div>
 
   </div>

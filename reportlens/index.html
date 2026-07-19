@@ -142,9 +142,7 @@
 .rl-exec-btn{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
 .rl-exec-btn:hover{opacity:0.85}
 .rl-exec-btn:disabled{opacity:0.5;cursor:not-allowed}
-.rl-tech-btn{background:linear-gradient(135deg,#065f46,#047857);color:#fff;border:none;padding:9px 16px;border-radius:var(--radius-sm,6px);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity 0.15s}
-.rl-tech-btn:hover{opacity:0.85}
-.rl-tech-btn:disabled{opacity:0.5;cursor:not-allowed}
+
 
 
 /* ── Report Workshop Overlay ────────────────────────────────── */
@@ -353,7 +351,6 @@
           <button class="btn" id="rl-clear-btn" disabled>Clear</button>
           <button class="rl-ai-btn" id="rl-ai-btn" disabled><span class="spark">✦</span> Ask AI</button>
           <button class="rl-exec-btn" id="rl-exec-btn" disabled>🏛 Executive Report</button>
-          <button class="rl-tech-btn" id="rl-tech-btn" disabled>⚙️ Technical Report</button>
         </div>
       </div>
 
@@ -544,7 +541,6 @@ function ingestRows(rawRows){
   $('#rl-replace-btn').disabled=false;$('#rl-export-btn').disabled=false;$('#rl-clear-btn').disabled=false;
   document.getElementById('rl-ai-btn').disabled=false;
   document.getElementById('rl-exec-btn').disabled=false;
-  document.getElementById('rl-tech-btn').disabled=false;
   renderAll();
 }
 
@@ -1117,13 +1113,86 @@ function detectPii(colName){
 }
 
 function openAiModal(){
-  // Auto-select all non-PII columns and run immediately — no technical modal needed
-  const includedCols = state.cols.filter(c => !detectPii(c.name)).map(c => c.name);
-  if (!includedCols.length) {
-    toast('No columns available for analysis (all detected as PII)');
+  openPrivacyGate('ai');
+}
+
+// ── Privacy gate — shown before Ask AI and Executive Report ──
+function openPrivacyGate(action) {
+  // Count PII vs safe cols
+  const piiCols  = state.cols.filter(c => detectPii(c.name)).map(c => c.name);
+  const safeCols = state.cols.filter(c => !detectPii(c.name)).map(c => c.name);
+
+  if (!safeCols.length) {
+    toast('All columns appear to contain sensitive data — nothing safe to send.');
     return;
   }
-  runAiAnalysis(includedCols);
+
+  const bg    = el('div', { class: 'rl-modal-bg' });
+  const modal = el('div', { class: 'rl-modal rl-privacy-modal', style: 'max-width:520px' });
+
+  // Header
+  modal.appendChild(el('h3', { style: 'margin:0 0 12px;font-size:1.05rem;display:flex;align-items:center;gap:8px' },
+    '🔒 What gets sent to AI?'));
+
+  // Main notice block
+  const notice = el('div', { style: 'background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 16px;margin-bottom:16px' });
+  notice.innerHTML = `
+    <p style="margin:0 0 8px;font-size:0.9rem;color:#166534;font-weight:600">✅ We only send column structure and statistics — never your actual data.</p>
+    <p style="margin:0;font-size:0.83rem;color:#374151;line-height:1.6">Column names, data types, and aggregate statistics (counts, averages, ranges) are sent to <strong>Pollinations.ai</strong> to generate the analysis. No row values, no cell contents, nothing personally identifiable.</p>`;
+  modal.appendChild(notice);
+
+  // What's included / excluded
+  const grid = el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px' });
+
+  const safeBox = el('div', { style: 'background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:12px 13px' });
+  safeBox.innerHTML = `<p style="margin:0 0 7px;font-size:0.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em">✓ Included (${safeCols.length})</p>`;
+  const safeList = el('div', { style: 'display:flex;flex-wrap:wrap;gap:4px' });
+  safeCols.forEach(n => {
+    const chip = el('span', { style: 'font-size:0.75rem;background:#dbeafe;color:#1e40af;border-radius:4px;padding:2px 7px' }, n);
+    safeList.appendChild(chip);
+  });
+  safeBox.appendChild(safeList);
+  grid.appendChild(safeBox);
+
+  const piiBox = el('div', { style: 'background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:12px 13px' });
+  piiBox.innerHTML = `<p style="margin:0 0 7px;font-size:0.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em">✗ Excluded — sensitive (${piiCols.length})</p>`;
+  if (piiCols.length) {
+    const piiList = el('div', { style: 'display:flex;flex-wrap:wrap;gap:4px' });
+    piiCols.forEach(n => {
+      const chip = el('span', { style: 'font-size:0.75rem;background:#fee2e2;color:#991b1b;border-radius:4px;padding:2px 7px' }, n);
+      piiList.appendChild(chip);
+    });
+    piiBox.appendChild(piiList);
+  } else {
+    piiBox.appendChild(el('span', { style: 'font-size:0.8rem;color:#6b7280' }, 'None detected'));
+  }
+  grid.appendChild(piiBox);
+  modal.appendChild(grid);
+
+  // Powered-by footnote
+  modal.appendChild(el('p', { style: 'margin:0 0 18px;font-size:0.78rem;color:#6b7280;line-height:1.5' },
+    'Powered by Pollinations.ai — free, no account required. Your file never leaves your browser.'));
+
+  // Actions
+  const actions = el('div', { class: 'rl-modal-actions' });
+  actions.appendChild(el('button', { class: 'btn', onClick: () => bg.remove() }, 'Cancel'));
+  const goBtn = el('button', {
+    class: 'btn primary',
+    style: action === 'exec'
+      ? 'background:linear-gradient(135deg,#0f172a,#1e3a5f);border-color:#0f172a'
+      : 'background:linear-gradient(135deg,#7c3aed,#2563eb);border-color:#7c3aed'
+  }, action === 'exec' ? '🏛 Generate Report' : '✦ Run Analysis');
+  goBtn.addEventListener('click', () => {
+    bg.remove();
+    if (action === 'exec') openWorkshop('exec');
+    else runAiAnalysis(safeCols);
+  });
+  actions.appendChild(goBtn);
+  modal.appendChild(actions);
+
+  bg.appendChild(modal);
+  bg.addEventListener('click', e => { if (e.target === bg) bg.remove(); });
+  document.body.appendChild(bg);
 }
 
 async function runAiAnalysis(includedCols){
@@ -1312,8 +1381,8 @@ function closeWorkshop() {
 
 // ── Top bar ───────────────────────────────────────────────────
 function wsRenderBar() {
-  const modeLabel = WS.mode === 'exec' ? 'Executive Report' : 'Technical Report';
-  const modeIcon  = WS.mode === 'exec' ? '🏛' : '⚙️';
+  const modeLabel = 'Executive Report';
+  const modeIcon  = '🏛';
 
   const steps = [
     { n: 1, label: 'Outline' },
@@ -1746,8 +1815,7 @@ function wsRenderReport(r) {
 }
 
 // ── Event wiring ─────────────────────────────────────────────
-document.getElementById('rl-exec-btn').addEventListener('click', () => openWorkshop('exec'));
-document.getElementById('rl-tech-btn').addEventListener('click', () => openWorkshop('tech'));
+document.getElementById('rl-exec-btn').addEventListener('click', () => openPrivacyGate('exec'));
 </script>
 
 <!-- ── Report Workshop Overlay ───────────────────────────────── -->

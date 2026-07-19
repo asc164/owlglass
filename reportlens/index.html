@@ -996,30 +996,53 @@ async function runAiAnalysis(includedCols){
 
   const meta = buildMetadata(includedCols);
 
-  const prompt = `You are a data analyst. A user has uploaded a dataset. Based ONLY on the metadata below (no raw data was shared), suggest:
+  const systemPrompt = `You are a data analyst. A user has uploaded a dataset. Based ONLY on the metadata provided (no raw data was shared), suggest:
 1. A brief 2-3 sentence plain-English summary of what this dataset appears to contain and its analytical potential.
 2. Up to 4 KPI cards. Each must use type from: count, sum, avg, min, max, distinct, topn. The col field must exactly match a column name from the metadata.
 3. Up to 4 charts. Each must use type: bar, line, or pie. xCol and yCol must exactly match column names. agg must be count, sum, or avg.
 
-Respond ONLY with a valid JSON object in this exact shape, no markdown fences, no explanation:
-{"summary":"...","kpis":[{"type":"count"},{"type":"sum","col":"exact_col_name"}],"charts":[{"type":"bar","xCol":"exact_col_name","yCol":"","agg":"count","title":"Chart title"}]}
+Respond ONLY with a valid JSON object in this exact shape, no markdown fences, no extra text:
+{"summary":"...","kpis":[{"type":"count"},{"type":"sum","col":"exact_col_name"}],"charts":[{"type":"bar","xCol":"exact_col_name","yCol":"","agg":"count","title":"Chart title"}]}`;
 
-Dataset metadata:
-${JSON.stringify(meta)}`;
+  const userPrompt = `Dataset metadata:\n${JSON.stringify(meta, null, 2)}`;
+
+  async function callAi(model) {
+    const res = await fetch('https://text.pollinations.ai/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt }
+        ],
+        model: model,
+        jsonMode: true,
+        seed: 42
+      })
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    // Pollinations POST returns {role, content}
+    const raw = typeof data === 'string' ? data : (data.content || data.text || JSON.stringify(data));
+    const clean = raw.replace(/^```[\w]*\n?/,'').replace(/\n?```$/,'').trim();
+    let parsed;
+    try { parsed = JSON.parse(clean); }
+    catch(e) {
+      const match = clean.match(/\{[\s\S]*\}/);
+      if(match) parsed = JSON.parse(match[0]);
+      else throw new Error('Could not parse AI response as JSON');
+    }
+    return parsed;
+  }
 
   try {
-    const url = 'https://text.pollinations.ai/' + encodeURIComponent(prompt) + '?model=openai&json=true&seed=42';
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('API returned ' + res.status);
-    const text = await res.text();
     let json;
     try {
-      const clean = text.replace(/^```[\w]*\n?/,'').replace(/\n?```$/,'').trim();
-      json = JSON.parse(clean);
+      json = await callAi('openai');
     } catch(e) {
-      const match = text.match(/\{[\s\S]*\}/);
-      if(match) json = JSON.parse(match[0]);
-      else throw new Error('Could not parse AI response as JSON');
+      console.warn('[ReportLens AI] openai failed, retrying with mistral:', e.message);
+      toast('Retrying with fallback model…');
+      json = await callAi('mistral');
     }
     applyAiSuggestions(json, meta);
   } catch(err) {

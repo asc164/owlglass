@@ -1117,66 +1117,13 @@ function detectPii(colName){
 }
 
 function openAiModal(){
-  const bg = el('div',{class:'rl-modal-bg'});
-  const modal = el('div',{class:'rl-modal rl-privacy-modal',style:'max-width:600px'});
-
-  modal.appendChild(el('h3',{style:'margin:0 0 4px;font-size:1rem'},'\u2726 Ask AI to analyse your data'));
-  modal.appendChild(el('p',{style:'font-size:0.82rem;color:#6b7280;margin:0 0 14px;line-height:1.5'},
-    'Review exactly what will be sent before anything leaves your browser. No raw row data is ever included \u2014 only column names, types, and aggregate statistics.'
-  ));
-
-  const notice = el('div',{class:'pm-notice'});
-  notice.innerHTML = '<span style="font-size:1.1rem">\uD83D\uDD12</span><div><strong>Your data stays in your browser</strong>Only column structure and statistics are sent \u2014 never actual row values. Powered by Pollinations.ai (free, no account needed).</div>';
-  modal.appendChild(notice);
-  modal.appendChild(el('div',{style:'margin-bottom:14px'}));
-
-  const secCols = el('div',{class:'pm-section'});
-  secCols.appendChild(el('h4',{},'Choose columns to include'));
-  const colList = el('div',{class:'pm-col-list'});
-  const checkboxes = {};
-
-  state.cols.forEach(col => {
-    const isPii = detectPii(col.name);
-    const row = el('div',{class:'pm-col-row'});
-    const cb = el('input',{type:'checkbox'});
-    cb.checked = !isPii;
-    checkboxes[col.name] = cb;
-    row.appendChild(cb);
-    row.appendChild(el('span',{class:'pm-col-name'},col.name));
-    row.appendChild(el('span',{class:'pm-col-type'},col.type));
-    const vals = state.rows.map(r=>r[col.name]).filter(v=>v!=null&&v!=='');
-    row.appendChild(el('span',{class:'pm-col-stats'},`${vals.length} values, ${col.unique} unique`));
-    if(isPii) row.appendChild(el('span',{class:'pm-pii-flag'},'PII \u2014 excluded by default'));
-    cb.addEventListener('change', updatePreview);
-    colList.appendChild(row);
-  });
-  secCols.appendChild(colList);
-  modal.appendChild(secCols);
-
-  const secPreview = el('div',{class:'pm-section'});
-  secPreview.appendChild(el('h4',{},'Exact payload that will be sent to AI'));
-  const previewBox = el('div',{class:'pm-preview'});
-  secPreview.appendChild(previewBox);
-  modal.appendChild(secPreview);
-
-  function getIncluded(){ return Object.entries(checkboxes).filter(([,cb])=>cb.checked).map(([name])=>name); }
-  function updatePreview(){ previewBox.textContent = JSON.stringify(buildMetadata(getIncluded()), null, 2); }
-  updatePreview();
-
-  const actions = el('div',{class:'rl-modal-actions'});
-  actions.appendChild(el('button',{class:'btn',onClick:()=>bg.remove()},'Cancel'));
-  const sendBtn = el('button',{class:'btn primary',style:'background:linear-gradient(135deg,#7c3aed,#2563eb);border-color:#7c3aed'},'\u2726 Confirm & Ask AI');
-  sendBtn.addEventListener('click',()=>{
-    const included = getIncluded();
-    if(!included.length){ toast('Select at least one column'); return; }
-    bg.remove();
-    runAiAnalysis(included);
-  });
-  actions.appendChild(sendBtn);
-  modal.appendChild(actions);
-  bg.appendChild(modal);
-  bg.addEventListener('click', e=>{ if(e.target===bg) bg.remove(); });
-  document.body.appendChild(bg);
+  // Auto-select all non-PII columns and run immediately — no technical modal needed
+  const includedCols = state.cols.filter(c => !detectPii(c.name)).map(c => c.name);
+  if (!includedCols.length) {
+    toast('No columns available for analysis (all detected as PII)');
+    return;
+  }
+  runAiAnalysis(includedCols);
 }
 
 async function runAiAnalysis(includedCols){
@@ -1230,9 +1177,11 @@ Respond ONLY with a valid JSON object in this exact shape, no markdown fences, n
     try {
       json = await callAi('openai');
     } catch(e) {
-      console.warn('[ReportLens AI] openai failed, retrying with mistral:', e.message);
-      toast('Retrying with fallback model…');
-      json = await callAi('mistral');
+      // Retry once after short delay — mistral is deprecated, only openai is available
+      console.warn('[ReportLens AI] openai failed, retrying:', e.message);
+      toast('Retrying…');
+      await new Promise(r => setTimeout(r, 1200));
+      json = await callAi('openai');
     }
     applyAiSuggestions(json, meta);
   } catch(err) {
@@ -1336,7 +1285,11 @@ async function wsCallAiJson(messages) {
     }
   }
   try { return await attempt('openai'); }
-  catch(e) { return await attempt('mistral'); }
+  catch(e) {
+    // Retry once on transient errors — mistral is deprecated, openai is the only model
+    await new Promise(r => setTimeout(r, 1200));
+    return await attempt('openai');
+  }
 }
 
 // ── Open workshop ────────────────────────────────────────────
